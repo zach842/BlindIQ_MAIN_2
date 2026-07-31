@@ -1,6 +1,6 @@
 # Secure BlindIQ Membership Setup
 
-The code is complete, but the database migration, Edge Function, secrets, and Stripe webhook must be activated in their dashboards before Premium access can work.
+The code is complete, but the database migration, Edge Function, secrets, and Stripe webhook must be activated in their dashboards before membership access can work.
 
 ## Part 1 — Create the Supabase tables
 
@@ -146,4 +146,4 @@ In Supabase, verify that the tester has:
 - The Edge Function rejects invalid signatures.
 - The webhook uses the checkout `client_reference_id` to associate the Stripe subscription with the authenticated Supabase user.
 - Row-level security allows each hunter to read only their own profile and subscription.
-- Premium access is based on the verified database row, not a redirect URL or browser flag.
+- Membership access is based on the verified database row, not a redirect URL or browser flag.

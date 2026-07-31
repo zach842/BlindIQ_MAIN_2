@@ -32,18 +32,18 @@ function Icon({ children }: { children: string }) {
   return <span className="icon" aria-hidden="true">{children}</span>;
 }
 
-function Shell({ view, setView, children, userName }: { view: View; setView: (v: View) => void; children: React.ReactNode; userName: string }) {
+function Shell({ view, setView, children, userName, isPremium }: { view: View; setView: (v: View) => void; children: React.ReactNode; userName: string; isPremium: boolean }) {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <button className="brand-button" onClick={() => setView("dashboard")}><Brand compact /></button>
+        <button className="brand-button" onClick={() => setView(isPremium ? "dashboard" : "account")}><Brand compact /></button>
         <button className="avatar" onClick={() => setView("account")} aria-label="Account">{userName.slice(0, 1).toUpperCase()}</button>
       </header>
       <main>{children}</main>
       {view !== "hunt" && view !== "summary" && (
         <nav className="bottom-nav" aria-label="Main navigation">
-          <button className={view === "dashboard" ? "active" : ""} onClick={() => setView("dashboard")}><Icon>⌂</Icon>Home</button>
-          <button className={view === "history" ? "active" : ""} onClick={() => setView("history")}><Icon>≡</Icon>My Hunts</button>
+          {isPremium && <button className={view === "dashboard" ? "active" : ""} onClick={() => setView("dashboard")}><Icon>⌂</Icon>Home</button>}
+          {isPremium && <button className={view === "history" ? "active" : ""} onClick={() => setView("history")}><Icon>≡</Icon>My Hunts</button>}
           <button className={view === "account" ? "active" : ""} onClick={() => setView("account")}><Icon>○</Icon>Account</button>
         </nav>
       )}
@@ -137,7 +137,7 @@ export default function App() {
       const membership = await getSubscription();
       setIsPremium(membership.isPremium);
       setSubscriptionStatus(membership.status);
-      setView("dashboard");
+      setView(membership.isPremium ? "dashboard" : "account");
     });
   }, []);
 
@@ -150,7 +150,7 @@ export default function App() {
       const membership = await getSubscription();
       setIsPremium(membership.isPremium);
       setSubscriptionStatus(membership.status);
-      setView("dashboard");
+      setView(membership.isPremium ? "dashboard" : "account");
       return;
     }
 
@@ -161,7 +161,7 @@ export default function App() {
     if (user.confirmationRequired) {
       return "Account created. Check your email and select the confirmation link before logging in.";
     }
-    setView("dashboard");
+    setView("account");
   }
 
   function addBird(bird: BirdRule) {
@@ -212,7 +212,7 @@ export default function App() {
   }
 
   return (
-    <Shell view={view} setView={setView} userName={userName}>
+    <Shell view={view} setView={setView} userName={userName} isPremium={isPremium}>
       {view === "dashboard" && (
         <div className="page dashboard">
           <div className="greeting"><p>Good morning, {userName}</p><h1>Where are you hunting?</h1></div>
@@ -254,7 +254,7 @@ export default function App() {
           </section>
 
           <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
-          <button className="button button--gold button--start" onClick={() => { if (isPremium) setView("hunt"); else { setToast("BlindIQ Premium is required to start a hunt."); setView("account"); } }}><span>{isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{isPremium ? "Open hunt mode →" : "$19.99/year →"}</small></button>
+          <button className="button button--gold button--start" onClick={() => { if (isPremium) setView("hunt"); else { setToast("An active BlindIQ membership is required to start a hunt."); setView("account"); } }}><span>{isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{isPremium ? "Open hunt mode →" : "$14.99/year →"}</small></button>
         </div>
       )}
 
@@ -319,7 +319,7 @@ export default function App() {
       {view === "history" && (
         <div className="page">
           <div className="page-title"><p className="eyebrow">YOUR SEASON</p><h1>My hunts</h1><p>A simple field record of every hunt you save.</p></div>
-          {!isPremium && <section className="locked-card"><span>PREMIUM FEATURE</span><h2>Unlock your hunt history</h2><p>Activate BlindIQ Premium to save and revisit every hunt.</p><button className="button button--gold" onClick={() => setView("account")}>View membership</button></section>}
+          {!isPremium && <section className="locked-card"><span>MEMBERSHIP REQUIRED</span><h2>Unlock your hunt history</h2><p>Activate your BlindIQ membership to save and revisit every hunt.</p><button className="button button--gold" onClick={() => setView("account")}>View membership</button></section>}
           {isPremium && <>
           <div className="stats-strip"><div><strong>{history.length}</strong><span>Hunts</span></div><div><strong>{history.reduce((sum, hunt) => sum + hunt.entries.reduce((s, e) => s + e.count, 0), 0)}</strong><span>Birds</span></div><div><strong>{new Set(history.map((hunt) => hunt.state)).size}</strong><span>States</span></div></div>
           <div className="history-list">
@@ -331,15 +331,15 @@ export default function App() {
 
       {view === "account" && (
         <div className="page account-page">
-          <div className="page-title"><p className="eyebrow">MEMBERSHIP</p><h1>Your BlindIQ account</h1></div>
-          <section className="profile-card"><div className="profile-avatar">{userName.slice(0, 1)}</div><div><strong>{userName}</strong><span>{accountEmail || `@${userName.toLowerCase()}`}</span></div><span className="demo-pill">{isDemoMode ? "DEMO" : isPremium ? "PREMIUM" : "FREE"}</span></section>
+          <div className="page-title"><p className="eyebrow">{isPremium ? "MEMBERSHIP" : "ONE LAST STEP"}</p><h1>{isPremium ? "Your BlindIQ account" : "Activate your membership"}</h1>{!isPremium && <p>Complete secure checkout to unlock the hunt dashboard.</p>}</div>
+          <section className="profile-card"><div className="profile-avatar">{userName.slice(0, 1)}</div><div><strong>{userName}</strong><span>{accountEmail || `@${userName.toLowerCase()}`}</span></div><span className="demo-pill">{isDemoMode ? "DEMO" : isPremium ? "ACTIVE" : "INACTIVE"}</span></section>
           <section className="premium-card">
-            <p className="eyebrow">BLINDIQ PREMIUM</p>
+            <p className="eyebrow">BLINDIQ ANNUAL MEMBERSHIP</p>
             <h2>Every hunt. One clear answer.</h2>
-            <div className="price"><strong>$19.99</strong><span>/ year</span></div>
-            <ul><li>✓ State regulation dashboards</li><li>✓ Live harvest and bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ Future premium tools as they launch</li></ul>
+            <div className="price"><strong>$14.99</strong><span>/ year</span></div>
+            <ul><li>✓ State regulation dashboards</li><li>✓ Live harvest and bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ New member tools as they launch</li></ul>
             <div className="promo-callout"><span>TESTER ACCESS</span><strong>Use code 100Ducks for 100% off at checkout.</strong></div>
-            {isPremium ? <div className="membership-active"><span>✓</span><div><strong>Premium active</strong><small>Verified through your BlindIQ membership record.</small></div></div> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); }}>Start annual membership</button>}
+            {isPremium ? <div className="membership-active"><span>✓</span><div><strong>Membership active</strong><small>Verified through your BlindIQ membership record.</small></div></div> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); }}>Start annual membership</button>}
             <small>Secure checkout is powered by Stripe. Renewal and discount terms are shown before confirmation.</small>
           </section>
           {toast && <div className="inline-toast">{toast}</div>}

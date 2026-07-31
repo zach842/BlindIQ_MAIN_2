@@ -2,7 +2,7 @@
 
 **HUNT WITH CONFIDENCE**
 
-BlindIQ is a mobile-first waterfowl hunting companion. This initial React + Vite foundation includes demo authentication, four state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $19.99/year premium screen.
+BlindIQ is a mobile-first waterfowl hunting companion. This initial React + Vite foundation includes authentication, four state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
 > Important: The included dates and limits are realistic demo data for product testing. They are not production-ready legal guidance. Every state package must be reviewed against current official wildlife-agency regulations before public launch.
 
@@ -19,7 +19,7 @@ BlindIQ is a mobile-first waterfowl hunting companion. This initial React + Vite
 - Aggregate six-duck limit, four-mallard limit, and two-hen limit logic
 - Live list of birds that remain available under loaded demo rules
 - Hunt summary and history
-- Account and $19.99/year subscription presentation
+- Account and $14.99/year subscription presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
 
@@ -149,7 +149,7 @@ VITE_STRIPE_CHECKOUT_URL=
 
 - Blank values keep the app in demo mode.
 - `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` connect authentication.
-- `VITE_STRIPE_PRICE_ID` identifies the $19.99 annual plan.
+- `VITE_STRIPE_PRICE_ID` identifies the $14.99 annual plan.
 - `VITE_STRIPE_CHECKOUT_URL` can temporarily point to a Stripe Payment Link.
 
 For the current tester build, set:
@@ -160,7 +160,7 @@ VITE_STRIPE_CHECKOUT_URL=https://buy.stripe.com/aFa8wP84abhXgfdawY48000
 
 The Stripe Payment Link must have promotion codes enabled for `100Ducks` to work.
 
-For production, payment entitlement must be confirmed server-side with Stripe webhooks. A browser environment variable alone must never be trusted to decide whether a customer is premium.
+For production, membership entitlement must be confirmed server-side with Stripe webhooks. A browser environment variable alone must never be trusted to decide whether a customer has active access.
 
 ## 7. Production integration plan
 
@@ -177,7 +177,7 @@ The current `src/services.ts` file is the boundary for live services:
 
 ## Secure membership deployment
 
-The secure Stripe webhook, subscription schema, row-level security policies, and premium gating are included. Follow `SECURE_MEMBERSHIP_SETUP.md` to activate them in Supabase and Stripe.
+The secure Stripe webhook, subscription schema, row-level security policies, and membership gating are included. Follow `SECURE_MEMBERSHIP_SETUP.md` to activate them in Supabase and Stripe.
 
 ## Project structure
 
