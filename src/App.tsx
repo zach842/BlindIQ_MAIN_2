@@ -1,6 +1,6 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { states } from "./data";
-import { beginCheckout, displayNameFor, getCurrentUser, getSubscription, isDemoMode, signIn, signOut, signUp } from "./services";
+import { beginCheckout, getSubscription, isDemoMode, signIn, signOut, signUp } from "./services";
 import type { BirdRule, HarvestEntry, HuntRecord } from "./types";
 
 type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "summary" | "history" | "account";
@@ -127,19 +127,6 @@ export default function App() {
     setZone(next.zones[0]);
     setHarvest({});
   }
-
-  useEffect(() => {
-    getCurrentUser().then(async (user) => {
-      if (!user) return;
-      setUserName(displayNameFor(user));
-      setAccountEmail(user.email ?? "");
-      setAccountUserId(user.id);
-      const membership = await getSubscription();
-      setIsPremium(membership.isPremium);
-      setSubscriptionStatus(membership.status);
-      setView(membership.isPremium ? "dashboard" : "account");
-    });
-  }, []);
 
   async function authenticate(username: string, email: string, password: string, mode: "login" | "signup") {
     if (mode === "login") {
