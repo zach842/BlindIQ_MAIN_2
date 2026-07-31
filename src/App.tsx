@@ -240,6 +240,8 @@ export default function App() {
             <div><span>WATERFOWL SEASON</span><strong>CLOSED TODAY</strong><p>You’re in {selected.name}. Here are the currently loaded dates.</p></div>
           </section>
 
+          <button className="button button--gold button--start" onClick={() => { if (isPremium) setView("hunt"); else { setToast("An active BlindIQ membership is required to start a hunt."); setView("account"); } }}><span>{isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{isPremium ? "Open hunt mode →" : "$14.99/year →"}</small></button>
+
           <section className="section">
             <div className="section-heading"><div><p className="eyebrow">SEASON OVERVIEW</p><h2>{selected.name} waterfowl</h2></div><span className="verified">Demo data</span></div>
             <p className="muted">{selected.overview}</p>
@@ -266,7 +268,6 @@ export default function App() {
           </section>
 
           <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
-          <button className="button button--gold button--start" onClick={() => { if (isPremium) setView("hunt"); else { setToast("An active BlindIQ membership is required to start a hunt."); setView("account"); } }}><span>{isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{isPremium ? "Open hunt mode →" : "$14.99/year →"}</small></button>
         </div>
       )}
 
@@ -350,7 +351,6 @@ export default function App() {
             <h2>Every hunt. One clear answer.</h2>
             <div className="price"><strong>$14.99</strong><span>/ year</span></div>
             <ul><li>✓ State regulation dashboards</li><li>✓ Live harvest and bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ New member tools as they launch</li></ul>
-            <div className="promo-callout"><span>TESTER ACCESS</span><strong>Use code 100Ducks for 100% off at checkout.</strong></div>
             {isPremium ? <div className="membership-active"><span>✓</span><div><strong>Membership active</strong><small>Verified through your BlindIQ membership record.</small></div></div> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); }}>Start annual membership</button>}
             <small>Secure checkout is powered by Stripe. Renewal and discount terms are shown before confirmation.</small>
           </section>
