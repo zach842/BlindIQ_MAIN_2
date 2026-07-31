@@ -150,7 +150,15 @@ export default function App() {
       const membership = await getSubscription();
       setIsPremium(membership.isPremium);
       setSubscriptionStatus(membership.status);
-      setView(membership.isPremium ? "dashboard" : "account");
+      if (membership.isPremium) {
+        setView("dashboard");
+      } else {
+        const checkoutResult = beginCheckout(user.id, user.email);
+        if (checkoutResult === "demo") {
+          setToast("Stripe checkout is not configured.");
+          setView("account");
+        }
+      }
       return;
     }
 
@@ -161,7 +169,11 @@ export default function App() {
     if (user.confirmationRequired) {
       return "Account created. Check your email and select the confirmation link before logging in.";
     }
-    setView("account");
+    const checkoutResult = beginCheckout(user.id, user.email);
+    if (checkoutResult === "demo") {
+      setToast("Stripe checkout is not configured.");
+      setView("account");
+    }
   }
 
   function addBird(bird: BirdRule) {

@@ -10,6 +10,7 @@ BlindIQ is a mobile-first waterfowl hunting companion. This initial React + Vite
 
 - Welcome, login, and account-creation screens
 - Supabase email/password authentication when environment settings are present
+- Automatic Stripe Checkout after signup or login for inactive members
 - Demo-mode fallback when Supabase settings are absent
 - Maryland, Delaware, Virginia, and North Carolina state selection
 - Closed-today banner and loaded season dates
