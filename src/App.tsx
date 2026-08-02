@@ -113,13 +113,18 @@ export default function App() {
   const duckCount = selected.birds.filter((bird) => bird.group === "Ducks").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
   const gooseCount = selected.birds.filter((bird) => bird.group === "Geese").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
 
-  const mallardCount = (harvest["mallard-drake"] ?? 0) + (harvest["mallard-hen"] ?? 0);
+  const limitForBird = (bird: BirdRule) => bird.zoneLimits?.[zone] ?? bird.limit;
   const remaining = (bird: BirdRule) => {
     if (bird.group === "Ducks" && duckCount >= 6) return 0;
-    if (bird.parent === "mallard") return Math.max(0, Math.min(bird.limit - (harvest[bird.id] ?? 0), 4 - mallardCount, 6 - duckCount));
-    return Math.max(0, Math.min(bird.limit - (harvest[bird.id] ?? 0), bird.group === "Ducks" ? 6 - duckCount : bird.limit));
+    const effectiveLimit = limitForBird(bird);
+    if (bird.parent) {
+      const parentCount = selected.birds.filter((item) => item.parent === bird.parent).reduce((sum, item) => sum + (harvest[item.id] ?? 0), 0);
+      const parentLimit = bird.parentLimit ?? effectiveLimit;
+      return Math.max(0, Math.min(effectiveLimit - (harvest[bird.id] ?? 0), parentLimit - parentCount, 6 - duckCount));
+    }
+    return Math.max(0, Math.min(effectiveLimit - (harvest[bird.id] ?? 0), bird.group === "Ducks" ? 6 - duckCount : effectiveLimit));
   };
-  const availableBirds = useMemo(() => selected.birds.filter((bird) => remaining(bird) > 0), [selected, harvest]);
+  const availableBirds = useMemo(() => selected.birds.filter((bird) => remaining(bird) > 0), [selected, harvest, zone]);
 
   function selectState(code: string) {
     const next = states.find((state) => state.code === code)!;
@@ -222,15 +227,22 @@ export default function App() {
             </select>
           </section>
 
-          <section className="status-banner status-banner--closed">
+          {selected.dataStatus === "archived" && (
+            <aside className="data-notice" role="alert">
+              <div>!</div>
+              <p><strong>Archived season data</strong>{selected.dataNotice}</p>
+            </aside>
+          )}
+
+          <section className={`status-banner ${selected.dataStatus === "archived" ? "status-banner--reference" : "status-banner--closed"}`}>
             <div className="status-icon">×</div>
-            <div><span>WATERFOWL SEASON</span><strong>CLOSED TODAY</strong><p>You’re in {selected.name}. Here are the currently loaded dates.</p></div>
+            <div><span>WATERFOWL SEASON</span><strong>{selected.dataStatus === "archived" ? "CURRENT DATA PENDING" : "CLOSED TODAY"}</strong><p>{selected.dataStatus === "archived" ? `${selected.seasonYear} is displayed for reference only.` : `You’re in ${selected.name}. Here are the currently loaded dates.`}</p></div>
           </section>
 
-          <button className="button button--gold button--start" onClick={() => { if (isPremium) setView("hunt"); else { setToast("An active BlindIQ membership is required to start a hunt."); setView("account"); } }}><span>{isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{isPremium ? "Open hunt mode →" : "$14.99/year →"}</small></button>
+          <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => { if (isPremium) setView("hunt"); else { setToast("An active BlindIQ membership is required to start a hunt."); setView("account"); } }}><span>{selected.dataStatus === "archived" ? "2026–2027 UPDATE PENDING" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot start a live hunt" : isPremium ? "Open hunt mode →" : "$14.99/year →"}</small></button>
 
           <section className="section">
-            <div className="section-heading"><div><p className="eyebrow">SEASON OVERVIEW</p><h2>{selected.name} waterfowl</h2></div><span className="verified">Demo data</span></div>
+            <div className="section-heading"><div><p className="eyebrow">SEASON OVERVIEW</p><h2>{selected.name} waterfowl</h2></div><span className="verified">{selected.seasonYear ?? "Demo data"}</span></div>
             <p className="muted">{selected.overview}</p>
             <div className="season-list">
               {selected.seasons.map((season) => (
@@ -242,6 +254,13 @@ export default function App() {
             </div>
           </section>
 
+          {!!selected.specialRules?.length && (
+            <section className="section special-rules">
+              <div className="section-heading"><div><p className="eyebrow">IMPORTANT RESTRICTIONS</p><h2>Before you hunt</h2></div></div>
+              <ul>{selected.specialRules.map((rule) => <li key={rule}>{rule}</li>)}</ul>
+            </section>
+          )}
+
           <section className="info-grid">
             <article className="info-card"><Icon>⌖</Icon><span>Zones</span><strong>{selected.zones.length} loaded</strong><p>{selected.zones.join(" • ")}</p></article>
             <article className="info-card"><Icon>◷</Icon><span>Shooting hours</span><strong>Check daily</strong><p>{selected.shootingHours}</p></article>
@@ -251,7 +270,7 @@ export default function App() {
 
           <section className="species-section section">
             <div className="section-heading"><div><p className="eyebrow">LOADED BAG RULES</p><h2>Ducks & geese</h2></div></div>
-            <div className="chip-list">{selected.birds.map((bird) => <span key={bird.id}>{bird.label} <b>{bird.limit}</b></span>)}</div>
+            <div className="chip-list">{selected.birds.map((bird) => <span key={bird.id}>{bird.label} <b>{limitForBird(bird)}</b></span>)}</div>
           </section>
 
           <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>

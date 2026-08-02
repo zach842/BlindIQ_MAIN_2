@@ -6,6 +6,8 @@ export type BirdRule = {
   note?: string;
   sex?: "Drake" | "Hen";
   parent?: string;
+  parentLimit?: number;
+  zoneLimits?: Record<string, number>;
 };
 
 export type Season = {
@@ -25,6 +27,10 @@ export type StateData = {
   zones: string[];
   birds: BirdRule[];
   overview: string;
+  seasonYear?: string;
+  dataStatus?: "current" | "tentative" | "archived" | "demo";
+  dataNotice?: string;
+  specialRules?: string[];
 };
 
 export type HarvestEntry = BirdRule & { count: number };
