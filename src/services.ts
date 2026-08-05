@@ -1,4 +1,5 @@
 import { createClient, type User } from "@supabase/supabase-js";
+import { TERMS_VERSION } from "./legal";
 
 export const appConfig = {
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL ?? "",
@@ -40,7 +41,7 @@ export async function signUp(username: string, email: string, password: string) 
     email,
     password,
     options: {
-      data: { username },
+      data: { username, terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString() },
       emailRedirectTo: window.location.origin,
     },
   });
@@ -51,6 +52,26 @@ export async function signUp(username: string, email: string, password: string) 
     email,
     confirmationRequired: !data.session,
   };
+}
+
+export async function getDefaultState() {
+  if (!supabase) return localStorage.getItem("blindiq-default-state") || "MD";
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return "MD";
+  const { data, error } = await supabase.from("profiles").select("default_state").eq("id", userData.user.id).maybeSingle();
+  if (error) throw error;
+  return data?.default_state || "MD";
+}
+
+export async function saveDefaultState(stateCode: string) {
+  if (!supabase) {
+    localStorage.setItem("blindiq-default-state", stateCode);
+    return;
+  }
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("Log in before saving a default state.");
+  const { error } = await supabase.from("profiles").update({ default_state: stateCode, updated_at: new Date().toISOString() }).eq("id", userData.user.id);
+  if (error) throw error;
 }
 
 export async function getCurrentUser() {

@@ -1,9 +1,11 @@
 import { FormEvent, useMemo, useState } from "react";
 import { states } from "./data";
-import { beginCheckout, getSubscription, isDemoMode, signIn, signOut, signUp } from "./services";
-import type { BirdRule, HarvestEntry, HuntRecord } from "./types";
+import { beginCheckout, getDefaultState, getSubscription, isDemoMode, saveDefaultState, signIn, signOut, signUp } from "./services";
+import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
+import { getDevicePosition, getWeather } from "./location";
+import type { BirdRule, DevicePosition, HarvestEntry, HuntRecord, WeatherData } from "./types";
 
-type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "summary" | "history" | "account";
+type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "summary" | "history" | "account" | "terms";
 
 const demoHistory: HuntRecord[] = [
   {
@@ -32,6 +34,59 @@ function Icon({ children }: { children: string }) {
   return <span className="icon" aria-hidden="true">{children}</span>;
 }
 
+function weatherSymbol(description: string) {
+  const value = description.toLowerCase();
+  if (value.includes("thunder")) return "ϟ";
+  if (value.includes("snow") || value.includes("sleet")) return "✣";
+  if (value.includes("rain") || value.includes("shower")) return "≋";
+  if (value.includes("fog") || value.includes("mist")) return "═";
+  if (value.includes("cloud") || value.includes("overcast")) return "☁";
+  return "☀";
+}
+
+function formatHour(value: string) {
+  return new Date(value).toLocaleTimeString("en-US", { hour: "numeric" });
+}
+
+function WeatherPanel({ weather, position, loading, error, onLocate }: { weather: WeatherData | null; position: DevicePosition | null; loading: boolean; error: string; onLocate: () => void }) {
+  const dayPeriods = weather?.daily.filter((period) => period.isDaytime).slice(0, 7) ?? [];
+  return (
+    <section className="weather-section" aria-live="polite">
+      <div className="weather-heading">
+        <div><p className="eyebrow">FIELD WEATHER</p><h2>{weather?.locationLabel || "Weather at your location"}</h2><p>{weather ? "Official National Weather Service conditions and forecast." : "Allow location access to load conditions where you are standing."}</p></div>
+        <button className="button weather-locate" disabled={loading} onClick={onLocate}>{loading ? "Locating…" : weather ? "Refresh location" : "Use my location"}</button>
+      </div>
+      {error && <div className="weather-error" role="alert"><strong>Weather unavailable</strong><span>{error}</span></div>}
+      {!weather && !error && <div className="weather-empty"><span>⌖</span><p><strong>Current conditions. Hourly wind. Seven-day outlook.</strong><small>Your precise location is used only to request this forecast and is not saved by BlindIQ.</small></p></div>}
+      {weather && <>
+        {!!weather.alerts.length && <div className="weather-alerts">{weather.alerts.map((alert) => <article key={alert.id}><span>!</span><div><strong>{alert.event}</strong><p>{alert.headline}</p></div></article>)}</div>}
+        <div className="current-weather">
+          <div className="weather-symbol">{weatherSymbol(weather.current.description)}</div>
+          <div className="current-temp"><strong>{weather.current.temperature === null ? "—" : `${weather.current.temperature}°`}</strong><span>{weather.current.description}</span></div>
+          <div className="weather-facts"><p><span>WIND</span><strong>{weather.current.windDirection} {weather.current.windSpeedMph === null ? weather.hourly[0]?.windSpeed || "—" : `${weather.current.windSpeedMph} mph`}</strong></p><p><span>HUMIDITY</span><strong>{weather.current.humidity === null ? "—" : `${weather.current.humidity}%`}</strong></p><p><span>GPS ACCURACY</span><strong>{position ? `±${Math.max(1, Math.round(position.accuracyMeters * 3.28084))} ft` : "—"}</strong></p></div>
+        </div>
+        {!!weather.hourly.length && <div className="forecast-block"><div className="forecast-title"><strong>Next 12 hours</strong><span>Swipe to view →</span></div><div className="hourly-strip">{weather.hourly.map((period) => <article key={period.startTime}><span>{formatHour(period.startTime)}</span><b>{weatherSymbol(period.shortForecast)}</b><strong>{period.temperature}°</strong><small>{period.windDirection} {period.windSpeed}</small><i>{period.precipitationChance ?? 0}% rain</i></article>)}</div></div>}
+        {!!dayPeriods.length && <div className="forecast-block"><div className="forecast-title"><strong>Seven-day outlook</strong><span>NWS forecast</span></div><div className="daily-list">{dayPeriods.map((period) => <article key={period.startTime}><div><strong>{period.name}</strong><span>{period.shortForecast}</span></div><b>{weatherSymbol(period.shortForecast)}</b><p><strong>{period.temperature}°{period.temperatureUnit}</strong><span>{period.windDirection} {period.windSpeed}</span></p></article>)}</div></div>}
+        <footer className="weather-source"><span>Updated {new Date(weather.retrievedAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span><a href="https://www.weather.gov/" target="_blank" rel="noreferrer">National Weather Service ↗</a></footer>
+      </>}
+    </section>
+  );
+}
+
+function LegalDocument({ onClose }: { onClose?: () => void }) {
+  return (
+    <article className="legal-document">
+      <header className="legal-header">
+        <div><p className="eyebrow">BLINDIQ LEGAL</p><h1>Terms of Use & User Agreement</h1><p>Effective {TERMS_EFFECTIVE_DATE} • Version {TERMS_VERSION}</p></div>
+        {onClose && <button className="legal-close" onClick={onClose} aria-label="Close user agreement">×</button>}
+      </header>
+      <aside className="legal-warning"><strong>Important hunting-law notice</strong><p>BlindIQ is an informational hunting companion—not legal advice or permission to hunt. You remain solely responsible for verifying official regulations and every shot you take.</p></aside>
+      {termsSections.map((section) => <section key={section.title}><h2>{section.title}</h2>{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</section>)}
+      <footer><p>This draft is designed for BlindIQ’s current product and should be reviewed by a qualified attorney before broad commercial launch.</p></footer>
+    </article>
+  );
+}
+
 function Shell({ view, setView, children, userName, isPremium }: { view: View; setView: (v: View) => void; children: React.ReactNode; userName: string; isPremium: boolean }) {
   return (
     <div className="app-shell">
@@ -58,6 +113,8 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
@@ -86,6 +143,7 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
           {mode === "signup" && <label>Display username<input required autoComplete="nickname" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Example: ChesapeakeHunter" /></label>}
           <label>{isDemoMode && mode === "login" ? "Username" : "Email address"}<input required type={isDemoMode && mode === "login" ? "text" : "email"} autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
           <label>Password<input required autoComplete={mode === "login" ? "current-password" : "new-password"} type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+          {mode === "signup" && <label className="agreement-check"><input required type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} /><span>I have read and agree to the <button type="button" onClick={() => setShowTerms(true)}>Terms of Use and User Agreement</button>, including the hunting-law disclaimer, release, and limitation of liability.</span></label>}
           {error && <div className="auth-error" role="alert">{error}</div>}
           {success && <div className="auth-success" role="status">{success}</div>}
           <button className="button button--gold button--wide" disabled={loading} type="submit">{loading ? "Please wait…" : mode === "login" ? "Log in" : "Create account"}</button>
@@ -93,6 +151,7 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
         <p className="auth-switch">{mode === "login" ? "New to BlindIQ?" : "Already have an account?"} <button onClick={onSwitch}>{mode === "login" ? "Create account" : "Log in"}</button></p>
         {isDemoMode && <div className="demo-note">{mode === "login" ? <>Demo login: <strong>hunter</strong> / <strong>confidence</strong></> : "Demo mode — your new account opens immediately but is not saved yet."}</div>}
       </div>
+      {showTerms && <div className="legal-modal" role="dialog" aria-modal="true" aria-label="BlindIQ User Agreement"><div className="legal-modal__panel"><LegalDocument onClose={() => setShowTerms(false)} /><button className="button button--gold button--wide" onClick={() => { setAccepted(true); setShowTerms(false); }}>I have read this agreement</button></div></div>}
     </div>
   );
 }
@@ -101,6 +160,7 @@ export default function App() {
   const [view, setView] = useState<View>("welcome");
   const [userName, setUserName] = useState("Hunter");
   const [stateCode, setStateCode] = useState("MD");
+  const [defaultStateCode, setDefaultStateCode] = useState("MD");
   const [zone, setZone] = useState(states[0].zones[0]);
   const [harvest, setHarvest] = useState<Record<string, number>>({});
   const [history, setHistory] = useState<HuntRecord[]>(demoHistory);
@@ -109,6 +169,10 @@ export default function App() {
   const [accountUserId, setAccountUserId] = useState("");
   const [isPremium, setIsPremium] = useState(isDemoMode);
   const [subscriptionStatus, setSubscriptionStatus] = useState(isDemoMode ? "active" : "inactive");
+  const [devicePosition, setDevicePosition] = useState<DevicePosition | null>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState("");
   const selected = states.find((state) => state.code === stateCode) ?? states[0];
   const duckCount = selected.birds.filter((bird) => bird.group === "Ducks").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
   const gooseCount = selected.birds.filter((bird) => bird.group === "Geese").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
@@ -133,6 +197,21 @@ export default function App() {
     setHarvest({});
   }
 
+  async function loadLocalWeather() {
+    setWeatherLoading(true);
+    setWeatherError("");
+    try {
+      const position = await getDevicePosition();
+      setDevicePosition(position);
+      const result = await getWeather(position);
+      setWeather(result);
+    } catch (cause) {
+      setWeatherError(cause instanceof Error ? cause.message : "BlindIQ could not load weather for this location.");
+    } finally {
+      setWeatherLoading(false);
+    }
+  }
+
   async function authenticate(username: string, email: string, password: string, mode: "login" | "signup") {
     if (mode === "login") {
       const user = await signIn(email, password);
@@ -140,6 +219,10 @@ export default function App() {
       setAccountEmail(user.email);
       setAccountUserId(user.id);
       const membership = await getSubscription();
+      const savedState = await getDefaultState();
+      const validState = states.some((state) => state.code === savedState) ? savedState : "MD";
+      setDefaultStateCode(validState);
+      selectState(validState);
       setIsPremium(membership.isPremium);
       setSubscriptionStatus(membership.status);
       if (membership.isPremium) {
@@ -215,6 +298,10 @@ export default function App() {
     return <AuthScreen mode={view} onSubmit={authenticate} onSwitch={() => setView(view === "login" ? "signup" : "login")} onBack={() => setView("welcome")} />;
   }
 
+  if (view === "terms") {
+    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium}><div className="page legal-page"><button className="back-link legal-back" onClick={() => setView("account")}>← Back to account</button><LegalDocument /></div></Shell>;
+  }
+
   return (
     <Shell view={view} setView={setView} userName={userName} isPremium={isPremium}>
       {view === "dashboard" && (
@@ -226,6 +313,8 @@ export default function App() {
               {states.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}
             </select>
           </section>
+
+          <WeatherPanel weather={weather} position={devicePosition} loading={weatherLoading} error={weatherError} onLocate={loadLocalWeather} />
 
           {selected.dataStatus === "archived" && (
             <aside className="data-notice" role="alert">
@@ -352,6 +441,10 @@ export default function App() {
         <div className="page account-page">
           <div className="page-title"><p className="eyebrow">{isPremium ? "MEMBERSHIP" : "ONE LAST STEP"}</p><h1>{isPremium ? "Your BlindIQ account" : "Activate your membership"}</h1>{!isPremium && <p>Complete secure checkout to unlock the hunt dashboard.</p>}</div>
           <section className="profile-card"><div className="profile-avatar">{userName.slice(0, 1)}</div><div><strong>{userName}</strong><span>{accountEmail || `@${userName.toLowerCase()}`}</span></div><span className="demo-pill">{isDemoMode ? "DEMO" : isPremium ? "ACTIVE" : "INACTIVE"}</span></section>
+          <section className="default-state-card">
+            <div><p className="eyebrow">HUNTING PREFERENCE</p><h2>Default state</h2><p>BlindIQ will open your dashboard with this state selected.</p></div>
+            <label htmlFor="default-state">DEFAULT HUNTING STATE<select id="default-state" value={defaultStateCode} onChange={async (e) => { const code = e.target.value; setDefaultStateCode(code); try { await saveDefaultState(code); selectState(code); setToast(`${states.find((state) => state.code === code)?.name} saved as your default state.`); } catch (cause) { setToast(cause instanceof Error ? cause.message : "Unable to save your default state."); } }}>{states.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}</select></label>
+          </section>
           <section className="premium-card">
             <p className="eyebrow">BLINDIQ ANNUAL MEMBERSHIP</p>
             <h2>Every hunt. One clear answer.</h2>
@@ -361,7 +454,7 @@ export default function App() {
             <small>Secure checkout is powered by Stripe. Renewal and discount terms are shown before confirmation.</small>
           </section>
           {toast && <div className="inline-toast">{toast}</div>}
-          <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button>Privacy & terms <span>›</span></button><button>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
+          <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
         </div>
       )}

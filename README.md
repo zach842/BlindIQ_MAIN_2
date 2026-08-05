@@ -2,7 +2,7 @@
 
 **HUNT WITH CONFIDENCE**
 
-BlindIQ is a mobile-first waterfowl hunting companion. This initial React + Vite foundation includes authentication, four state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
+BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 12 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
 > Important: The included dates and limits are realistic demo data for product testing. They are not production-ready legal guidance. Every state package must be reviewed against current official wildlife-agency regulations before public launch.
 
@@ -12,7 +12,16 @@ BlindIQ is a mobile-first waterfowl hunting companion. This initial React + Vite
 - Supabase email/password authentication when environment settings are present
 - Automatic Stripe Checkout after signup or login for inactive members
 - Demo-mode fallback when Supabase settings are absent
-- Maryland, Delaware, Virginia, and North Carolina state selection
+- Twelve selectable states: Maryland, Delaware, Virginia, North Carolina, Pennsylvania, New York, West Virginia, South Carolina, Louisiana, Texas, Arkansas, and North Dakota
+- Required click-to-accept Terms of Use and User Agreement during account creation
+- Agreement version and acceptance time recorded with new Supabase accounts
+- User-selectable default hunting state saved to the Supabase profile
+- Improved compact BlindIQ wordmark contrast in the app header
+- Permission-based weather at the hunter’s current location
+- Current temperature, conditions, wind, humidity, and GPS accuracy
+- Active National Weather Service alerts
+- Twelve-hour and seven-day National Weather Service forecasts
+- Location is used for the forecast and is not stored by BlindIQ
 - Closed-today banner and loaded season dates
 - Duck and goose seasons, zones, shooting hours, bag rules, and official links
 - Start Hunt flow with zone selection
@@ -180,12 +189,26 @@ The current `src/services.ts` file is the boundary for live services:
 
 The secure Stripe webhook, subscription schema, row-level security policies, and membership gating are included. Follow `SECURE_MEMBERSHIP_SETUP.md` to activate them in Supabase and Stripe.
 
+## Apply the default-state and agreement database update
+
+Before deploying this version, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
+
+```text
+supabase/migrations/202608040001_default_state_and_terms.sql
+```
+
+Paste it into the query editor and click **Run** once. This adds the default state and agreement-acceptance fields to user profiles. Do this before asking testers to create new accounts with this version.
+
+The included agreement is a product-specific working draft, not a substitute for legal advice. Have a qualified attorney review the agreement, business name/entity, governing-law provision, privacy practices, and subscription terms before broad commercial launch.
+
 ## Project structure
 
 ```text
 src/
 ├── App.tsx       Screens, navigation, and interactive hunt flow
 ├── data.ts       Demo state regulations and bird rules
+├── legal.ts      Versioned Terms of Use and User Agreement
+├── location.ts   Browser location and National Weather Service forecast service
 ├── services.ts   Supabase/Stripe configuration boundary
 ├── styles.css    BlindIQ design system and responsive layout
 ├── types.ts      Shared data types
