@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 12 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
-This package is **BlindIQ v1.10**, adding secure 30-day remembered-device access to the v1.9 agreement, default-state, and location-weather release.
+This package is **BlindIQ v1.11**, adding a compact collapsible weather widget while retaining secure 30-day remembered-device access, the user agreement, default-state selection, and location-weather release.
 
 > Important: The included dates and limits are realistic demo data for product testing. They are not production-ready legal guidance. Every state package must be reviewed against current official wildlife-agency regulations before public launch.
 
@@ -24,6 +24,8 @@ This package is **BlindIQ v1.10**, adding secure 30-day remembered-device access
 - User-selectable default hunting state saved to the Supabase profile
 - Improved compact BlindIQ wordmark contrast in the app header
 - Permission-based weather at the hunter’s current location
+- Weather stays collapsed by default so hunting controls remain immediately accessible
+- One-tap weather opening and closing with a compact condition summary after loading
 - Current temperature, conditions, wind, humidity, and GPS accuracy
 - Active National Weather Service alerts
 - Twelve-hour and seven-day National Weather Service forecasts
