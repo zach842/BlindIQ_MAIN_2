@@ -4,6 +4,8 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 12 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
+This package is **BlindIQ v1.10**, adding secure 30-day remembered-device access to the v1.9 agreement, default-state, and location-weather release.
+
 > Important: The included dates and limits are realistic demo data for product testing. They are not production-ready legal guidance. Every state package must be reviewed against current official wildlife-agency regulations before public launch.
 
 ## What works now
@@ -15,6 +17,10 @@ BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundat
 - Twelve selectable states: Maryland, Delaware, Virginia, North Carolina, Pennsylvania, New York, West Virginia, South Carolina, Louisiana, Texas, Arkansas, and North Dakota
 - Required click-to-accept Terms of Use and User Agreement during account creation
 - Agreement version and acceptance time recorded with new Supabase accounts
+- Optional **Remember this device for 30 days** access during signup and login
+- Automatic restoration of an authenticated Supabase session on that device
+- Current-tab-only access when device remembrance is not selected
+- Remembered-device data and the local session cleared immediately at logout
 - User-selectable default hunting state saved to the Supabase profile
 - Improved compact BlindIQ wordmark contrast in the app header
 - Permission-based weather at the hunter’s current location
@@ -82,6 +88,15 @@ Demo login:
 Username: hunter
 Password: confidence
 ```
+
+### Test 30-day device remembrance
+
+1. Log in with **Remember this device for 30 days** selected.
+2. Close the browser tab, reopen BlindIQ, and confirm the app restores the account automatically.
+3. Log out and reopen BlindIQ; the welcome screen should appear.
+4. Log in again with the option cleared. A refresh in the same tab remains active, but closing that tab ends device remembrance.
+
+BlindIQ stores an authenticated Supabase session and a 30-day expiration time in that browser. It never stores the hunter's password. Private browsing, cleared website data, browser privacy controls, or manual logout can end remembrance earlier.
 
 ## 3. Test on an iPhone or Android phone over Wi-Fi
 

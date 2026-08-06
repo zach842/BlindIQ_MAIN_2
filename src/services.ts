@@ -1,6 +1,15 @@
 import { createClient, type User } from "@supabase/supabase-js";
 import { TERMS_VERSION } from "./legal";
 
+const REMEMBERED_DEVICE_KEY = "blindiq-remembered-device";
+const ACTIVE_TAB_KEY = "blindiq-active-tab";
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+type RememberedDevice = {
+  userId: string;
+  expiresAt: number;
+};
+
 export const appConfig = {
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL ?? "",
   supabasePublishableKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
@@ -15,27 +24,94 @@ export const supabase =
 
 export const isDemoMode = !supabase;
 
+function readRememberedDevice() {
+  try {
+    const saved = localStorage.getItem(REMEMBERED_DEVICE_KEY);
+    if (!saved) return { device: null as RememberedDevice | null, expired: false };
+    const device = JSON.parse(saved) as Partial<RememberedDevice>;
+    if (typeof device.userId !== "string" || typeof device.expiresAt !== "number") {
+      localStorage.removeItem(REMEMBERED_DEVICE_KEY);
+      return { device: null, expired: false };
+    }
+    if (device.expiresAt <= Date.now()) {
+      localStorage.removeItem(REMEMBERED_DEVICE_KEY);
+      return { device: null, expired: true };
+    }
+    return { device: device as RememberedDevice, expired: false };
+  } catch {
+    return { device: null, expired: false };
+  }
+}
+
+function markActiveTab(userId: string) {
+  try {
+    sessionStorage.setItem(ACTIVE_TAB_KEY, userId);
+  } catch {
+    // Private browsing or device policy may prevent browser storage.
+  }
+}
+
+function activeTabUserId() {
+  try {
+    return sessionStorage.getItem(ACTIVE_TAB_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function rememberDevice(userId: string, shouldRemember: boolean) {
+  markActiveTab(userId);
+  try {
+    if (shouldRemember) {
+      const device: RememberedDevice = { userId, expiresAt: Date.now() + THIRTY_DAYS_MS };
+      localStorage.setItem(REMEMBERED_DEVICE_KEY, JSON.stringify(device));
+    } else {
+      localStorage.removeItem(REMEMBERED_DEVICE_KEY);
+    }
+  } catch {
+    // The login remains valid for the current tab if persistent storage is unavailable.
+  }
+}
+
+export function forgetRememberedDevice() {
+  try {
+    localStorage.removeItem(REMEMBERED_DEVICE_KEY);
+  } catch {
+    // Nothing else is required when browser storage is unavailable.
+  }
+  try {
+    sessionStorage.removeItem(ACTIVE_TAB_KEY);
+  } catch {
+    // Nothing else is required when browser storage is unavailable.
+  }
+}
+
 export function displayNameFor(user: User) {
   const username = user.user_metadata?.username;
   if (typeof username === "string" && username.trim()) return username.trim();
   return user.email?.split("@")[0] || "Hunter";
 }
 
-export async function signIn(email: string, password: string) {
+export async function signIn(email: string, password: string, shouldRemember = true) {
   if (!supabase) {
     if (email.toLowerCase() !== "hunter" || password !== "confidence") {
       throw new Error("Incorrect username or password.");
     }
+    rememberDevice("demo-user", shouldRemember);
     return { id: "demo-user", name: "Hunter", email: "hunter" };
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
+  rememberDevice(data.user.id, shouldRemember);
   return { id: data.user.id, name: displayNameFor(data.user), email: data.user.email ?? email };
 }
 
-export async function signUp(username: string, email: string, password: string) {
-  if (!supabase) return { id: "demo-user", name: username, email, confirmationRequired: false };
+export async function signUp(username: string, email: string, password: string, shouldRemember = true) {
+  if (!supabase) {
+    rememberDevice("demo-user", shouldRemember);
+    return { id: "demo-user", name: username, email, confirmationRequired: false };
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -46,6 +122,7 @@ export async function signUp(username: string, email: string, password: string) 
     },
   });
   if (error) throw error;
+  if (data.session && data.user) rememberDevice(data.user.id, shouldRemember);
   return {
     name: data.user ? displayNameFor(data.user) : username,
     id: data.user?.id ?? "",
@@ -80,8 +157,49 @@ export async function getCurrentUser() {
   return data.user;
 }
 
+export async function restoreRememberedUser() {
+  const { device, expired } = readRememberedDevice();
+  const tabUserId = activeTabUserId();
+
+  if (expired) {
+    forgetRememberedDevice();
+    if (supabase) await supabase.auth.signOut({ scope: "local" });
+    return null;
+  }
+
+  if (!device && !tabUserId) {
+    if (supabase) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) await supabase.auth.signOut({ scope: "local" });
+    }
+    return null;
+  }
+
+  if (!supabase) {
+    return device?.userId === "demo-user" || tabUserId === "demo-user"
+      ? { id: "demo-user", name: "Hunter", email: "hunter" }
+      : null;
+  }
+
+  const { data, error } = await supabase.auth.getUser();
+  const expectedUserId = device?.userId ?? tabUserId;
+  if (error || !data.user || data.user.id !== expectedUserId) {
+    forgetRememberedDevice();
+    await supabase.auth.signOut({ scope: "local" });
+    return null;
+  }
+
+  markActiveTab(data.user.id);
+  return {
+    id: data.user.id,
+    name: displayNameFor(data.user),
+    email: data.user.email ?? "",
+  };
+}
+
 export async function signOut() {
-  if (supabase) await supabase.auth.signOut();
+  forgetRememberedDevice();
+  if (supabase) await supabase.auth.signOut({ scope: "local" });
 }
 
 export async function getSubscription() {

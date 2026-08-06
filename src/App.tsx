@@ -1,6 +1,6 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { states } from "./data";
-import { beginCheckout, getDefaultState, getSubscription, isDemoMode, saveDefaultState, signIn, signOut, signUp } from "./services";
+import { beginCheckout, getDefaultState, getSubscription, isDemoMode, restoreRememberedUser, saveDefaultState, signIn, signOut, signUp } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { getDevicePosition, getWeather } from "./location";
 import type { BirdRule, DevicePosition, HarvestEntry, HuntRecord, WeatherData } from "./types";
@@ -106,7 +106,7 @@ function Shell({ view, setView, children, userName, isPremium }: { view: View; s
   );
 }
 
-function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "signup"; onSubmit: (username: string, email: string, password: string, mode: "login" | "signup") => Promise<string | void>; onSwitch: () => void; onBack: () => void }) {
+function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "signup"; onSubmit: (username: string, email: string, password: string, mode: "login" | "signup", rememberDevice: boolean) => Promise<string | void>; onSwitch: () => void; onBack: () => void }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState(isDemoMode && mode === "login" ? "hunter" : "");
   const [password, setPassword] = useState(isDemoMode && mode === "login" ? "confidence" : "");
@@ -115,13 +115,14 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
   const [loading, setLoading] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(true);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
     setLoading(true);
     try {
-      const message = await onSubmit(username, email, password, mode);
+      const message = await onSubmit(username, email, password, mode, rememberDevice);
       if (message) setSuccess(message);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to log in.");
@@ -143,6 +144,7 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
           {mode === "signup" && <label>Display username<input required autoComplete="nickname" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Example: ChesapeakeHunter" /></label>}
           <label>{isDemoMode && mode === "login" ? "Username" : "Email address"}<input required type={isDemoMode && mode === "login" ? "text" : "email"} autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
           <label>Password<input required autoComplete={mode === "login" ? "current-password" : "new-password"} type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+          <label className="remember-device"><input type="checkbox" checked={rememberDevice} onChange={(e) => setRememberDevice(e.target.checked)} /><span><strong>Remember this device for 30 days</strong><small>Use only on a private phone or computer. BlindIQ never stores your password.</small></span></label>
           {mode === "signup" && <label className="agreement-check"><input required type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} /><span>I have read and agree to the <button type="button" onClick={() => setShowTerms(true)}>Terms of Use and User Agreement</button>, including the hunting-law disclaimer, release, and limitation of liability.</span></label>}
           {error && <div className="auth-error" role="alert">{error}</div>}
           {success && <div className="auth-success" role="status">{success}</div>}
@@ -173,6 +175,7 @@ export default function App() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState("");
+  const [sessionLoading, setSessionLoading] = useState(true);
   const selected = states.find((state) => state.code === stateCode) ?? states[0];
   const duckCount = selected.birds.filter((bird) => bird.group === "Ducks").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
   const gooseCount = selected.birds.filter((bird) => bird.group === "Geese").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
@@ -197,6 +200,39 @@ export default function App() {
     setHarvest({});
   }
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function restoreSession() {
+      try {
+        const user = await restoreRememberedUser();
+        if (!user || cancelled) return;
+        const [membership, savedState] = await Promise.all([getSubscription(), getDefaultState()]);
+        if (cancelled) return;
+        const nextState = states.find((state) => state.code === savedState) ?? states[0];
+        setUserName(user.name);
+        setAccountEmail(user.email);
+        setAccountUserId(user.id);
+        setDefaultStateCode(nextState.code);
+        setStateCode(nextState.code);
+        setZone(nextState.zones[0]);
+        setHarvest({});
+        setIsPremium(membership.isPremium);
+        setSubscriptionStatus(membership.status);
+        setView(membership.isPremium ? "dashboard" : "account");
+      } catch {
+        if (!cancelled) setToast("Your saved login could not be restored. Please log in again.");
+      } finally {
+        if (!cancelled) setSessionLoading(false);
+      }
+    }
+
+    void restoreSession();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function loadLocalWeather() {
     setWeatherLoading(true);
     setWeatherError("");
@@ -212,9 +248,9 @@ export default function App() {
     }
   }
 
-  async function authenticate(username: string, email: string, password: string, mode: "login" | "signup") {
+  async function authenticate(username: string, email: string, password: string, mode: "login" | "signup", shouldRememberDevice: boolean) {
     if (mode === "login") {
-      const user = await signIn(email, password);
+      const user = await signIn(email, password, shouldRememberDevice);
       setUserName(user.name);
       setAccountEmail(user.email);
       setAccountUserId(user.id);
@@ -237,7 +273,7 @@ export default function App() {
       return;
     }
 
-    const user = await signUp(username, email, password);
+    const user = await signUp(username, email, password, shouldRememberDevice);
     setUserName(user.name);
     setAccountEmail(user.email);
     setAccountUserId(user.id);
@@ -270,6 +306,10 @@ export default function App() {
     }
     setHarvest({});
     setView("history");
+  }
+
+  if (sessionLoading) {
+    return <div className="session-loading"><Brand /><span className="session-loading__spinner" aria-hidden="true" /><p>Checking this device…</p></div>;
   }
 
   if (view === "welcome") {
