@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 12 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
-This package is **BlindIQ v1.11**, adding a compact collapsible weather widget while retaining secure 30-day remembered-device access, the user agreement, default-state selection, and location-weather release.
+This package is **BlindIQ v1.12**, adding a compact **+ HOME** action beside the user bubble, installable-app support, and clear iPhone and Android home-screen instructions. It retains the collapsible weather widget, secure 30-day remembered-device access, user agreement, and default-state selection.
 
 > Important: The included dates and limits are realistic demo data for product testing. They are not production-ready legal guidance. Every state package must be reviewed against current official wildlife-agency regulations before public launch.
 
@@ -23,6 +23,10 @@ This package is **BlindIQ v1.11**, adding a compact collapsible weather widget w
 - Remembered-device data and the local session cleared immediately at logout
 - User-selectable default hunting state saved to the Supabase profile
 - Improved compact BlindIQ wordmark contrast in the app header
+- Small **+ HOME** action beside the user bubble
+- Step-by-step home-screen instructions for both iPhone and Android
+- Native Android install prompt when the browser makes it available
+- Installable web-app manifest, icon, and service worker
 - Permission-based weather at the hunter’s current location
 - Weather stays collapsed by default so hunting controls remain immediately accessible
 - One-tap weather opening and closing with a compact condition summary after loading
@@ -120,6 +124,28 @@ BlindIQ stores an authenticated Supabase session and a 30-day expiration time in
 6. Keep the terminal running while you test.
 
 If the phone cannot connect, make sure both devices are on the same non-guest network and approve any firewall prompt on the computer. Some business, hotel, and guest networks block device-to-device connections.
+
+### Add BlindIQ to an iPhone home screen
+
+For the most reliable test, use the live HTTPS Vercel address.
+
+1. Open BlindIQ in **Safari**.
+2. Log in and tap the small **+ HOME** button beside the user bubble.
+3. Read the iPhone instructions, then close the guide.
+4. Tap Safari's **Share** button—the square with the upward arrow.
+5. Scroll down and tap **Add to Home Screen**.
+6. Tap **Add**.
+
+### Add BlindIQ to an Android home screen
+
+1. Open BlindIQ in **Chrome**.
+2. Log in and tap the small **+ HOME** button beside the user bubble.
+3. If **Install BlindIQ now** appears, tap it and confirm installation.
+4. Otherwise, open Chrome's three-dot menu.
+5. Tap **Install app** or **Add to Home screen**.
+6. Confirm the installation.
+
+After installation, BlindIQ opens in its own app-style window. The **+ HOME** action hides when the app is opened from the installed home-screen icon. Browser wording can vary slightly by phone and operating-system version.
 
 ## 4. Upload to GitHub
 

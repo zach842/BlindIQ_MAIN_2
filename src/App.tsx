@@ -7,6 +7,20 @@ import type { BirdRule, DevicePosition, HarvestEntry, HuntRecord, WeatherData } 
 
 type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "summary" | "history" | "account" | "terms";
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+}
+
+type InstallUi = {
+  visible: boolean;
+  guideOpen: boolean;
+  canPrompt: boolean;
+  openGuide: () => void;
+  closeGuide: () => void;
+  install: () => Promise<void>;
+};
+
 const demoHistory: HuntRecord[] = [
   {
     id: "sample-1",
@@ -101,12 +115,50 @@ function LegalDocument({ onClose }: { onClose?: () => void }) {
   );
 }
 
-function Shell({ view, setView, children, userName, isPremium }: { view: View; setView: (v: View) => void; children: React.ReactNode; userName: string; isPremium: boolean }) {
+function InstallGuide({ canPrompt, onInstall, onClose }: { canPrompt: boolean; onInstall: () => Promise<void>; onClose: () => void }) {
+  return (
+    <div className="install-guide" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
+      <div className="install-guide__panel">
+        <button className="install-guide__close" type="button" onClick={onClose} aria-label="Close installation instructions">×</button>
+        <p className="eyebrow">ADD BLINDIQ TO YOUR PHONE</p>
+        <h2 id="install-guide-title">One tap from the blind.</h2>
+        <p className="install-guide__intro">Add BlindIQ to your home screen for fast access without searching for the website.</p>
+        {canPrompt && <button className="button button--gold button--wide install-guide__native" type="button" onClick={() => void onInstall()}>Install BlindIQ now</button>}
+        <div className="install-guide__devices">
+          <section className="install-guide__device">
+            <div className="install-guide__device-heading"><h3>iPhone</h3><small>Use Safari</small></div>
+            <ol>
+              <li>Open BlindIQ in <strong>Safari</strong>.</li>
+              <li>Tap the <strong>Share</strong> button at the bottom of Safari.</li>
+              <li>Scroll and tap <strong>Add to Home Screen</strong>.</li>
+              <li>Tap <strong>Add</strong> in the upper-right corner.</li>
+            </ol>
+          </section>
+          <section className="install-guide__device">
+            <div className="install-guide__device-heading"><h3>Android</h3><small>Use Chrome</small></div>
+            <ol>
+              <li>Open BlindIQ in <strong>Chrome</strong>.</li>
+              <li>Tap the <strong>three-dot menu</strong> in the upper-right corner.</li>
+              <li>Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
+              <li>Confirm by tapping <strong>Install</strong> or <strong>Add</strong>.</li>
+            </ol>
+          </section>
+        </div>
+        <p className="install-guide__note">The wording may vary slightly by phone and browser version.</p>
+      </div>
+    </div>
+  );
+}
+
+function Shell({ view, setView, children, userName, isPremium, installUi }: { view: View; setView: (v: View) => void; children: React.ReactNode; userName: string; isPremium: boolean; installUi: InstallUi }) {
   return (
     <div className="app-shell">
       <header className="topbar">
         <button className="brand-button" onClick={() => setView(isPremium ? "dashboard" : "account")}><Brand compact /></button>
-        <button className="avatar" onClick={() => setView("account")} aria-label="Account">{userName.slice(0, 1).toUpperCase()}</button>
+        <div className="topbar-actions">
+          {installUi.visible && <button className="home-install-button" type="button" onClick={installUi.openGuide} aria-label="Add BlindIQ to your home screen"><span>＋</span> HOME</button>}
+          <button className="avatar" onClick={() => setView("account")} aria-label="Account">{userName.slice(0, 1).toUpperCase()}</button>
+        </div>
       </header>
       <main>{children}</main>
       {view !== "hunt" && view !== "summary" && (
@@ -116,6 +168,7 @@ function Shell({ view, setView, children, userName, isPremium }: { view: View; s
           <button className={view === "account" ? "active" : ""} onClick={() => setView("account")}><Icon>○</Icon>Account</button>
         </nav>
       )}
+      {installUi.guideOpen && <InstallGuide canPrompt={installUi.canPrompt} onInstall={installUi.install} onClose={installUi.closeGuide} />}
     </div>
   );
 }
@@ -191,6 +244,9 @@ export default function App() {
   const [weatherError, setWeatherError] = useState("");
   const [weatherExpanded, setWeatherExpanded] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installGuideOpen, setInstallGuideOpen] = useState(false);
+  const [appInstalled, setAppInstalled] = useState(() => window.matchMedia("(display-mode: standalone)").matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
   const selected = states.find((state) => state.code === stateCode) ?? states[0];
   const duckCount = selected.birds.filter((bird) => bird.group === "Ducks").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
   const gooseCount = selected.birds.filter((bird) => bird.group === "Geese").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
@@ -214,6 +270,26 @@ export default function App() {
     setZone(next.zones[0]);
     setHarvest({});
   }
+
+  useEffect(() => {
+    function captureInstallPrompt(event: Event) {
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+    }
+
+    function markInstalled() {
+      setAppInstalled(true);
+      setInstallPrompt(null);
+      setInstallGuideOpen(false);
+    }
+
+    window.addEventListener("beforeinstallprompt", captureInstallPrompt);
+    window.addEventListener("appinstalled", markInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", captureInstallPrompt);
+      window.removeEventListener("appinstalled", markInstalled);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -260,6 +336,17 @@ export default function App() {
       setWeatherError(cause instanceof Error ? cause.message : "BlindIQ could not load weather for this location.");
     } finally {
       setWeatherLoading(false);
+    }
+  }
+
+  async function installBlindIq() {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    setInstallPrompt(null);
+    if (choice.outcome === "accepted") {
+      setAppInstalled(true);
+      setInstallGuideOpen(false);
     }
   }
 
@@ -323,6 +410,15 @@ export default function App() {
     setView("history");
   }
 
+  const installUi: InstallUi = {
+    visible: !appInstalled,
+    guideOpen: installGuideOpen,
+    canPrompt: Boolean(installPrompt),
+    openGuide: () => setInstallGuideOpen(true),
+    closeGuide: () => setInstallGuideOpen(false),
+    install: installBlindIq,
+  };
+
   if (sessionLoading) {
     return <div className="session-loading"><Brand /><span className="session-loading__spinner" aria-hidden="true" /><p>Checking this device…</p></div>;
   }
@@ -354,11 +450,11 @@ export default function App() {
   }
 
   if (view === "terms") {
-    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium}><div className="page legal-page"><button className="back-link legal-back" onClick={() => setView("account")}>← Back to account</button><LegalDocument /></div></Shell>;
+    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}><div className="page legal-page"><button className="back-link legal-back" onClick={() => setView("account")}>← Back to account</button><LegalDocument /></div></Shell>;
   }
 
   return (
-    <Shell view={view} setView={setView} userName={userName} isPremium={isPremium}>
+    <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}>
       {view === "dashboard" && (
         <div className="page dashboard">
           <div className="greeting"><p>Good morning, {userName}</p><h1>Where are you hunting?</h1></div>
