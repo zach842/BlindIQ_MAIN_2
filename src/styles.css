@@ -111,9 +111,10 @@ input:focus, select:focus { outline: 3px solid rgba(211,166,63,.22); border-colo
 
 .app-shell { min-height: 100vh; padding-bottom: 78px; }
 .topbar { height: 68px; background: var(--forest); display: flex; align-items: center; justify-content: space-between; padding: 0 max(22px, calc((100vw - 1040px)/2)); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 18px rgba(13,38,31,.16); }
-.brand-button { border: 0; background: none; padding: 0; }
-.topbar-actions { display: flex; align-items: center; gap: 8px; }
-.home-install-button { height: 31px; display: inline-flex; align-items: center; gap: 4px; padding: 0 9px; border: 1px solid rgba(216,198,162,.72); border-radius: 99px; color: #f4e8cc; background: rgba(255,255,255,.06); font-size: 8px; font-weight: 900; letter-spacing: 1px; line-height: 1; }
+.brand-button { min-width: 0; flex: 0 1 auto; border: 0; background: none; padding: 0; }
+.brand-button .brand { min-width: 0; }
+.topbar-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+.home-install-button { min-width: 64px; height: 31px; flex: 0 0 auto; display: inline-flex; justify-content: center; align-items: center; gap: 4px; padding: 0 9px; border: 1px solid rgba(216,198,162,.72); border-radius: 99px; color: #f4e8cc; background: rgba(255,255,255,.06); font-size: 8px; font-weight: 900; letter-spacing: 1px; line-height: 1; }
 .home-install-button:hover { background: rgba(255,255,255,.12); border-color: var(--gold); }
 .home-install-button:focus-visible { outline: 3px solid rgba(211,166,63,.34); outline-offset: 2px; }
 .home-install-button span { color: var(--gold); font-size: 14px; line-height: 1; }
@@ -409,9 +410,18 @@ input:focus, select:focus { outline: 3px solid rgba(211,166,63,.22); border-colo
   .topbar { padding-left: 11px; padding-right: 11px; }
   .brand--compact > img { width: 38px; height: 38px; }
   .brand--compact strong { font-size: 21px; }
-  .home-install-button { height: 29px; padding: 0 7px; font-size: 7px; letter-spacing: .7px; }
+  .home-install-button { min-width: 61px; height: 30px; padding: 0 7px; border-color: rgba(216,198,162,.9); background: rgba(255,255,255,.1); font-size: 7px; letter-spacing: .7px; }
   .avatar { width: 36px; height: 36px; }
   .install-guide { padding: 0; align-items: end; }
   .install-guide__panel { width: 100%; max-height: 92vh; padding: 24px 19px 28px; border-radius: 16px 16px 0 0; }
   .install-guide__devices { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 360px) {
+  .brand { gap: 6px; }
+  .brand--compact > img { width: 32px; height: 32px; }
+  .brand--compact strong { font-size: 18px; }
+  .topbar-actions { gap: 6px; }
+  .home-install-button { min-width: 57px; padding: 0 6px; }
+  .avatar { width: 34px; height: 34px; }
 }

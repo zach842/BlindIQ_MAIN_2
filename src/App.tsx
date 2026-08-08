@@ -13,7 +13,6 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 type InstallUi = {
-  visible: boolean;
   guideOpen: boolean;
   canPrompt: boolean;
   openGuide: () => void;
@@ -156,7 +155,7 @@ function Shell({ view, setView, children, userName, isPremium, installUi }: { vi
       <header className="topbar">
         <button className="brand-button" onClick={() => setView(isPremium ? "dashboard" : "account")}><Brand compact /></button>
         <div className="topbar-actions">
-          {installUi.visible && <button className="home-install-button" type="button" onClick={installUi.openGuide} aria-label="Add BlindIQ to your home screen"><span>＋</span> HOME</button>}
+          <button className="home-install-button" type="button" onClick={installUi.openGuide} aria-label="Add BlindIQ to your home screen"><span>＋</span> HOME</button>
           <button className="avatar" onClick={() => setView("account")} aria-label="Account">{userName.slice(0, 1).toUpperCase()}</button>
         </div>
       </header>
@@ -246,7 +245,6 @@ export default function App() {
   const [sessionLoading, setSessionLoading] = useState(true);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installGuideOpen, setInstallGuideOpen] = useState(false);
-  const [appInstalled, setAppInstalled] = useState(() => window.matchMedia("(display-mode: standalone)").matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
   const selected = states.find((state) => state.code === stateCode) ?? states[0];
   const duckCount = selected.birds.filter((bird) => bird.group === "Ducks").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
   const gooseCount = selected.birds.filter((bird) => bird.group === "Geese").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
@@ -278,7 +276,6 @@ export default function App() {
     }
 
     function markInstalled() {
-      setAppInstalled(true);
       setInstallPrompt(null);
       setInstallGuideOpen(false);
     }
@@ -345,7 +342,6 @@ export default function App() {
     const choice = await installPrompt.userChoice;
     setInstallPrompt(null);
     if (choice.outcome === "accepted") {
-      setAppInstalled(true);
       setInstallGuideOpen(false);
     }
   }
@@ -411,7 +407,6 @@ export default function App() {
   }
 
   const installUi: InstallUi = {
-    visible: !appInstalled,
     guideOpen: installGuideOpen,
     canPrompt: Boolean(installPrompt),
     openGuide: () => setInstallGuideOpen(true),
