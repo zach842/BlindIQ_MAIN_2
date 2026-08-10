@@ -2,9 +2,9 @@
 
 **HUNT WITH CONFIDENCE**
 
-BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 12 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
+BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 17 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
-This package is **BlindIQ v1.13**, making the compact **+ HOME** action reliably visible beside the user bubble on desktop, iPhone, Android, and installed-app views. It includes installable-app support and clear iPhone and Android home-screen instructions while retaining the collapsible weather widget, secure 30-day remembered-device access, user agreement, and default-state selection.
+This package is **BlindIQ v1.14**, adding Wisconsin, Illinois, Montana, Minnesota, and Kansas. It includes official current packages for Wisconsin, Montana, Minnesota, and Kansas; Illinois is clearly marked as a preseason package until IDNR publishes its final 2026–2027 daily limits. The hunt engine now supports zone-specific aggregate duck limits, including Montana’s seven-bird Pacific Flyway bag.
 
 > Important: The included dates and limits are realistic demo data for product testing. They are not production-ready legal guidance. Every state package must be reviewed against current official wildlife-agency regulations before public launch.
 
@@ -14,7 +14,7 @@ This package is **BlindIQ v1.13**, making the compact **+ HOME** action reliably
 - Supabase email/password authentication when environment settings are present
 - Automatic Stripe Checkout after signup or login for inactive members
 - Demo-mode fallback when Supabase settings are absent
-- Twelve selectable states: Maryland, Delaware, Virginia, North Carolina, Pennsylvania, New York, West Virginia, South Carolina, Louisiana, Texas, Arkansas, and North Dakota
+- Seventeen selectable states: Maryland, Delaware, Virginia, North Carolina, Pennsylvania, New York, West Virginia, South Carolina, Louisiana, Texas, Arkansas, North Dakota, Wisconsin, Illinois, Montana, Minnesota, and Kansas
 - Required click-to-accept Terms of Use and User Agreement during account creation
 - Agreement version and acceptance time recorded with new Supabase accounts
 - Optional **Remember this device for 30 days** access during signup and login
@@ -38,7 +38,8 @@ This package is **BlindIQ v1.13**, making the compact **+ HOME** action reliably
 - Duck and goose seasons, zones, shooting hours, bag rules, and official links
 - Start Hunt flow with zone selection
 - Add and remove harvested birds
-- Aggregate six-duck limit, four-mallard limit, and two-hen limit logic
+- State- and zone-aware aggregate duck limits, including Montana’s seven-bird Pacific Flyway bag
+- Species, sex, parent-species, and zone-specific bag-limit logic
 - Live list of birds that remain available under loaded demo rules
 - Hunt summary and history
 - Account and $14.99/year subscription presentation
@@ -215,6 +216,16 @@ The Stripe Payment Link must have promotion codes enabled for `100Ducks` to work
 
 For production, membership entitlement must be confirmed server-side with Stripe webhooks. A browser environment variable alone must never be trusted to decide whether a customer has active access.
 
+## v1.14 regulation sources
+
+- **Wisconsin:** [Wisconsin DNR 2026 migratory game-bird dates and limits](https://dnr.wisconsin.gov/topic/Hunt/regulations/OnlineHuntingRegulations?page=8)
+- **Illinois:** [Illinois DNR waterfowl resources](https://dnr.illinois.gov/hunting/waterfowlhunting.html). The zone structure and dates are official; the app displays a preseason notice until the final 2026–2027 bag-limit digest is published.
+- **Montana:** [Montana FWP 2026 migratory-bird regulations](https://fwp.mt.gov/hunt/regulations/migratory-bird)
+- **Minnesota:** [Minnesota DNR 2026 waterfowl seasons and daily limits](https://www.dnr.state.mn.us/hunting/waterfowl/index.html)
+- **Kansas:** [Kansas Wildlife & Parks 2026–2027 duck seasons and limits](https://www.ksoutdoors.gov/outdoor-activities/hunting-in-kansas/what-to-hunt/migratory-birds/ducks)
+
+Every official source remains linked from its state dashboard so hunters can verify the loaded package before hunting.
+
 ## 7. Production integration plan
 
 The current `src/services.ts` file is the boundary for live services:
@@ -249,7 +260,7 @@ The included agreement is a product-specific working draft, not a substitute for
 ```text
 src/
 ├── App.tsx       Screens, navigation, and interactive hunt flow
-├── data.ts       Demo state regulations and bird rules
+├── data.ts       Season-versioned state regulations and bird rules
 ├── legal.ts      Versioned Terms of Use and User Agreement
 ├── location.ts   Browser location and National Weather Service forecast service
 ├── services.ts   Supabase/Stripe configuration boundary

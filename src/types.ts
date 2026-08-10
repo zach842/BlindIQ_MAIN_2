@@ -7,6 +7,7 @@ export type BirdRule = {
   sex?: "Drake" | "Hen";
   parent?: string;
   parentLimit?: number;
+  parentLimits?: Record<string, number>;
   zoneLimits?: Record<string, number>;
 };
 
@@ -31,6 +32,8 @@ export type StateData = {
   dataStatus?: "current" | "tentative" | "archived" | "demo";
   dataNotice?: string;
   specialRules?: string[];
+  duckDailyLimit?: number;
+  duckDailyLimits?: Record<string, number>;
 };
 
 export type HarvestEntry = BirdRule & { count: number };

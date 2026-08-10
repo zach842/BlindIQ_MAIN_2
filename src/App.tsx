@@ -248,17 +248,18 @@ export default function App() {
   const selected = states.find((state) => state.code === stateCode) ?? states[0];
   const duckCount = selected.birds.filter((bird) => bird.group === "Ducks").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
   const gooseCount = selected.birds.filter((bird) => bird.group === "Geese").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
+  const duckDailyLimit = selected.duckDailyLimits?.[zone] ?? selected.duckDailyLimit ?? 6;
 
   const limitForBird = (bird: BirdRule) => bird.zoneLimits?.[zone] ?? bird.limit;
   const remaining = (bird: BirdRule) => {
-    if (bird.group === "Ducks" && duckCount >= 6) return 0;
+    if (bird.group === "Ducks" && duckCount >= duckDailyLimit) return 0;
     const effectiveLimit = limitForBird(bird);
     if (bird.parent) {
       const parentCount = selected.birds.filter((item) => item.parent === bird.parent).reduce((sum, item) => sum + (harvest[item.id] ?? 0), 0);
-      const parentLimit = bird.parentLimit ?? effectiveLimit;
-      return Math.max(0, Math.min(effectiveLimit - (harvest[bird.id] ?? 0), parentLimit - parentCount, 6 - duckCount));
+      const parentLimit = bird.parentLimits?.[zone] ?? bird.parentLimit ?? effectiveLimit;
+      return Math.max(0, Math.min(effectiveLimit - (harvest[bird.id] ?? 0), parentLimit - parentCount, duckDailyLimit - duckCount));
     }
-    return Math.max(0, Math.min(effectiveLimit - (harvest[bird.id] ?? 0), bird.group === "Ducks" ? 6 - duckCount : effectiveLimit));
+    return Math.max(0, Math.min(effectiveLimit - (harvest[bird.id] ?? 0), bird.group === "Ducks" ? duckDailyLimit - duckCount : effectiveLimit));
   };
   const availableBirds = useMemo(() => selected.birds.filter((bird) => remaining(bird) > 0), [selected, harvest, zone]);
 
@@ -462,10 +463,10 @@ export default function App() {
 
           <WeatherPanel weather={weather} position={devicePosition} loading={weatherLoading} error={weatherError} expanded={weatherExpanded} onToggle={() => setWeatherExpanded((current) => !current)} onLocate={loadLocalWeather} />
 
-          {selected.dataStatus === "archived" && (
+          {selected.dataNotice && (
             <aside className="data-notice" role="alert">
               <div>!</div>
-              <p><strong>Archived season data</strong>{selected.dataNotice}</p>
+              <p><strong>{selected.dataStatus === "archived" ? "Archived season data" : "Preseason data notice"}</strong>{selected.dataNotice}</p>
             </aside>
           )}
 
@@ -499,7 +500,7 @@ export default function App() {
           <section className="info-grid">
             <article className="info-card"><Icon>⌖</Icon><span>Zones</span><strong>{selected.zones.length} loaded</strong><p>{selected.zones.join(" • ")}</p></article>
             <article className="info-card"><Icon>◷</Icon><span>Shooting hours</span><strong>Check daily</strong><p>{selected.shootingHours}</p></article>
-            <article className="info-card"><Icon>▤</Icon><span>Daily duck bag</span><strong>6 ducks</strong><p>Species and sex restrictions apply.</p></article>
+            <article className="info-card"><Icon>▤</Icon><span>Daily duck bag</span><strong>{duckDailyLimit} ducks</strong><p>{selected.duckDailyLimits ? "Changes with the selected flyway or zone." : "Species and sex restrictions apply."}</p></article>
             <article className="info-card"><Icon>↗</Icon><span>Official source</span><strong>Verify before hunting</strong><a href={selected.officialUrl} target="_blank" rel="noreferrer">Open agency regulations</a></article>
           </section>
 
@@ -527,9 +528,9 @@ export default function App() {
               <p><span className="pulse" /> Demo session active</p>
             </section>
             <section className="bag-meter">
-              <div><span>DUCK BAG</span><strong>{duckCount}<small>/6</small></strong></div>
-              <div className="meter"><i style={{ width: `${Math.min(100, duckCount / 6 * 100)}%` }} /></div>
-              <p>{duckCount >= 6 ? "Daily duck bag filled. Stop harvesting ducks." : `${6 - duckCount} duck${6 - duckCount === 1 ? "" : "s"} remain in the aggregate bag.`}</p>
+              <div><span>DUCK BAG</span><strong>{duckCount}<small>/{duckDailyLimit}</small></strong></div>
+              <div className="meter"><i style={{ width: `${Math.min(100, duckCount / duckDailyLimit * 100)}%` }} /></div>
+              <p>{duckCount >= duckDailyLimit ? "Daily duck bag filled. Stop harvesting ducks." : `${duckDailyLimit - duckCount} duck${duckDailyLimit - duckCount === 1 ? "" : "s"} remain in the aggregate bag.`}</p>
             </section>
             <section className="harvest-panel">
               <div className="section-heading"><div><p className="eyebrow">LOG A BIRD</p><h2>What did you harvest?</h2></div><span>{duckCount + gooseCount} logged</span></div>
