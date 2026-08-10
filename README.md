@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 17 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
-This package is **BlindIQ v1.14**, adding Wisconsin, Illinois, Montana, Minnesota, and Kansas. It includes official current packages for Wisconsin, Montana, Minnesota, and Kansas; Illinois is clearly marked as a preseason package until IDNR publishes its final 2026–2027 daily limits. The hunt engine now supports zone-specific aggregate duck limits, including Montana’s seven-bird Pacific Flyway bag.
+This package is **BlindIQ v1.15**. Both the dashboard hunting-state selector and the account default-state selector display all 17 states alphabetically. Maryland’s season overview now includes both its Eastern and Western Duck Zones. It retains the five v1.14 state additions, Illinois preseason notice, and zone-aware aggregate duck limits.
 
 > Important: The included dates and limits are realistic demo data for product testing. They are not production-ready legal guidance. Every state package must be reviewed against current official wildlife-agency regulations before public launch.
 
@@ -15,6 +15,7 @@ This package is **BlindIQ v1.14**, adding Wisconsin, Illinois, Montana, Minnesot
 - Automatic Stripe Checkout after signup or login for inactive members
 - Demo-mode fallback when Supabase settings are absent
 - Seventeen selectable states: Maryland, Delaware, Virginia, North Carolina, Pennsylvania, New York, West Virginia, South Carolina, Louisiana, Texas, Arkansas, North Dakota, Wisconsin, Illinois, Montana, Minnesota, and Kansas
+- Alphabetical state choices on both the dashboard and account settings screens
 - Required click-to-accept Terms of Use and User Agreement during account creation
 - Agreement version and acceptance time recorded with new Supabase accounts
 - Optional **Remember this device for 30 days** access during signup and login

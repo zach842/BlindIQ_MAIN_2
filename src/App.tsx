@@ -20,6 +20,8 @@ type InstallUi = {
   install: () => Promise<void>;
 };
 
+const sortedStates = [...states].sort((first, second) => first.name.localeCompare(second.name, "en"));
+
 const demoHistory: HuntRecord[] = [
   {
     id: "sample-1",
@@ -457,7 +459,7 @@ export default function App() {
           <section className="state-picker">
             <label htmlFor="state">HUNTING STATE</label>
             <select id="state" value={stateCode} onChange={(e) => selectState(e.target.value)}>
-              {states.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}
+              {sortedStates.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}
             </select>
           </section>
 
@@ -590,7 +592,7 @@ export default function App() {
           <section className="profile-card"><div className="profile-avatar">{userName.slice(0, 1)}</div><div><strong>{userName}</strong><span>{accountEmail || `@${userName.toLowerCase()}`}</span></div><span className="demo-pill">{isDemoMode ? "DEMO" : isPremium ? "ACTIVE" : "INACTIVE"}</span></section>
           <section className="default-state-card">
             <div><p className="eyebrow">HUNTING PREFERENCE</p><h2>Default state</h2><p>BlindIQ will open your dashboard with this state selected.</p></div>
-            <label htmlFor="default-state">DEFAULT HUNTING STATE<select id="default-state" value={defaultStateCode} onChange={async (e) => { const code = e.target.value; setDefaultStateCode(code); try { await saveDefaultState(code); selectState(code); setToast(`${states.find((state) => state.code === code)?.name} saved as your default state.`); } catch (cause) { setToast(cause instanceof Error ? cause.message : "Unable to save your default state."); } }}>{states.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}</select></label>
+            <label htmlFor="default-state">DEFAULT HUNTING STATE<select id="default-state" value={defaultStateCode} onChange={async (e) => { const code = e.target.value; setDefaultStateCode(code); try { await saveDefaultState(code); selectState(code); setToast(`${states.find((state) => state.code === code)?.name} saved as your default state.`); } catch (cause) { setToast(cause instanceof Error ? cause.message : "Unable to save your default state."); } }}>{sortedStates.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}</select></label>
           </section>
           <section className="premium-card">
             <p className="eyebrow">BLINDIQ ANNUAL MEMBERSHIP</p>

@@ -43,6 +43,7 @@ export const states: StateData[] = [
     zones: ["Eastern Duck Zone", "Western Duck Zone", "Atlantic Population Goose Zone"],
     seasons: [
       { name: "Regular Duck", dates: "Oct 11–18 • Nov 15–28 • Dec 16–Jan 31", open: false, zone: "Eastern Duck Zone" },
+      { name: "Regular Duck", dates: "Oct 4–18 • Nov 22–28 • Dec 16–Jan 31", open: false, zone: "Western Duck Zone" },
       { name: "Sea Ducks", dates: "Nov 8–Jan 10", open: false, zone: "Special Sea Duck Area" },
       { name: "Canada Goose", dates: "Nov 22–28 • Dec 16–Jan 31", open: false, zone: "AP Goose Zone" },
       { name: "Snow Goose", dates: "Oct 1–Jan 31", open: false, zone: "Statewide" },
