@@ -11,8 +11,18 @@ createRoot(document.getElementById("root")!).render(
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    void navigator.serviceWorker.register("/sw.js").catch(() => {
-      // The app remains fully usable if a browser blocks service workers.
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
     });
+
+    void navigator.serviceWorker
+      .register("/sw.js?v=1.25", { updateViaCache: "none" })
+      .then((registration) => registration.update())
+      .catch(() => {
+        // The app remains fully usable if a browser blocks service workers.
+      });
   });
 }

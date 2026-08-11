@@ -1,8 +1,10 @@
 import { createClient, type User } from "@supabase/supabase-js";
 import { TERMS_VERSION } from "./legal";
+import type { HarvestEntry, HuntRecord, NewHuntRecord } from "./types";
 
 const REMEMBERED_DEVICE_KEY = "blindiq-remembered-device";
 const ACTIVE_TAB_KEY = "blindiq-active-tab";
+const DEMO_HUNTS_KEY = "blindiq-demo-hunts-v1";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 type RememberedDevice = {
@@ -220,6 +222,98 @@ export async function getSubscription() {
     isPremium: status === "active" || status === "trialing",
     currentPeriodEnd: data?.current_period_end ?? null,
   };
+}
+
+function formatHuntDate(value: string) {
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function rowToHuntRecord(row: {
+  id: string;
+  hunted_at: string;
+  state_code: string;
+  state_name: string;
+  zone: string;
+  is_simulation: boolean;
+  entries: unknown;
+}): HuntRecord {
+  return {
+    id: row.id,
+    date: formatHuntDate(row.hunted_at),
+    huntedAt: row.hunted_at,
+    stateCode: row.state_code,
+    state: row.state_name,
+    zone: row.zone,
+    isSimulation: row.is_simulation,
+    entries: Array.isArray(row.entries) ? row.entries as HarvestEntry[] : [],
+  };
+}
+
+function readDemoHunts(): HuntRecord[] {
+  try {
+    const stored = localStorage.getItem(DEMO_HUNTS_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed as HuntRecord[] : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function listHunts(): Promise<HuntRecord[]> {
+  if (!supabase) return readDemoHunts();
+  const { data, error } = await supabase
+    .from("hunts")
+    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries")
+    .order("hunted_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(rowToHuntRecord);
+}
+
+export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> {
+  const huntedAt = new Date().toISOString();
+  const birdCount = input.entries.reduce((sum, entry) => sum + entry.count, 0);
+
+  if (!supabase) {
+    const record: HuntRecord = {
+      id: crypto.randomUUID(),
+      date: formatHuntDate(huntedAt),
+      huntedAt,
+      stateCode: input.stateCode,
+      state: input.state,
+      zone: input.zone,
+      entries: input.entries,
+      isSimulation: input.isSimulation,
+    };
+    localStorage.setItem(DEMO_HUNTS_KEY, JSON.stringify([record, ...readDemoHunts()]));
+    return record;
+  }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error("Log in before saving a hunt.");
+
+  const { data, error } = await supabase
+    .from("hunts")
+    .insert({
+      user_id: userData.user.id,
+      hunted_at: huntedAt,
+      state_code: input.stateCode,
+      state_name: input.state,
+      zone: input.zone,
+      is_simulation: input.isSimulation,
+      season_year: input.seasonYear ?? null,
+      entries: input.entries,
+      bird_count: birdCount,
+      app_version: "1.25",
+    })
+    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries")
+    .single();
+  if (error) throw error;
+  return rowToHuntRecord(data);
 }
 
 export function beginCheckout(userId: string, email: string) {

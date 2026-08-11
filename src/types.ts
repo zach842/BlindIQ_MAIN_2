@@ -42,9 +42,21 @@ export type HarvestEntry = BirdRule & { count: number };
 export type HuntRecord = {
   id: string;
   date: string;
+  huntedAt: string;
+  stateCode: string;
   state: string;
   zone: string;
   entries: HarvestEntry[];
+  isSimulation: boolean;
+};
+
+export type NewHuntRecord = {
+  stateCode: string;
+  state: string;
+  zone: string;
+  entries: HarvestEntry[];
+  isSimulation: boolean;
+  seasonYear?: string;
 };
 
 export type DevicePosition = {

@@ -1,5 +1,51 @@
 # BlindIQ Deployment Notes
 
+## v1.25 — Permanent hunt history and Test Hunt mode
+
+- Added the account-owned `public.hunts` Supabase table with authenticated-user Row Level Security.
+- Saves each live or test hunt atomically with its state, zone, date, season package, mode, bird count, and harvest entries.
+- Restores hunt history from Supabase after login and across devices using the same account.
+- Saves zero-bird hunts instead of silently discarding them.
+- Added a distinct **Test Hunt** action for off-season practice and labels every saved test record.
+- Excluded test hunts and test birds from the live season statistics.
+- Added loading, empty, success, and database-error states to My Hunts.
+- Tightened the existing account-trigger permissions and optimized the existing profile/subscription RLS policies after a Supabase advisor review.
+- Advanced the visible release marker and service-worker cache to v1.25.
+
+## v1.24 — Dashboard placement and mobile icon release
+
+- Locked **Better the Community** into a final dashboard footer after all season dates, restrictions, zones, bag rules, official sources, and the legal disclaimer.
+- Added a visible v1.24 marker directly beneath the dashboard feedback card so the deployed layout is easy to confirm.
+- Added dedicated 180px iPhone, 192px Android, 512px Android, and 512px maskable Android icons using the BlindIQ duck-and-shield mark.
+- Added explicit favicon and Apple touch-icon metadata and expanded the web-app manifest for both standard and maskable Android installs.
+- Disabled browser caching for the service worker and manifest on Vercel, advanced the runtime cache, and made installed devices actively check for the latest release.
+
+## v1.23 — Idaho, Oregon, and Washington expansion
+
+- Added complete available 2026–27 regulation packages for Idaho, Oregon, and Washington.
+- Expanded BlindIQ from 25 to 28 selectable states while preserving alphabetical dashboard and default-state lists.
+- Added three Idaho duck areas, species-specific Idaho goose areas, controlled swan rules, shooting-hour guidance and official access links.
+- Added Oregon duck and goose zones, Northwest Permit Goose requirements, sea-duck and brant permits, Lake County white-fronted-goose limit, reservation resources and official shooting-hour links.
+- Added Washington’s statewide duck dates, five goose management areas, southwest goose certification, sea-duck and snow-goose harvest-card requirements, conditional brant rules and WDFW Hunt Planner.
+- Added seven-duck aggregate logic for all three states and zone-aware goose limits for Oregon and Washington.
+- Advanced the visible release marker and service-worker cache to v1.23.
+
+## v1.22 — Eight-state 2026–27 expansion
+
+- Added California, Florida, Iowa, Michigan, Missouri, Nebraska, New Jersey, and Ohio.
+- Expanded BlindIQ from 17 to 25 selectable states while preserving alphabetical dashboard and default-state lists.
+- Added the available official duck, goose, zone, special-hunt, shooting-hour, species-limit, public-area, and source information for every new state.
+- Added date-dependent scaup guidance, California special-management warnings, Nebraska two-tier guidance, Florida limited-hunting-day rules, and New Jersey’s Sunday closure.
+- Marked Missouri’s commission-approved package as tentative until final federal approval is reflected in the current MDC digest.
+- Advanced the visible release marker and service-worker cache to v1.22.
+
+## v1.21 — Community card follows the regulations
+
+- Moved **Better the Community** to the bottom of the state dashboard.
+- Hunters now see season dates, restrictions, zone information, bag rules, reviewed sources, and the legal disclaimer before the feedback invitation.
+- Retained the second feedback entry on the Account screen and the complete email-preparation form.
+- Advanced the visible release marker and service-worker cache to v1.21.
+
 ## v1.20 — Visible community feedback and deployment confirmation
 
 - Added **Better the Community** directly below Start Hunt on the main dashboard.

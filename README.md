@@ -2,9 +2,9 @@
 
 **HUNT WITH CONFIDENCE**
 
-BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 17 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
+BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 28 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
-This package is **BlindIQ v1.20**. It makes the dedicated **Better the Community** feedback experience visible on both the main dashboard and Account screen while retaining the reviewed 2026–27 regulation update, alphabetical 17-state selectors, and hunt-log-first experience.
+This package is **BlindIQ v1.25**. It permanently saves live and test hunts to each member’s Supabase account, restores hunt history after reopening the app, saves zero-bird hunts, and adds an explicitly labeled Test Hunt mode for off-season practice. It retains the corrected community-card placement and branded phone icons from v1.24.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -15,7 +15,7 @@ This package is **BlindIQ v1.20**. It makes the dedicated **Better the Community
 - Supabase email/password authentication when environment settings are present
 - Automatic Stripe Checkout after signup or login for inactive members
 - Demo-mode fallback when Supabase settings are absent
-- Seventeen selectable states: Maryland, Delaware, Virginia, North Carolina, Pennsylvania, New York, West Virginia, South Carolina, Louisiana, Texas, Arkansas, North Dakota, Wisconsin, Illinois, Montana, Minnesota, and Kansas
+- Twenty-eight selectable states: Arkansas, California, Delaware, Florida, Idaho, Illinois, Iowa, Kansas, Louisiana, Maryland, Michigan, Minnesota, Missouri, Montana, Nebraska, New Jersey, New York, North Carolina, North Dakota, Ohio, Oregon, Pennsylvania, South Carolina, Texas, Virginia, Washington, West Virginia, and Wisconsin
 - Alphabetical state choices on both the dashboard and account settings screens
 - Required click-to-accept Terms of Use and User Agreement during account creation
 - Agreement version and acceptance time recorded with new Supabase accounts
@@ -28,7 +28,8 @@ This package is **BlindIQ v1.20**. It makes the dedicated **Better the Community
 - Small, always-visible **+ HOME** action beside the user bubble
 - Step-by-step home-screen instructions for both iPhone and Android
 - Native Android install prompt when the browser makes it available
-- Installable web-app manifest, icon, and service worker
+- Dedicated opaque iPhone, Android, and Android maskable home-screen icons
+- Installable web-app manifest and update-aware service worker
 - Permission-based weather at the hunter’s current location
 - Weather stays collapsed by default so hunting controls remain immediately accessible
 - One-tap weather opening and closing with a compact condition summary after loading
@@ -44,15 +45,19 @@ This package is **BlindIQ v1.20**. It makes the dedicated **Better the Community
 - Delaware proposal options clearly separated from final regulations
 - Corrected 2026 Minnesota youth/early-goose dates and pintail limit
 - Start Hunt flow with zone selection
+- Separate **Test Hunt** action for off-season practice
+- Test records visibly labeled and excluded from live hunt and harvest totals
 - Add and remove harvested birds
 - State- and zone-aware aggregate duck limits, including Montana’s seven-bird Pacific Flyway bag
 - Species, sex, parent-species, and zone-specific bag-limit logic
 - Live list of birds that remain available under loaded demo rules
-- Hunt summary and history
+- Hunt summary and permanent account-scoped Supabase history
+- Zero-bird hunt saving
+- Demo-mode hunt persistence in local browser storage
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
-- Dashboard and Account links to the community form, with context-aware Back navigation
+- End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
-- Visible v1.20 marker at the bottom of Account for deployment confirmation
+- Visible v1.25 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and $14.99/year subscription presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
@@ -226,6 +231,23 @@ VITE_STRIPE_CHECKOUT_URL=https://buy.stripe.com/aFa8wP84abhXgfdawY48000
 The Stripe Payment Link must have promotion codes enabled for `100Ducks` to work.
 
 For production, membership entitlement must be confirmed server-side with Stripe webhooks. A browser environment variable alone must never be trusted to decide whether a customer has active access.
+
+## v1.23 regulation sources
+
+- **Idaho:** [Idaho Fish and Game 2026–27 migratory game-bird regulations](https://idfg.idaho.gov/rules/migratory) and [official brochure PDF](https://idfg.idaho.gov/sites/default/files/migratorygame2026-2027_web.pdf)
+- **Oregon:** [ODFW 2026–27 migratory game-bird seasons](https://www.eregulations.com/oregon/hunting/game-bird/migratory-game-bird-seasons), [zone maps](https://www.eregulations.com/oregon/hunting/game-bird/migratory-game-bird-zone-maps), and [Northwest Permit Goose rules](https://www.eregulations.com/oregon/hunting/game-bird/northwest-permit-goose-season)
+- **Washington:** [WDFW 2026–27 game-bird regulations](https://wdfw.wa.gov/hunting/regulations/migratory-waterfowl-upland-game), [WAC 220-416-060](https://app.leg.wa.gov/wac/default.aspx?cite=220-416-060), and [WDFW Hunt Planner](https://geodataservices.wdfw.wa.gov/hunt-planner/)
+
+## v1.22 regulation sources
+
+- **California:** [CDFW 2026–27 waterfowl seasons and limits](https://wildlife.ca.gov/Hunting/Waterfowl)
+- **Florida:** [FWC/eRegulations 2026–27 migratory bird seasons and limits](https://www.eregulations.com/florida/hunting/migratory-bird-hunting-regulations/)
+- **Iowa:** [Iowa DNR 2026–27 migratory game bird seasons](https://www.iowadnr.gov/things-do/hunting-trapping/types-hunting-trapping/migratory-game-bird-hunting)
+- **Michigan:** [Michigan DNR 2026 Waterfowl Hunting Regulations Summary](https://www.michigan.gov/dnr/managing-resources/laws/regulations/waterfowl)
+- **Missouri:** [MDC 2026–27 commission-approved season selections](https://mdc.mo.gov/newsroom/mdc-sets-upcoming-migratory-game-bird-waterfowl-seasons-4)
+- **Nebraska:** [Nebraska Game and Parks 2026–27 waterfowl seasons](https://outdoornebraska.gov/hunt/hunting-seasons/)
+- **New Jersey:** [NJ Fish & Wildlife 2026–27 migratory game bird hub](https://dep.nj.gov/njfw/hunting/waterfowl-and-migratory-birds-in-new-jersey/)
+- **Ohio:** [Ohio DNR 2026–27 hunting season table](https://dam.assets.ohio.gov/image/upload/ohiodnr.gov/documents/wildlife/news/2026-27_Hunting_Seasons.pdf)
 
 ## v1.14 regulation sources
 

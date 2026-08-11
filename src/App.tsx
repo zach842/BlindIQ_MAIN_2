@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { states } from "./data";
-import { beginCheckout, getDefaultState, getSubscription, isDemoMode, restoreRememberedUser, saveDefaultState, signIn, signOut, signUp } from "./services";
+import { beginCheckout, getDefaultState, getSubscription, isDemoMode, listHunts, restoreRememberedUser, saveDefaultState, saveHuntRecord, signIn, signOut, signUp } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { getDevicePosition, getWeather } from "./location";
 import type { BirdRule, DevicePosition, HarvestEntry, HuntRecord, WeatherData } from "./types";
@@ -21,20 +21,6 @@ type InstallUi = {
 };
 
 const sortedStates = [...states].sort((first, second) => first.name.localeCompare(second.name, "en"));
-
-const demoHistory: HuntRecord[] = [
-  {
-    id: "sample-1",
-    date: "January 10, 2026",
-    state: "Maryland",
-    zone: "Eastern Duck Zone",
-    entries: [
-      { id: "mallard-drake", label: "Mallard — Drake", group: "Ducks", limit: 4, count: 2 },
-      { id: "black-duck", label: "American Black Duck", group: "Ducks", limit: 2, count: 1 },
-      { id: "canada-goose", label: "Canada Goose", group: "Geese", limit: 2, count: 2 },
-    ],
-  },
-];
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -136,7 +122,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.20",
+      "Submitted from BlindIQ v1.25",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -292,7 +278,11 @@ export default function App() {
   const [defaultStateCode, setDefaultStateCode] = useState("MD");
   const [zone, setZone] = useState(states[0].zones[0]);
   const [harvest, setHarvest] = useState<Record<string, number>>({});
-  const [history, setHistory] = useState<HuntRecord[]>(demoHistory);
+  const [history, setHistory] = useState<HuntRecord[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+  const [savingHunt, setSavingHunt] = useState(false);
+  const [isSimulation, setIsSimulation] = useState(false);
   const [toast, setToast] = useState("");
   const [accountEmail, setAccountEmail] = useState("");
   const [accountUserId, setAccountUserId] = useState("");
@@ -323,12 +313,26 @@ export default function App() {
     return Math.max(0, Math.min(effectiveLimit - (harvest[bird.id] ?? 0), bird.group === "Ducks" ? duckDailyLimit - duckCount : effectiveLimit));
   };
   const availableBirds = useMemo(() => selected.birds.filter((bird) => remaining(bird) > 0), [selected, harvest, zone]);
+  const liveHistory = history.filter((hunt) => !hunt.isSimulation);
+  const liveBirdCount = liveHistory.reduce((sum, hunt) => sum + hunt.entries.reduce((entrySum, entry) => entrySum + entry.count, 0), 0);
 
   function selectState(code: string) {
     const next = states.find((state) => state.code === code)!;
     setStateCode(code);
     setZone(next.zones[0]);
     setHarvest({});
+    setIsSimulation(false);
+  }
+
+  function startHunt(simulation: boolean) {
+    if (!isPremium) {
+      setToast("An active BlindIQ membership is required to start a hunt.");
+      setView("account");
+      return;
+    }
+    setHarvest({});
+    setIsSimulation(simulation);
+    setView("hunt");
   }
 
   function openFeedback(returnTo: View) {
@@ -354,6 +358,30 @@ export default function App() {
       window.removeEventListener("appinstalled", markInstalled);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isPremium || !accountUserId) {
+      setHistory([]);
+      return;
+    }
+
+    let cancelled = false;
+    setHistoryLoading(true);
+    setHistoryError("");
+    void listHunts()
+      .then((records) => {
+        if (!cancelled) setHistory(records);
+      })
+      .catch((cause) => {
+        if (!cancelled) setHistoryError(cause instanceof Error ? cause.message : "Unable to load saved hunts.");
+      })
+      .finally(() => {
+        if (!cancelled) setHistoryLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accountUserId, isPremium]);
 
   useEffect(() => {
     let cancelled = false;
@@ -465,12 +493,27 @@ export default function App() {
 
   const entries: HarvestEntry[] = selected.birds.filter((bird) => harvest[bird.id]).map((bird) => ({ ...bird, count: harvest[bird.id] }));
 
-  function saveHunt() {
-    if (entries.length) {
-      setHistory((current) => [{ id: crypto.randomUUID(), date: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }), state: selected.name, zone, entries }, ...current]);
+  async function saveHunt() {
+    setSavingHunt(true);
+    setToast("");
+    try {
+      const record = await saveHuntRecord({
+        stateCode: selected.code,
+        state: selected.name,
+        zone,
+        entries,
+        isSimulation,
+        seasonYear: selected.seasonYear,
+      });
+      setHistory((current) => [record, ...current.filter((hunt) => hunt.id !== record.id)]);
+      setHarvest({});
+      setView("history");
+      setToast(isSimulation ? "Test hunt saved." : "Hunt saved to your account.");
+    } catch (cause) {
+      setToast(cause instanceof Error ? `Hunt not saved: ${cause.message}` : "Hunt not saved. Please try again.");
+    } finally {
+      setSavingHunt(false);
     }
-    setHarvest({});
-    setView("history");
   }
 
   const installUi: InstallUi = {
@@ -545,9 +588,10 @@ export default function App() {
             <div><span>WATERFOWL SEASON</span><strong>{selected.dataStatus === "archived" ? "CURRENT DATA PENDING" : "CLOSED TODAY"}</strong><p>{selected.dataStatus === "archived" ? `${selected.seasonYear} is displayed for reference only.` : `You’re in ${selected.name}. Here are the currently loaded dates.`}</p></div>
           </section>
 
-          <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => { if (isPremium) setView("hunt"); else { setToast("An active BlindIQ membership is required to start a hunt."); setView("account"); } }}><span>{selected.dataStatus === "archived" ? "2026–2027 UPDATE PENDING" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot start a live hunt" : isPremium ? "Open hunt mode →" : "$14.99/year →"}</small></button>
-
-          <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
+          <div className="hunt-actions">
+            <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => startHunt(false)}><span>{selected.dataStatus === "archived" ? "LIVE HUNT UNAVAILABLE" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot guide a live hunt" : isPremium ? "Save a real hunt →" : "$14.99/year →"}</small></button>
+            <button className="button button--test" type="button" onClick={() => startHunt(true)}><span>TEST HUNT</span><small>Practice without changing live totals →</small></button>
+          </div>
 
           <section className="section">
             <div className="section-heading"><div><p className="eyebrow">SEASON OVERVIEW</p><h2>{selected.name} waterfowl</h2></div><span className="verified">{selected.seasonYear ?? "Demo data"}</span></div>
@@ -581,19 +625,25 @@ export default function App() {
             <div className="chip-list">{selected.birds.map((bird) => <span key={bird.id}>{bird.label} <b>{limitForBird(bird)}</b></span>)}</div>
           </section>
 
-          <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
+          <footer className="dashboard-end">
+            <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
+
+            <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
+            <small className="version-stamp">BlindIQ v1.25</small>
+          </footer>
         </div>
       )}
 
       {view === "hunt" && (
-        <div className="hunt-page">
+        <div className={`hunt-page ${isSimulation ? "hunt-page--simulation" : ""}`}>
           {toast && <div className="toast">✓ {toast}</div>}
           <header className="hunt-header">
             <button onClick={() => setView("dashboard")}>←</button>
-            <div><span>ACTIVE HUNT</span><strong>{selected.name}</strong></div>
+            <div><span>{isSimulation ? "TEST HUNT" : "ACTIVE HUNT"}</span><strong>{selected.name}</strong></div>
             <button className="end-button" onClick={() => setView("summary")}>Finish</button>
           </header>
           <div className="hunt-content">
+            {isSimulation && <aside className="simulation-notice"><strong>Simulation mode</strong><p>Practice the logger and bag-limit guidance. This hunt will be saved as a test and excluded from your live harvest totals.</p></aside>}
             <section className="hunt-location">
               <label>HUNTING ZONE</label>
               <select value={zone} onChange={(e) => setZone(e.target.value)}>{selected.zones.map((item) => <option key={item}>{item}</option>)}</select>
@@ -635,22 +685,27 @@ export default function App() {
       {view === "summary" && (
         <div className="page summary-page">
           <button className="back-link" onClick={() => setView("hunt")}>← Back to hunt</button>
-          <div className="summary-hero"><span>HUNT COMPLETE</span><h1>Good hunt.</h1><p>{selected.name} • {zone}</p></div>
+          <div className={`summary-hero ${isSimulation ? "summary-hero--simulation" : ""}`}><span>{isSimulation ? "TEST HUNT COMPLETE" : "HUNT COMPLETE"}</span><h1>{isSimulation ? "Test complete." : "Good hunt."}</h1><p>{selected.name} • {zone}</p></div>
           <section className="summary-total"><span>TOTAL HARVEST</span><strong>{duckCount + gooseCount}</strong><p>{duckCount} ducks • {gooseCount} geese</p></section>
           <section className="section"><h2>Today’s harvest</h2>{entries.length ? entries.map((entry) => <div className="summary-row" key={entry.id}><span>{entry.label}</span><strong>× {entry.count}</strong></div>) : <p className="empty">No birds logged. You can still save a zero-harvest hunt.</p>}</section>
-          <button className="button button--gold button--wide" onClick={saveHunt}>Save to My Hunts</button>
+          {toast && <div className="inline-toast">{toast}</div>}
+          <button className="button button--gold button--wide" disabled={savingHunt} onClick={() => void saveHunt()}>{savingHunt ? "Saving…" : isSimulation ? "Save Test Hunt" : "Save to My Hunts"}</button>
           <button className="text-button" onClick={() => { setHarvest({}); setView("dashboard"); }}>Discard hunt</button>
         </div>
       )}
 
       {view === "history" && (
         <div className="page">
-          <div className="page-title"><p className="eyebrow">YOUR SEASON</p><h1>My hunts</h1><p>A simple field record of every hunt you save.</p></div>
+          <div className="page-title"><p className="eyebrow">YOUR SEASON</p><h1>My hunts</h1><p>Saved securely to your account. Test hunts are labeled and excluded from live totals.</p></div>
           {!isPremium && <section className="locked-card"><span>MEMBERSHIP REQUIRED</span><h2>Unlock your hunt history</h2><p>Activate your BlindIQ membership to save and revisit every hunt.</p><button className="button button--gold" onClick={() => setView("account")}>View membership</button></section>}
           {isPremium && <>
-          <div className="stats-strip"><div><strong>{history.length}</strong><span>Hunts</span></div><div><strong>{history.reduce((sum, hunt) => sum + hunt.entries.reduce((s, e) => s + e.count, 0), 0)}</strong><span>Birds</span></div><div><strong>{new Set(history.map((hunt) => hunt.state)).size}</strong><span>States</span></div></div>
+          <div className="stats-strip"><div><strong>{liveHistory.length}</strong><span>Live hunts</span></div><div><strong>{liveBirdCount}</strong><span>Live birds</span></div><div><strong>{new Set(liveHistory.map((hunt) => hunt.state)).size}</strong><span>States</span></div></div>
+          {toast && <div className="inline-toast">{toast}</div>}
+          {historyLoading && <p className="history-status">Loading your hunts…</p>}
+          {historyError && <div className="history-error" role="alert"><strong>Saved hunts could not be loaded.</strong><span>{historyError}</span></div>}
+          {!historyLoading && !historyError && history.length === 0 && <section className="empty-history"><h2>No hunts saved yet.</h2><p>Start a live hunt or use Test Hunt to practice. Zero-bird hunts can also be saved.</p></section>}
           <div className="history-list">
-            {history.map((hunt) => <article key={hunt.id}><div className="date-tile"><strong>{hunt.date.split(" ")[1]?.replace(",", "")}</strong><span>{hunt.date.split(" ")[0]?.slice(0, 3)}</span></div><div><strong>{hunt.state}</strong><span>{hunt.zone}</span><p>{hunt.entries.map((entry) => `${entry.count} ${entry.label}`).join(" • ")}</p></div><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b></article>)}
+            {history.map((hunt) => <article className={hunt.isSimulation ? "history-row--simulation" : ""} key={hunt.id}><div className="date-tile"><strong>{hunt.date.split(" ")[1]?.replace(",", "")}</strong><span>{hunt.date.split(" ")[0]?.slice(0, 3)}</span></div><div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}</strong><span>{hunt.zone}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.count} ${entry.label}`).join(" • ") : "Zero-bird hunt"}</p></div><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b></article>)}
           </div>
           </>}
         </div>
@@ -674,9 +729,9 @@ export default function App() {
           </section>
           {toast && <div className="inline-toast">{toast}</div>}
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
-          <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
+          <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.20</small>
+          <small className="version-stamp">BlindIQ v1.25</small>
         </div>
       )}
     </Shell>
