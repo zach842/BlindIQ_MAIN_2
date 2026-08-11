@@ -373,6 +373,8 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .community-card h2 { margin-bottom: 5px; color: white; font-size: 29px; }
 .community-card > div p:last-child { margin: 0; color: #cad6d0; font-size: 11px; line-height: 1.5; }
 .community-card > .button { min-width: 140px; }
+.community-card--dashboard { margin-top: 0; }
+.version-stamp { display: block; padding: 5px 0 20px; color: var(--muted); text-align: center; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
 
 .feedback-page { max-width: 760px; padding-bottom: 44px; }
 .feedback-back { position: static; display: inline-block; margin-bottom: 23px; color: var(--forest); }
@@ -393,6 +395,7 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
   .legal-grid { grid-template-columns: repeat(4, 1fr); }
   .dashboard { display: grid; grid-template-columns: 1.3fr .7fr; gap: 0 18px; }
   .greeting, .state-picker, .weather-section, .status-banner, .info-grid, .species-section, .disclaimer, .button--start { grid-column: 1 / -1; }
+  .dashboard .community-card { grid-column: 1 / -1; }
   .dashboard > .section:first-of-type { grid-column: 1 / 2; }
 }
 

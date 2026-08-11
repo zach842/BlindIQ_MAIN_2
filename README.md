@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 17 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
-This package is **BlindIQ v1.19**. It adds a dedicated **Better the Community** feedback experience while retaining the reviewed 2026–27 regulation update, alphabetical 17-state selectors, and hunt-log-first experience.
+This package is **BlindIQ v1.20**. It makes the dedicated **Better the Community** feedback experience visible on both the main dashboard and Account screen while retaining the reviewed 2026–27 regulation update, alphabetical 17-state selectors, and hunt-log-first experience.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -50,7 +50,9 @@ This package is **BlindIQ v1.19**. It adds a dedicated **Better the Community** 
 - Live list of birds that remain available under loaded demo rules
 - Hunt summary and history
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
+- Dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
+- Visible v1.20 marker at the bottom of Account for deployment confirmation
 - Account and $14.99/year subscription presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design

@@ -1,5 +1,13 @@
 # BlindIQ Deployment Notes
 
+## v1.20 — Visible community feedback and deployment confirmation
+
+- Added **Better the Community** directly below Start Hunt on the main dashboard.
+- Retained the matching community-feedback entry on the Account screen.
+- Added context-aware Back navigation so hunters return to the screen where they opened the form.
+- Added a visible `BlindIQ v1.20` marker at the bottom of Account to confirm the correct release is deployed.
+- Advanced the service-worker cache version so installed devices retrieve the new release.
+
 ## v1.19 — Better the Community
 
 - Added a prominent **Better the Community** card to the Account screen.

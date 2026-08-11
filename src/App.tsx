@@ -136,14 +136,14 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.19",
+      "Submitted from BlindIQ v1.20",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
 
   return (
     <div className="page feedback-page">
-      <button className="back-link feedback-back" type="button" onClick={onBack}>← Back to account</button>
+      <button className="back-link feedback-back" type="button" onClick={onBack}>← Back</button>
       <header className="feedback-heading">
         <p className="eyebrow">BETTER THE COMMUNITY</p>
         <h1>Help improve BlindIQ.</h1>
@@ -286,6 +286,7 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
 
 export default function App() {
   const [view, setView] = useState<View>("welcome");
+  const [feedbackReturn, setFeedbackReturn] = useState<View>("account");
   const [userName, setUserName] = useState("Hunter");
   const [stateCode, setStateCode] = useState("MD");
   const [defaultStateCode, setDefaultStateCode] = useState("MD");
@@ -328,6 +329,11 @@ export default function App() {
     setStateCode(code);
     setZone(next.zones[0]);
     setHarvest({});
+  }
+
+  function openFeedback(returnTo: View) {
+    setFeedbackReturn(returnTo);
+    setView("feedback");
   }
 
   useEffect(() => {
@@ -510,7 +516,7 @@ export default function App() {
   }
 
   if (view === "feedback") {
-    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}><FeedbackForm stateName={selected.name} accountEmail={accountEmail} onBack={() => setView("account")} /></Shell>;
+    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}><FeedbackForm stateName={selected.name} accountEmail={accountEmail} onBack={() => setView(feedbackReturn)} /></Shell>;
   }
 
   return (
@@ -540,6 +546,8 @@ export default function App() {
           </section>
 
           <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => { if (isPremium) setView("hunt"); else { setToast("An active BlindIQ membership is required to start a hunt."); setView("account"); } }}><span>{selected.dataStatus === "archived" ? "2026–2027 UPDATE PENDING" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot start a live hunt" : isPremium ? "Open hunt mode →" : "$14.99/year →"}</small></button>
+
+          <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
 
           <section className="section">
             <div className="section-heading"><div><p className="eyebrow">SEASON OVERVIEW</p><h2>{selected.name} waterfowl</h2></div><span className="verified">{selected.seasonYear ?? "Demo data"}</span></div>
@@ -665,9 +673,10 @@ export default function App() {
             <small>Secure checkout is powered by Stripe. Renewal and discount terms are shown before confirmation.</small>
           </section>
           {toast && <div className="inline-toast">{toast}</div>}
-          <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => setView("feedback")}>Send feedback</button></section>
+          <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
+          <small className="version-stamp">BlindIQ v1.20</small>
         </div>
       )}
     </Shell>
