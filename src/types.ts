@@ -23,6 +23,7 @@ export type StateData = {
   name: string;
   verifiedLabel: string;
   officialUrl: string;
+  sourceLinks?: { label: string; url: string }[];
   shootingHours: string;
   seasons: Season[];
   zones: string[];

@@ -1,7 +1,7 @@
 {
   "name": "BlindIQ — Hunt With Confidence",
   "short_name": "BlindIQ",
-  "description": "Clear waterfowl regulations, harvest tracking, and field-ready hunt guidance.",
+  "description": "Waterfowl hunt logging, daily harvest tracking, and clear regulations.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

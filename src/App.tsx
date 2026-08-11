@@ -5,7 +5,7 @@ import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { getDevicePosition, getWeather } from "./location";
 import type { BirdRule, DevicePosition, HarvestEntry, HuntRecord, WeatherData } from "./types";
 
-type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "summary" | "history" | "account" | "terms";
+type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "summary" | "history" | "account" | "terms" | "feedback";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -116,6 +116,64 @@ function LegalDocument({ onClose }: { onClose?: () => void }) {
   );
 }
 
+function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; accountEmail: string; onBack: () => void }) {
+  const [category, setCategory] = useState("Regulation error");
+  const [subject, setSubject] = useState("");
+  const [details, setDetails] = useState("");
+  const [steps, setSteps] = useState("");
+
+  function prepareEmail(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const emailSubject = `[BlindIQ ${category}] ${subject.trim() || "Community submission"}`;
+    const body = [
+      `Category: ${category}`,
+      `State selected in BlindIQ: ${stateName}`,
+      `Member email: ${accountEmail || "Not provided"}`,
+      "",
+      "What I noticed / my idea:",
+      details.trim(),
+      "",
+      "Steps to reproduce or additional context:",
+      steps.trim() || "Not provided",
+      "",
+      "Submitted from BlindIQ v1.19",
+    ].join("\n");
+    window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
+  }
+
+  return (
+    <div className="page feedback-page">
+      <button className="back-link feedback-back" type="button" onClick={onBack}>← Back to account</button>
+      <header className="feedback-heading">
+        <p className="eyebrow">BETTER THE COMMUNITY</p>
+        <h1>Help improve BlindIQ.</h1>
+        <p>Report an incorrect regulation, tell us about a bug, or share an idea that would make the next hunt better.</p>
+      </header>
+      <form className="feedback-form" onSubmit={prepareEmail}>
+        <label htmlFor="feedback-category">WHAT ARE YOU SENDING?
+          <select id="feedback-category" value={category} onChange={(event) => setCategory(event.target.value)}>
+            <option>Regulation error</option>
+            <option>App bug</option>
+            <option>Feature idea</option>
+            <option>General feedback</option>
+          </select>
+        </label>
+        <label htmlFor="feedback-subject">SHORT TITLE
+          <input id="feedback-subject" value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="Example: Maryland scaup limit" required />
+        </label>
+        <label htmlFor="feedback-details">TELL US WHAT YOU FOUND
+          <textarea id="feedback-details" value={details} onChange={(event) => setDetails(event.target.value)} placeholder="Include the regulation, screen, feature, or behavior you want us to review." rows={6} required />
+        </label>
+        <label htmlFor="feedback-steps">STEPS OR EXTRA CONTEXT <span>OPTIONAL</span>
+          <textarea id="feedback-steps" value={steps} onChange={(event) => setSteps(event.target.value)} placeholder="For a bug, tell us what you tapped and what happened. For a regulation, include the state and source link if available." rows={4} />
+        </label>
+        <aside className="feedback-destination"><span>@</span><p><strong>Sent to office@blindiq.app</strong><small>Your email app will open with this report prepared. Review it, attach screenshots if helpful, and tap Send.</small></p></aside>
+        <button className="button button--gold button--wide" type="submit">Prepare email</button>
+      </form>
+    </div>
+  );
+}
+
 function InstallGuide({ canPrompt, onInstall, onClose }: { canPrompt: boolean; onInstall: () => Promise<void>; onClose: () => void }) {
   return (
     <div className="install-guide" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
@@ -205,8 +263,8 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
         <Brand />
         <div className="auth-copy">
           <p className="eyebrow">{mode === "login" ? "WELCOME BACK" : "JOIN BLINDIQ"}</p>
-          <h1>{mode === "login" ? "Headed to the blind?" : "Create your account"}</h1>
-          <p>{mode === "login" ? "Sign in to pick up where you left off." : isDemoMode ? "Create a temporary demo account." : "Choose your BlindIQ username and secure your account with email and password."}</p>
+          <h1>{mode === "login" ? "Continue your hunt log" : "Start your hunt log"}</h1>
+          <p>{mode === "login" ? "Sign in to review past hunts, check regulations, or start today’s hunt." : isDemoMode ? "Create a temporary demo account and try the hunt log." : "Create your BlindIQ account to log hunts, track your daily bag, and keep regulations within reach."}</p>
         </div>
         <form onSubmit={submit}>
           {mode === "signup" && <label>Display username<input required autoComplete="nickname" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Example: ChesapeakeHunter" /></label>}
@@ -429,15 +487,15 @@ export default function App() {
         <div className="welcome-content">
           <Brand />
           <div className="welcome-copy">
-            <p className="eyebrow">YOUR WATERFOWL HUNTING COMPANION</p>
-            <h1>Clear rules.<br />Confident hunts.</h1>
-            <p>Understand the season, track your harvest, and know what’s legal next—all in one place.</p>
+            <p className="eyebrow">YOUR WATERFOWL HUNT LOG</p>
+            <h1>Log hunts.<br />Know the regs.</h1>
+            <p>Record every bird, track your daily bag, and keep the rules for your state within reach.</p>
           </div>
           <div className="welcome-actions">
             <button className="button button--gold button--wide" onClick={() => setView("signup")}>Get started</button>
             <button className="button button--ghost button--wide" onClick={() => setView("login")}>I already have an account</button>
           </div>
-          <small>Demo regulation data is for product testing only.</small>
+          <small>Always verify current rules with the official wildlife agency before hunting.</small>
         </div>
       </div>
     );
@@ -449,6 +507,10 @@ export default function App() {
 
   if (view === "terms") {
     return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}><div className="page legal-page"><button className="back-link legal-back" onClick={() => setView("account")}>← Back to account</button><LegalDocument /></div></Shell>;
+  }
+
+  if (view === "feedback") {
+    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}><FeedbackForm stateName={selected.name} accountEmail={accountEmail} onBack={() => setView("account")} /></Shell>;
   }
 
   return (
@@ -503,7 +565,7 @@ export default function App() {
             <article className="info-card"><Icon>⌖</Icon><span>Zones</span><strong>{selected.zones.length} loaded</strong><p>{selected.zones.join(" • ")}</p></article>
             <article className="info-card"><Icon>◷</Icon><span>Shooting hours</span><strong>Check daily</strong><p>{selected.shootingHours}</p></article>
             <article className="info-card"><Icon>▤</Icon><span>Daily duck bag</span><strong>{duckDailyLimit} ducks</strong><p>{selected.duckDailyLimits ? "Changes with the selected flyway or zone." : "Species and sex restrictions apply."}</p></article>
-            <article className="info-card"><Icon>↗</Icon><span>Official source</span><strong>Verify before hunting</strong><a href={selected.officialUrl} target="_blank" rel="noreferrer">Open agency regulations</a></article>
+            <article className="info-card"><Icon>↗</Icon><span>Reviewed sources</span><strong>Verify before hunting</strong>{(selected.sourceLinks ?? [{ label: "Agency regulations", url: selected.officialUrl }]).map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">Open {source.label}</a>)}</article>
           </section>
 
           <section className="species-section section">
@@ -520,14 +582,14 @@ export default function App() {
           {toast && <div className="toast">✓ {toast}</div>}
           <header className="hunt-header">
             <button onClick={() => setView("dashboard")}>←</button>
-            <div><span>ACTIVE DEMO HUNT</span><strong>{selected.name}</strong></div>
+            <div><span>ACTIVE HUNT</span><strong>{selected.name}</strong></div>
             <button className="end-button" onClick={() => setView("summary")}>Finish</button>
           </header>
           <div className="hunt-content">
             <section className="hunt-location">
               <label>HUNTING ZONE</label>
               <select value={zone} onChange={(e) => setZone(e.target.value)}>{selected.zones.map((item) => <option key={item}>{item}</option>)}</select>
-              <p><span className="pulse" /> Demo session active</p>
+              <p><span className="pulse" /> Hunt session active</p>
             </section>
             <section className="bag-meter">
               <div><span>DUCK BAG</span><strong>{duckCount}<small>/{duckDailyLimit}</small></strong></div>
@@ -603,7 +665,8 @@ export default function App() {
             <small>Secure checkout is powered by Stripe. Renewal and discount terms are shown before confirmation.</small>
           </section>
           {toast && <div className="inline-toast">{toast}</div>}
-          <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
+          <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => setView("feedback")}>Send feedback</button></section>
+          <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
         </div>
       )}

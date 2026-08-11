@@ -4,13 +4,14 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 17 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
 
-This package is **BlindIQ v1.15**. Both the dashboard hunting-state selector and the account default-state selector display all 17 states alphabetically. Maryland’s season overview now includes both its Eastern and Western Duck Zones. It retains the five v1.14 state additions, Illinois preseason notice, and zone-aware aggregate duck limits.
+This package is **BlindIQ v1.19**. It adds a dedicated **Better the Community** feedback experience while retaining the reviewed 2026–27 regulation update, alphabetical 17-state selectors, and hunt-log-first experience.
 
-> Important: The included dates and limits are realistic demo data for product testing. They are not production-ready legal guidance. Every state package must be reviewed against current official wildlife-agency regulations before public launch.
+> Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
 ## What works now
 
 - Welcome, login, and account-creation screens
+- Hunt-log-first welcome and authentication messaging
 - Supabase email/password authentication when environment settings are present
 - Automatic Stripe Checkout after signup or login for inactive members
 - Demo-mode fallback when Supabase settings are absent
@@ -37,12 +38,19 @@ This package is **BlindIQ v1.15**. Both the dashboard hunting-state selector and
 - Location is used for the forecast and is not stored by BlindIQ
 - Closed-today banner and loaded season dates
 - Duck and goose seasons, zones, shooting hours, bag rules, and official links
+- Reviewed agency and eRegulations links for the newly audited state packages
+- Full 2026–27 Virginia, North Carolina, and South Carolina waterfowl packages
+- Complete provisional Maryland package with its federal-approval warning
+- Delaware proposal options clearly separated from final regulations
+- Corrected 2026 Minnesota youth/early-goose dates and pintail limit
 - Start Hunt flow with zone selection
 - Add and remove harvested birds
 - State- and zone-aware aggregate duck limits, including Montana’s seven-bird Pacific Flyway bag
 - Species, sex, parent-species, and zone-specific bag-limit logic
 - Live list of birds that remain available under loaded demo rules
 - Hunt summary and history
+- **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
+- Prepared feedback and support emails addressed to office@blindiq.app
 - Account and $14.99/year subscription presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
