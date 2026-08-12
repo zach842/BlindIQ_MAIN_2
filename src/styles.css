@@ -36,7 +36,8 @@ h1, h2, .brand strong, .status-banner strong, .price strong, .bag-meter strong {
 .welcome-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,31,24,.86), rgba(9,31,24,.15) 70%), repeating-linear-gradient(115deg, transparent 0 80px, rgba(216,198,162,.025) 81px 82px); }
 .welcome-content { position: relative; width: min(1100px, 100%); min-height: 100vh; padding: 48px clamp(24px, 7vw, 72px); display: flex; flex-direction: column; justify-content: space-between; }
 .welcome-copy { max-width: 650px; margin: auto 0; }
-.welcome-copy h1 { font-size: clamp(58px, 9vw, 102px); line-height: .86; letter-spacing: -.02em; margin-bottom: 24px; }
+.welcome-copy h1 { font-size: clamp(58px, 9vw, 102px); line-height: .86; letter-spacing: -.02em; margin-bottom: 14px; }
+.welcome-copy .welcome-price { margin: 0 0 22px; color: var(--gold); font-family: "Barlow Condensed", Impact, sans-serif; font-size: clamp(24px, 4vw, 34px); font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
 .welcome-copy > p:last-child { max-width: 560px; font-size: 18px; line-height: 1.65; color: #e6e1d7; }
 .welcome-actions { width: min(440px, 100%); display: grid; gap: 12px; }
 .welcome-content > small { color: #c6cec9; margin-top: 16px; }

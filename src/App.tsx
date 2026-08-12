@@ -122,7 +122,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.25",
+      "Submitted from BlindIQ v1.27",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -538,6 +538,7 @@ export default function App() {
           <div className="welcome-copy">
             <p className="eyebrow">YOUR WATERFOWL HUNT LOG</p>
             <h1>Log hunts.<br />Know the regs.</h1>
+            <p className="welcome-price">Only $10.99/year</p>
             <p>Record every bird, track your daily bag, and keep the rules for your state within reach.</p>
           </div>
           <div className="welcome-actions">
@@ -589,7 +590,7 @@ export default function App() {
           </section>
 
           <div className="hunt-actions">
-            <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => startHunt(false)}><span>{selected.dataStatus === "archived" ? "LIVE HUNT UNAVAILABLE" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot guide a live hunt" : isPremium ? "Save a real hunt →" : "$14.99/year →"}</small></button>
+            <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => startHunt(false)}><span>{selected.dataStatus === "archived" ? "LIVE HUNT UNAVAILABLE" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot guide a live hunt" : isPremium ? "Save a real hunt →" : "$10.99/year →"}</small></button>
             <button className="button button--test" type="button" onClick={() => startHunt(true)}><span>TEST HUNT</span><small>Practice without changing live totals →</small></button>
           </div>
 
@@ -629,7 +630,7 @@ export default function App() {
             <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.25</small>
+            <small className="version-stamp">BlindIQ v1.27</small>
           </footer>
         </div>
       )}
@@ -722,7 +723,7 @@ export default function App() {
           <section className="premium-card">
             <p className="eyebrow">BLINDIQ ANNUAL MEMBERSHIP</p>
             <h2>Every hunt. One clear answer.</h2>
-            <div className="price"><strong>$14.99</strong><span>/ year</span></div>
+            <div className="price"><strong>$10.99</strong><span>/ year</span></div>
             <ul><li>✓ State regulation dashboards</li><li>✓ Live harvest and bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ New member tools as they launch</li></ul>
             {isPremium ? <div className="membership-active"><span>✓</span><div><strong>Membership active</strong><small>Verified through your BlindIQ membership record.</small></div></div> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); }}>Start annual membership</button>}
             <small>Secure checkout is powered by Stripe. Renewal and discount terms are shown before confirmation.</small>
@@ -731,7 +732,7 @@ export default function App() {
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.25</small>
+          <small className="version-stamp">BlindIQ v1.27</small>
         </div>
       )}
     </Shell>

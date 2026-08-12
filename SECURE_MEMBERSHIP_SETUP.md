@@ -94,15 +94,30 @@ You will add 'STRIPE_WEBHOOK_SECRET` after creating the Stripe endpoint.
 
 ## Part 5 — Configure Vercel
 
+### Change the annual Stripe price to $10.99
+
+1. In Stripe, open **Product catalog** and select the BlindIQ annual membership product.
+2. Add a new price of **$10.99 USD** with **Recurring** billing and a **Yearly** interval.
+3. Create a new Payment Link that uses that new yearly price.
+4. Turn on **Allow promotion codes** and confirm the customer-facing `100Ducks` promotion code is eligible for this product.
+5. Set the after-payment redirect to the production BlindIQ website.
+6. Copy the new `price_...` ID and `https://buy.stripe.com/...` Payment Link into Vercel as described below.
+7. Complete one checkout in Stripe test mode before replacing the live link.
+
+Changing the words in BlindIQ does not change what Stripe charges. The Payment Link’s recurring price is the billing authority.
+
 Add these environment variables under **Vercel → BlindIQ → Settings → Environment Variables**:
 
 ```text
 VITE_SUPABASE_URL=https://bkspxwqtiaerhlsyvels.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your Supabase publishable key
-VITE_STRIPE_CHECKOUT_URL=https://buy.stripe.com/aFa8wP84abhXgfdawY48000
+VITE_STRIPE_PRICE_ID=price_REPLACE_WITH_10_99_ANNUAL_PRICE_ID
+VITE_STRIPE_CHECKOUT_URL=https://buy.stripe.com/REPLACE_WITH_10_99_ANNUAL_LINK
 ```
 
 Apply them to Production, Preview, and Development, then redeploy.
+
+The Stripe price must be **$10.99 USD, recurring yearly**. Stripe price amounts are immutable, so create a new price and a new Payment Link instead of editing or reusing the previous link.
 
 ## Part 6 — Configure return URLs
 

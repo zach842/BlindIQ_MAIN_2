@@ -1,5 +1,19 @@
 # BlindIQ Deployment Notes
 
+## v1.27 — Welcome-screen annual price
+
+- Added **Only $10.99/year** directly beneath “Log hunts. Know the regs.” on the welcome screen.
+- Styled the price in BlindIQ gold for clear visibility without competing with the primary headline.
+- Advanced the visible release marker and service-worker cache to v1.27.
+
+## v1.26 — $10.99 annual membership
+
+- Standardized every in-app annual membership price at $10.99.
+- Updated the locked Start Hunt call-to-action and Account membership card.
+- Updated the README and secure membership instructions for the new recurring annual Stripe price and Payment Link.
+- Retained permanent account-scoped hunt history and Test Hunt mode from v1.25.
+- Advanced the visible release marker and service-worker cache to v1.26.
+
 ## v1.25 — Permanent hunt history and Test Hunt mode
 
 - Added the account-owned `public.hunts` Supabase table with authenticated-user Row Level Security.

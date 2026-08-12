@@ -2,9 +2,9 @@
 
 **HUNT WITH CONFIDENCE**
 
-BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 28 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $14.99/year membership.
+BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 28 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $10.99/year membership.
 
-This package is **BlindIQ v1.25**. It permanently saves live and test hunts to each member’s Supabase account, restores hunt history after reopening the app, saves zero-bird hunts, and adds an explicitly labeled Test Hunt mode for off-season practice. It retains the corrected community-card placement and branded phone icons from v1.24.
+This package is **BlindIQ v1.27**. It presents **Only $10.99/year** directly beneath the welcome-screen message “Log hunts. Know the regs.” and retains the $10.99 annual membership presentation throughout the app and documentation. It also retains permanent live and test hunt history, off-season Test Hunt mode, the corrected community-card placement, and branded phone icons.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -57,8 +57,8 @@ This package is **BlindIQ v1.25**. It permanently saves live and test hunts to e
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
 - End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
-- Visible v1.25 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
-- Account and $14.99/year subscription presentation
+- Visible v1.27 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Account and $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
 
@@ -219,18 +219,25 @@ VITE_STRIPE_CHECKOUT_URL=
 
 - Blank values keep the app in demo mode.
 - `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` connect authentication.
-- `VITE_STRIPE_PRICE_ID` identifies the $14.99 annual plan.
+- `VITE_STRIPE_PRICE_ID` identifies the $10.99 recurring annual price in Stripe.
 - `VITE_STRIPE_CHECKOUT_URL` can temporarily point to a Stripe Payment Link.
 
-For the current tester build, set:
+After creating the new $10.99 recurring annual Stripe price and Payment Link, set:
 
 ```text
-VITE_STRIPE_CHECKOUT_URL=https://buy.stripe.com/aFa8wP84abhXgfdawY48000
+VITE_STRIPE_PRICE_ID=price_REPLACE_WITH_10_99_ANNUAL_PRICE_ID
+VITE_STRIPE_CHECKOUT_URL=https://buy.stripe.com/REPLACE_WITH_10_99_ANNUAL_LINK
 ```
 
-The Stripe Payment Link must have promotion codes enabled for `100Ducks` to work.
+Do not reuse the previous Payment Link. The new Stripe Payment Link must use the $10.99 yearly recurring price. It must also have promotion codes enabled for `100Ducks` to work.
 
 For production, membership entitlement must be confirmed server-side with Stripe webhooks. A browser environment variable alone must never be trusted to decide whether a customer has active access.
+
+### Stripe price-change checklist
+
+Stripe does not allow an existing price amount to be edited. Create a new **$10.99 USD recurring yearly** price and a new Payment Link, then replace `VITE_STRIPE_CHECKOUT_URL` in Vercel. Update `VITE_STRIPE_PRICE_ID` to the new `price_...` identifier for configuration consistency. The existing Stripe webhook endpoint and signing secret remain valid when the new price and link are created in the same Stripe account; the webhook records the price actually used by the subscription.
+
+Existing subscriptions do not automatically move to a new price. Decide separately whether existing members keep their original renewal price or whether each existing subscription should be migrated to the new yearly price. Review proration and customer notice before migrating active subscriptions.
 
 ## v1.23 regulation sources
 

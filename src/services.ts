@@ -308,7 +308,7 @@ export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> 
       season_year: input.seasonYear ?? null,
       entries: input.entries,
       bird_count: birdCount,
-      app_version: "1.25",
+      app_version: "1.27",
     })
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries")
     .single();
