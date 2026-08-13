@@ -287,8 +287,10 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .harvest-panel { background: white; border-radius: 9px; padding: 20px; border: 1px solid var(--line); }
 .section-heading > span { font-size: 11px; color: var(--muted); }
 .bird-list { border-top: 1px solid var(--line); }
-.bird-row { display: grid; grid-template-columns: 38px 1fr auto 25px 34px; align-items: center; gap: 10px; min-height: 66px; border-bottom: 1px solid var(--line); }
-.bird-avatar { width: 34px; height: 34px; background: #e6e8df; color: var(--forest); display: grid; place-items: center; border-radius: 50%; font: 800 15px "Barlow Condensed"; }
+.bird-row { display: grid; grid-template-columns: 48px 1fr auto 25px 34px; align-items: center; gap: 10px; min-height: 72px; border-bottom: 1px solid var(--line); }
+.bird-avatar { position: relative; width: 46px; height: 46px; overflow: hidden; background: #e6e8df; border: 2px solid #e5e1d6; border-radius: 50%; }
+.bird-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bird-avatar--representative::after { content: "REF"; position: absolute; right: -1px; bottom: -1px; padding: 2px 4px; border-radius: 5px 0 0; color: white; background: rgba(13,38,31,.88); font: 800 6px/1 Inter, sans-serif; letter-spacing: .5px; }
 .bird-name strong, .bird-name span { display: block; }
 .bird-name strong { font-size: 13px; }
 .bird-name span { color: var(--muted); font-size: 10px; margin-top: 3px; }
@@ -298,6 +300,10 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .plus:disabled { opacity: .35; cursor: not-allowed; }
 .count { text-align: center; }
 .bird-row--full { opacity: .55; }
+.harvest-heading__actions { display: flex; align-items: flex-end; flex-direction: column; gap: 7px; }
+.harvest-heading__actions > span { color: var(--muted); font-size: 10px; }
+.harvest-heading__actions button { min-height: 34px; padding: 0 11px; border: 1px solid #c6a758; border-radius: 99px; color: var(--forest); background: #fff8e6; font-size: 10px; font-weight: 700; }
+.harvest-heading__actions button b { color: #886817; }
 .legal-next { background: var(--deep); color: white; padding: 24px; border-radius: 9px; margin: 14px 0; }
 .legal-next h2 { color: white; }
 .legal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -325,6 +331,44 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .summary-row { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding: 14px 0; font-size: 13px; }
 .empty { color: var(--muted); }
 .text-button { width: 100%; background: none; border: 0; padding: 18px; color: var(--muted); }
+.share-hunt-card { display: grid; grid-template-columns: 50px minmax(0,1fr); gap: 16px; margin: 18px 0; padding: 22px; border: 1px solid #9d8449; border-radius: 10px; color: white; background: linear-gradient(135deg, var(--deep), var(--forest-2)); }
+.share-hunt-card__icon { width: 48px; height: 48px; display: grid; place-items: center; border: 1px solid rgba(216,198,162,.6); border-radius: 50%; color: var(--gold); background: rgba(255,255,255,.06); font-size: 24px; font-weight: 900; }
+.share-hunt-card h2 { margin: 0 0 7px; color: white; font-size: 29px; }
+.share-hunt-card p:last-child { margin: 0; color: #cad6d0; font-size: 11px; line-height: 1.55; }
+.share-hunt-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1.25fr .75fr; gap: 9px; }
+.share-hunt-actions .button { width: 100%; min-height: 50px; }
+.share-download { border: 1px solid rgba(255,255,255,.3); color: white; background: rgba(255,255,255,.08); }
+.share-history-button { margin-top: 10px; border: 1px solid var(--forest); color: var(--forest); background: transparent; }
+
+.bird-guide-page { min-height: calc(100vh - 68px); padding-bottom: 35px; background: var(--cream); }
+.bird-guide-header { position: sticky; top: 68px; z-index: 9; min-height: 84px; display: grid; grid-template-columns: 56px 1fr auto; align-items: center; padding: 0 max(22px, calc((100vw - 1040px)/2)); color: white; background: #3f4938; box-shadow: 0 4px 16px rgba(13,38,31,.14); }
+.bird-guide-header > button:first-child { width: 42px; height: 42px; border: 0; color: white; background: transparent; font-size: 25px; }
+.bird-guide-header div span, .bird-guide-header div strong { display: block; }
+.bird-guide-header div span { color: var(--gold); font-size: 9px; font-weight: 900; letter-spacing: 2px; }
+.bird-guide-header div strong { margin-top: 4px; font: 800 25px/1 "Barlow Condensed", Impact, sans-serif; }
+.bird-guide-done { min-height: 38px; padding: 0 14px; border: 1px solid rgba(216,198,162,.55); border-radius: 99px; color: #f2dfb6; background: rgba(255,255,255,.06); font-size: 10px; font-weight: 800; }
+.bird-guide-content { width: min(980px, calc(100% - 34px)); margin: 0 auto; }
+.bird-guide-intro { padding: 34px 0 22px; }
+.bird-guide-intro h1 { margin-bottom: 10px; color: var(--forest); font-size: clamp(42px, 7vw, 64px); line-height: .92; }
+.bird-guide-intro > p:not(.eyebrow) { max-width: 680px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.bird-guide-intro aside { margin-top: 20px; padding: 15px 17px; border-left: 4px solid var(--gold); border-radius: 6px; color: #5f522f; background: #f2e6c3; font-size: 11px; line-height: 1.6; }
+.bird-guide-intro aside strong { display: block; color: #4b3d1a; }
+.bird-guide-filters { display: flex; gap: 8px; margin-top: 20px; overflow-x: auto; }
+.bird-guide-filters button { min-height: 35px; padding: 0 16px; border: 1px solid #bcb8ad; border-radius: 99px; color: var(--forest); background: white; font-size: 10px; font-weight: 800; }
+.bird-guide-filters button.active { border-color: var(--forest); color: white; background: var(--forest); }
+.bird-guide-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.bird-guide-card { overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: var(--paper); box-shadow: 0 10px 26px rgba(23,48,39,.07); }
+.bird-guide-card > img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #dcded4; }
+.bird-guide-card__body { padding: 20px; }
+.bird-guide-card__body > span { color: #887025; font-size: 8px; font-weight: 900; letter-spacing: 1.8px; }
+.bird-guide-card h2 { margin: 5px 0 12px; color: var(--forest); font-size: 29px; }
+.bird-guide-card ul { margin: 0; padding-left: 18px; color: #4f5853; }
+.bird-guide-card li { margin: 0 0 8px; font-size: 11px; line-height: 1.55; }
+.bird-guide-card a { display: block; margin-top: 15px; color: #53665d; font-size: 8px; line-height: 1.5; }
+.bird-guide-source { display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-top: 18px; padding: 20px; border-radius: 8px; color: white; background: var(--forest); }
+.bird-guide-source p { margin: 0; color: #d3ddd7; font-size: 11px; line-height: 1.55; }
+.bird-guide-source strong { color: white; }
+.bird-guide-source a { flex: 0 0 auto; min-height: 40px; display: inline-flex; align-items: center; padding: 0 13px; border: 1px solid rgba(255,255,255,.26); border-radius: 6px; color: var(--tan); font-size: 10px; font-weight: 800; text-decoration: none; }
 .page-title p:last-child { color: var(--muted); margin-top: -18px; }
 .stats-strip { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--forest); color: white; border-radius: 9px; margin-bottom: 20px; }
 .stats-strip div { padding: 18px; text-align: center; border-right: 1px solid rgba(255,255,255,.12); }
@@ -429,7 +473,21 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
   .season-row p { text-align: left; }
   .section-heading { align-items: start; }
   .legal-grid { grid-template-columns: 1fr; }
-  .bird-row { grid-template-columns: 34px 1fr auto 22px 32px; gap: 7px; }
+  .bird-row { grid-template-columns: 45px 1fr auto 22px 32px; gap: 7px; }
+  .bird-avatar { width: 43px; height: 43px; }
+  .harvest-heading { gap: 14px; }
+  .harvest-heading__actions button { max-width: 118px; height: auto; padding: 7px 10px; line-height: 1.25; }
+  .harvest-heading__actions button b { display: block; }
+  .bird-guide-header { top: 68px; grid-template-columns: 46px 1fr auto; padding: 0 12px; }
+  .bird-guide-done { padding: 0 10px; font-size: 8px; }
+  .bird-guide-content { width: min(100% - 22px, 980px); }
+  .bird-guide-grid { grid-template-columns: 1fr; gap: 12px; }
+  .bird-guide-card__body { padding: 18px; }
+  .bird-guide-source { align-items: stretch; flex-direction: column; }
+  .bird-guide-source a { justify-content: center; }
+  .share-hunt-card { grid-template-columns: 44px minmax(0,1fr); padding: 18px; }
+  .share-hunt-card__icon { width: 42px; height: 42px; }
+  .share-hunt-actions { grid-template-columns: 1fr; }
   .premium-card { padding: 22px; }
   .default-state-card { grid-template-columns: 1fr; gap: 14px; }
   .community-card { grid-template-columns: 42px 1fr; padding: 18px; }

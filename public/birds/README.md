@@ -1,0 +1,35 @@
+# BlindIQ waterfowl reference images
+
+The images in this folder were downloaded from the U.S. Fish & Wildlife Service media library. Each media page identifies the selected image as **Public Domain**. BlindIQ displays the individual credit and source link beside every field-guide entry.
+
+- [Mallard drake](https://www.fws.gov/media/mallard-drake-1)
+- [Mallard female](https://www.fws.gov/media/mallard-female)
+- [American black duck](https://www.fws.gov/media/american-black-duck)
+- [Mottled duck](https://www.fws.gov/media/mottled-duck-resizedpng)
+- [Black-bellied whistling-duck](https://www.fws.gov/media/black-bellied-whistling-duck-1)
+- [Wood duck](https://www.fws.gov/media/wood-duck-17)
+- [Blue-winged teal](https://www.fws.gov/media/blue-winged-teal-1)
+- [Gadwall](https://www.fws.gov/media/gadwall-2)
+- [American wigeon](https://www.fws.gov/media/american-wigeon-8)
+- [Northern shoveler](https://www.fws.gov/media/northern-shoveler-1)
+- [Northern pintail](https://www.fws.gov/media/northern-pintail-12)
+- [Redhead](https://www.fws.gov/media/redhead-ducks-funk-waterfowl-production-area-rainwater-basin-wetland-management-district)
+- [Canvasback](https://www.fws.gov/media/canvasback)
+- [Scaup](https://www.fws.gov/media/scaup-ducks-0)
+- [Ring-necked duck](https://www.fws.gov/media/ring-necked-duck-3)
+- [Bufflehead](https://www.fws.gov/media/buffleheads-0)
+- [Common goldeneye](https://www.fws.gov/media/common-goldeneye-6)
+- [Common merganser](https://www.fws.gov/media/common-merganser-1)
+- [Harlequin duck](https://www.fws.gov/media/harlequin-duck)
+- [Long-tailed duck](https://www.fws.gov/media/long-tailed-duck)
+- [Surf scoter](https://www.fws.gov/media/surf-scoter-1)
+- [Canada goose](https://www.fws.gov/media/canada-geese-7)
+- [Snow geese](https://www.fws.gov/media/snow-geese-6)
+- [Greater white-fronted goose](https://www.fws.gov/media/greater-white-fronted-goose-3)
+- [Brant](https://www.fws.gov/media/brant-pair)
+- [American coot](https://www.fws.gov/media/american-coot-6)
+- [Tundra swan](https://www.fws.gov/media/tundra-swan)
+- [Wilson’s snipe](https://www.fws.gov/media/wilsons-snipe-0)
+- [Representative waterfowl group](https://www.fws.gov/media/ducks-wetland-0)
+
+Identification text is concise field-reference copy informed by official species material and the USFWS [Ducks at a Distance](https://www.fws.gov/media/ducks-distance-waterfowl-identification-guide) guide. It is not a substitute for positive identification or official regulations.

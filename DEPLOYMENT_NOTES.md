@@ -1,5 +1,17 @@
 # BlindIQ Deployment Notes
 
+## v1.28 — Waterfowl field guide and hunt sharing
+
+- Replaced hunt-row letter placeholders with public-domain U.S. Fish & Wildlife Service reference photos.
+- Added an in-hunt **Not sure?** action that opens a mobile field guide with common duck, goose, coot, swan, and snipe references, bullet-point identification markers, source credits, and category filters.
+- Clearly marks broad-category thumbnails as representative so they are not mistaken for an exact species identification.
+- Added the complete official USFWS *Ducks at a Distance* guide as an extended reference.
+- Added private, on-device creation of a branded 1080 × 1350 BlindIQ hunt card.
+- Added native phone sharing for compatible installed apps plus an image-download fallback.
+- Shared cards exclude precise GPS coordinates and show state and selected zone only.
+- Keeps the summary available after saving so the hunter can share before opening My Hunts.
+- Advanced the visible release marker and service-worker cache to v1.28.
+
 ## v1.27 — Welcome-screen annual price
 
 - Added **Only $10.99/year** directly beneath “Log hunts. Know the regs.” on the welcome screen.

@@ -3,9 +3,11 @@ import { states } from "./data";
 import { beginCheckout, getDefaultState, getSubscription, isDemoMode, listHunts, restoreRememberedUser, saveDefaultState, saveHuntRecord, signIn, signOut, signUp } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { getDevicePosition, getWeather } from "./location";
+import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
+import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
 import type { BirdRule, DevicePosition, HarvestEntry, HuntRecord, WeatherData } from "./types";
 
-type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "summary" | "history" | "account" | "terms" | "feedback";
+type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "bird-guide" | "summary" | "history" | "account" | "terms" | "feedback";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -33,6 +35,15 @@ function Brand({ compact = false }: { compact?: boolean }) {
 
 function Icon({ children }: { children: string }) {
   return <span className="icon" aria-hidden="true">{children}</span>;
+}
+
+function BirdReferencePhoto({ bird }: { bird: BirdRule }) {
+  const photo = birdPhotoFor(bird);
+  return (
+    <div className={`bird-avatar ${photo.representative ? "bird-avatar--representative" : ""}`} title={photo.representative ? "Representative group photo—open the field guide to identify the exact species." : photo.alt}>
+      <img src={photo.src} alt="" loading="lazy" />
+    </div>
+  );
 }
 
 function weatherSymbol(description: string) {
@@ -122,7 +133,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.27",
+      "Submitted from BlindIQ v1.28",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -156,6 +167,48 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
         <aside className="feedback-destination"><span>@</span><p><strong>Sent to office@blindiq.app</strong><small>Your email app will open with this report prepared. Review it, attach screenshots if helpful, and tap Send.</small></p></aside>
         <button className="button button--gold button--wide" type="submit">Prepare email</button>
       </form>
+    </div>
+  );
+}
+
+function BirdGuide({ onBack }: { onBack: () => void }) {
+  const [group, setGroup] = useState<"All" | "Ducks" | "Geese" | "Other">("All");
+  const visibleEntries = group === "All" ? birdGuideEntries : birdGuideEntries.filter((entry) => entry.group === group);
+  return (
+    <div className="bird-guide-page">
+      <header className="bird-guide-header">
+        <button type="button" onClick={onBack}>←</button>
+        <div><span>WATERFOWL REFERENCE</span><strong>Not sure?</strong></div>
+        <button className="bird-guide-done" type="button" onClick={onBack}>Back to hunt</button>
+      </header>
+      <div className="bird-guide-content">
+        <section className="bird-guide-intro">
+          <p className="eyebrow">FIELD IDENTIFICATION</p>
+          <h1>Check the bird before you log it.</h1>
+          <p>Compare the photo and identifying markers below. Plumage can change with sex, age, season, distance, and lighting.</p>
+          <aside><strong>If you cannot positively identify a live bird, do not take the shot.</strong> This guide is a visual reference—not a legal determination. Verify species and current rules with official sources.</aside>
+          <div className="bird-guide-filters" aria-label="Filter field guide">
+            {(["All", "Ducks", "Geese", "Other"] as const).map((option) => <button className={group === option ? "active" : ""} type="button" key={option} onClick={() => setGroup(option)}>{option}</button>)}
+          </div>
+        </section>
+        <div className="bird-guide-grid">
+          {visibleEntries.map((entry) => (
+            <article className="bird-guide-card" key={entry.id}>
+              <img src={entry.image} alt={`${entry.name} reference`} loading="lazy" />
+              <div className="bird-guide-card__body">
+                <span>{entry.group === "Other" ? "OTHER WATERFOWL" : entry.group.toUpperCase()}</span>
+                <h2>{entry.name}</h2>
+                <ul>{entry.markers.map((marker) => <li key={marker}>{marker}</li>)}</ul>
+                <a href={entry.sourceUrl} target="_blank" rel="noreferrer">Photo source: {entry.credit} ↗</a>
+              </div>
+            </article>
+          ))}
+        </div>
+        <footer className="bird-guide-source">
+          <p><strong>Need the complete official guide?</strong> Review the U.S. Fish & Wildlife Service’s <em>Ducks at a Distance</em> waterfowl identification guide.</p>
+          <a href="https://www.fws.gov/media/ducks-distance-waterfowl-identification-guide" target="_blank" rel="noreferrer">Open the USFWS guide ↗</a>
+        </footer>
+      </div>
     </div>
   );
 }
@@ -206,7 +259,7 @@ function Shell({ view, setView, children, userName, isPremium, installUi }: { vi
         </div>
       </header>
       <main>{children}</main>
-      {view !== "hunt" && view !== "summary" && (
+      {view !== "hunt" && view !== "bird-guide" && view !== "summary" && (
         <nav className="bottom-nav" aria-label="Main navigation">
           {isPremium && <button className={view === "dashboard" ? "active" : ""} onClick={() => setView("dashboard")}><Icon>⌂</Icon>Home</button>}
           {isPremium && <button className={view === "history" ? "active" : ""} onClick={() => setView("history")}><Icon>≡</Icon>My Hunts</button>}
@@ -282,6 +335,8 @@ export default function App() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [savingHunt, setSavingHunt] = useState(false);
+  const [huntSaved, setHuntSaved] = useState(false);
+  const [sharingHunt, setSharingHunt] = useState(false);
   const [isSimulation, setIsSimulation] = useState(false);
   const [toast, setToast] = useState("");
   const [accountEmail, setAccountEmail] = useState("");
@@ -322,6 +377,7 @@ export default function App() {
     setZone(next.zones[0]);
     setHarvest({});
     setIsSimulation(false);
+    setHuntSaved(false);
   }
 
   function startHunt(simulation: boolean) {
@@ -332,6 +388,7 @@ export default function App() {
     }
     setHarvest({});
     setIsSimulation(simulation);
+    setHuntSaved(false);
     setView("hunt");
   }
 
@@ -494,6 +551,7 @@ export default function App() {
   const entries: HarvestEntry[] = selected.birds.filter((bird) => harvest[bird.id]).map((bird) => ({ ...bird, count: harvest[bird.id] }));
 
   async function saveHunt() {
+    if (huntSaved) return;
     setSavingHunt(true);
     setToast("");
     try {
@@ -506,13 +564,40 @@ export default function App() {
         seasonYear: selected.seasonYear,
       });
       setHistory((current) => [record, ...current.filter((hunt) => hunt.id !== record.id)]);
-      setHarvest({});
-      setView("history");
-      setToast(isSimulation ? "Test hunt saved." : "Hunt saved to your account.");
+      setHuntSaved(true);
+      setToast(isSimulation ? "Test hunt saved. You can share it or view My Hunts." : "Hunt saved. You can share it or view My Hunts.");
     } catch (cause) {
       setToast(cause instanceof Error ? `Hunt not saved: ${cause.message}` : "Hunt not saved. Please try again.");
     } finally {
       setSavingHunt(false);
+    }
+  }
+
+  function finishSavedHunt() {
+    setHarvest({});
+    setHuntSaved(false);
+    setToast("");
+    setView("history");
+  }
+
+  async function prepareShare(mode: "share" | "download") {
+    setSharingHunt(true);
+    setToast("");
+    try {
+      const shareInput = { state: selected.name, zone, entries, duckCount, gooseCount, isSimulation };
+      const file = await createHuntShareFile(shareInput);
+      if (mode === "download") {
+        downloadHuntShareFile(file);
+        setToast("Hunt card downloaded. On iPhone, use the Share menu and choose Save Image if prompted.");
+        return;
+      }
+      const result = await shareHuntFile(file, shareInput);
+      setToast(result === "shared" ? "Your phone’s share menu opened." : "Sharing is not supported here, so the hunt card was downloaded.");
+    } catch (cause) {
+      if (cause instanceof DOMException && cause.name === "AbortError") return;
+      setToast(cause instanceof Error ? cause.message : "The hunt card could not be prepared.");
+    } finally {
+      setSharingHunt(false);
     }
   }
 
@@ -630,7 +715,7 @@ export default function App() {
             <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.27</small>
+            <small className="version-stamp">BlindIQ v1.28</small>
           </footer>
         </div>
       )}
@@ -656,11 +741,11 @@ export default function App() {
               <p>{duckCount >= duckDailyLimit ? "Daily duck bag filled. Stop harvesting ducks." : `${duckDailyLimit - duckCount} duck${duckDailyLimit - duckCount === 1 ? "" : "s"} remain in the aggregate bag.`}</p>
             </section>
             <section className="harvest-panel">
-              <div className="section-heading"><div><p className="eyebrow">LOG A BIRD</p><h2>What did you harvest?</h2></div><span>{duckCount + gooseCount} logged</span></div>
+              <div className="section-heading harvest-heading"><div><p className="eyebrow">LOG A BIRD</p><h2>What did you harvest?</h2></div><div className="harvest-heading__actions"><span>{duckCount + gooseCount} logged</span><button type="button" onClick={() => setView("bird-guide")}>Not sure? <b>Open ID guide</b></button></div></div>
               <div className="bird-list">
                 {selected.birds.map((bird) => (
                   <article className={remaining(bird) === 0 ? "bird-row bird-row--full" : "bird-row"} key={bird.id}>
-                    <div className="bird-avatar">{bird.group === "Geese" ? "G" : bird.group === "Other" ? "C" : "D"}</div>
+                    <BirdReferencePhoto bird={bird} />
                     <div className="bird-name"><strong>{bird.label}</strong><span>{bird.group} • {remaining(bird)} remaining</span></div>
                     {(harvest[bird.id] ?? 0) > 0 && <button className="minus" onClick={() => removeBird(bird.id)} aria-label={`Remove ${bird.label}`}>−</button>}
                     <b className="count">{harvest[bird.id] ?? 0}</b>
@@ -683,15 +768,22 @@ export default function App() {
         </div>
       )}
 
+      {view === "bird-guide" && <BirdGuide onBack={() => setView("hunt")} />}
+
       {view === "summary" && (
         <div className="page summary-page">
-          <button className="back-link" onClick={() => setView("hunt")}>← Back to hunt</button>
+          {!huntSaved && <button className="back-link" onClick={() => setView("hunt")}>← Back to hunt</button>}
           <div className={`summary-hero ${isSimulation ? "summary-hero--simulation" : ""}`}><span>{isSimulation ? "TEST HUNT COMPLETE" : "HUNT COMPLETE"}</span><h1>{isSimulation ? "Test complete." : "Good hunt."}</h1><p>{selected.name} • {zone}</p></div>
           <section className="summary-total"><span>TOTAL HARVEST</span><strong>{duckCount + gooseCount}</strong><p>{duckCount} ducks • {gooseCount} geese</p></section>
           <section className="section"><h2>Today’s harvest</h2>{entries.length ? entries.map((entry) => <div className="summary-row" key={entry.id}><span>{entry.label}</span><strong>× {entry.count}</strong></div>) : <p className="empty">No birds logged. You can still save a zero-harvest hunt.</p>}</section>
           {toast && <div className="inline-toast">{toast}</div>}
-          <button className="button button--gold button--wide" disabled={savingHunt} onClick={() => void saveHunt()}>{savingHunt ? "Saving…" : isSimulation ? "Save Test Hunt" : "Save to My Hunts"}</button>
-          <button className="text-button" onClick={() => { setHarvest({}); setView("dashboard"); }}>Discard hunt</button>
+          {!huntSaved && <button className="button button--gold button--wide" disabled={savingHunt} onClick={() => void saveHunt()}>{savingHunt ? "Saving…" : isSimulation ? "Save Test Hunt" : "Save to My Hunts"}</button>}
+          <section className="share-hunt-card">
+            <div className="share-hunt-card__icon">↗</div>
+            <div><p className="eyebrow">SHARE YOUR HUNT</p><h2>Make a BlindIQ hunt card.</h2><p>Share through your phone to Facebook, Instagram, Messages, and more. Exact GPS coordinates are never included.</p></div>
+            <div className="share-hunt-actions"><button className="button button--gold" disabled={sharingHunt} type="button" onClick={() => void prepareShare("share")}>{sharingHunt ? "Preparing…" : "Share hunt"}</button><button className="button share-download" disabled={sharingHunt} type="button" onClick={() => void prepareShare("download")}>Save image</button></div>
+          </section>
+          {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>View My Hunts</button> : <button className="text-button" onClick={() => { setHarvest({}); setHuntSaved(false); setView("dashboard"); }}>Discard hunt</button>}
         </div>
       )}
 
@@ -732,7 +824,7 @@ export default function App() {
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.27</small>
+          <small className="version-stamp">BlindIQ v1.28</small>
         </div>
       )}
     </Shell>
