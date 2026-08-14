@@ -1,5 +1,11 @@
 # BlindIQ Deployment Notes
 
+## v1.30 — Prominent any-device messaging
+
+- Added a visible **Use BlindIQ on any internet-connected device** badge to the main welcome screen.
+- Added a dedicated callout on the login form explaining that members can sign in from a phone, tablet, or computer.
+- Advanced the visible release marker and service-worker cache to v1.30.
+
 ## v1.29 — Any-device account access message
 
 - Updated the login screen to explain that members can sign in on any internet-connected device.
