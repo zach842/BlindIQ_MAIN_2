@@ -1,5 +1,11 @@
 # BlindIQ Deployment Notes
 
+## v1.29 — Any-device account access message
+
+- Updated the login screen to explain that members can sign in on any internet-connected device.
+- Kept the message focused on access to past hunts, regulations, and starting today’s hunt.
+- Advanced the visible release marker and service-worker cache to v1.29.
+
 ## v1.28 — Waterfowl field guide and hunt sharing
 
 - Replaced hunt-row letter placeholders with public-domain U.S. Fish & Wildlife Service reference photos.

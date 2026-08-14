@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 28 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $10.99/year membership.
 
-This package is **BlindIQ v1.28**. It adds public-domain USFWS waterfowl reference photos throughout the hunt logger, an in-app **Not sure?** identification guide, and private-by-design branded hunt cards that can be shared through a phone’s native share menu or saved as an image. It retains **Only $10.99/year**, permanent live and test hunt history, off-season Test Hunt mode, the corrected community-card placement, and branded phone icons.
+This package is **BlindIQ v1.29**. It adds clear login-screen messaging that members can sign in on any internet-connected device to access their BlindIQ account. It retains public-domain USFWS waterfowl reference photos, the in-app **Not sure?** identification guide, private-by-design branded hunt sharing, **Only $10.99/year**, permanent live and test hunt history, off-season Test Hunt mode, the corrected community-card placement, and branded phone icons.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -64,7 +64,7 @@ This package is **BlindIQ v1.28**. It adds public-domain USFWS waterfowl referen
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
 - End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
-- Visible v1.28 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.29 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
