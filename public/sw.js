@@ -1,4 +1,4 @@
-const CACHE_NAME = "blindiq-runtime-v1.30";
+const CACHE_NAME = "blindiq-runtime-v1.31";
 
 self.addEventListener("install", () => {
   self.skipWaiting();

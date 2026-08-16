@@ -1,5 +1,14 @@
 # BlindIQ Deployment Notes
 
+## v1.31 — North Dakota live season status and focused dashboard
+
+- Replaced the hard-coded closed banner with date-aware **Open Today**, **Partially Open**, **Closed Today**, and reference states.
+- Added structured North Dakota status periods for early Canada goose, special youth/veteran/military waterfowl, regular ducks, and regular geese.
+- On August 16, North Dakota now displays **PARTIALLY OPEN** and identifies Early Canada Goose as the active season in three loaded zones.
+- Added reminders to verify residency, zone, license, and eligibility requirements whenever a season is active.
+- Removed the weather widget and forecast controls from the dashboard for now.
+- Advanced the visible release marker and service-worker cache to v1.31.
+
 ## v1.30 — Prominent any-device messaging
 
 - Added a visible **Use BlindIQ on any internet-connected device** badge to the main welcome screen.

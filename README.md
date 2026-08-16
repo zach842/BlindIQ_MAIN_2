@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 28 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $10.99/year membership.
 
-This package is **BlindIQ v1.30**. It adds a prominent any-device access message to both the welcome screen and login form so members immediately know they can sign in from a phone, tablet, or computer. It retains public-domain USFWS waterfowl reference photos, the in-app **Not sure?** identification guide, private-by-design branded hunt sharing, **Only $10.99/year**, permanent live and test hunt history, off-season Test Hunt mode, the corrected community-card placement, and branded phone icons.
+This package is **BlindIQ v1.31**. It adds date-aware **Open Today**, **Partially Open**, and **Closed Today** dashboard states, beginning with a fully structured North Dakota 2026–2027 calendar. It also removes the weather widget from the current interface. The release retains the prominent any-device login message, public-domain USFWS waterfowl references, the **Not sure?** guide, branded hunt sharing, **Only $10.99/year**, permanent hunt history, and Test Hunt mode.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -30,13 +30,9 @@ This package is **BlindIQ v1.30**. It adds a prominent any-device access message
 - Native Android install prompt when the browser makes it available
 - Dedicated opaque iPhone, Android, and Android maskable home-screen icons
 - Installable web-app manifest and update-aware service worker
-- Permission-based weather at the hunter’s current location
-- Weather stays collapsed by default so hunting controls remain immediately accessible
-- One-tap weather opening and closing with a compact condition summary after loading
-- Current temperature, conditions, wind, humidity, and GPS accuracy
-- Active National Weather Service alerts
-- Twelve-hour and seven-day National Weather Service forecasts
-- Location is used for the forecast and is not stored by BlindIQ
+- Date-aware dashboard status with separate **Open Today**, **Partially Open**, and **Closed Today** banners
+- North Dakota’s complete structured 2026–2027 waterfowl calendar, including its August early Canada goose zones
+- Weather and forecast controls removed from the current interface for a more focused dashboard
 - Closed-today banner and loaded season dates
 - Duck and goose seasons, zones, shooting hours, bag rules, and official links
 - Reviewed agency and eRegulations links for the newly audited state packages
@@ -64,7 +60,7 @@ This package is **BlindIQ v1.30**. It adds a prominent any-device access message
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
 - End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
-- Visible v1.30 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.31 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
@@ -309,7 +305,8 @@ src/
 ├── App.tsx       Screens, navigation, and interactive hunt flow
 ├── data.ts       Season-versioned state regulations and bird rules
 ├── legal.ts      Versioned Terms of Use and User Agreement
-├── location.ts   Browser location and National Weather Service forecast service
+├── location.ts   Reserved location/forecast service for a possible future release; not currently shown
+├── seasonStatus.ts Date-aware state season-status resolver
 ├── services.ts   Supabase/Stripe configuration boundary
 ├── styles.css    BlindIQ design system and responsive layout
 ├── types.ts      Shared data types

@@ -18,6 +18,14 @@ export type Season = {
   zone: string;
 };
 
+export type WaterfowlStatusPeriod = {
+  name: string;
+  category: "ducks" | "geese";
+  startDate: string;
+  endDate: string;
+  zone: string;
+};
+
 export type StateData = {
   code: string;
   name: string;
@@ -26,6 +34,7 @@ export type StateData = {
   sourceLinks?: { label: string; url: string }[];
   shootingHours: string;
   seasons: Season[];
+  statusPeriods?: WaterfowlStatusPeriod[];
   zones: string[];
   birds: BirdRule[];
   overview: string;

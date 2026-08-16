@@ -2,10 +2,10 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { states } from "./data";
 import { beginCheckout, getDefaultState, getSubscription, isDemoMode, listHunts, restoreRememberedUser, saveDefaultState, saveHuntRecord, signIn, signOut, signUp } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
-import { getDevicePosition, getWeather } from "./location";
 import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
 import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
-import type { BirdRule, DevicePosition, HarvestEntry, HuntRecord, WeatherData } from "./types";
+import { getDashboardSeasonStatus } from "./seasonStatus";
+import type { BirdRule, HarvestEntry, HuntRecord } from "./types";
 
 type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "bird-guide" | "summary" | "history" | "account" | "terms" | "feedback";
 
@@ -46,59 +46,6 @@ function BirdReferencePhoto({ bird }: { bird: BirdRule }) {
   );
 }
 
-function weatherSymbol(description: string) {
-  const value = description.toLowerCase();
-  if (value.includes("thunder")) return "ϟ";
-  if (value.includes("snow") || value.includes("sleet")) return "✣";
-  if (value.includes("rain") || value.includes("shower")) return "≋";
-  if (value.includes("fog") || value.includes("mist")) return "═";
-  if (value.includes("cloud") || value.includes("overcast")) return "☁";
-  return "☀";
-}
-
-function formatHour(value: string) {
-  return new Date(value).toLocaleTimeString("en-US", { hour: "numeric" });
-}
-
-function WeatherPanel({ weather, position, loading, error, expanded, onToggle, onLocate }: { weather: WeatherData | null; position: DevicePosition | null; loading: boolean; error: string; expanded: boolean; onToggle: () => void; onLocate: () => void }) {
-  const dayPeriods = weather?.daily.filter((period) => period.isDaytime).slice(0, 7) ?? [];
-  const temperature = weather?.current.temperature === null || weather?.current.temperature === undefined ? "—" : `${weather.current.temperature}°`;
-  const wind = weather ? `${weather.current.windDirection} ${weather.current.windSpeedMph === null ? weather.hourly[0]?.windSpeed || "—" : `${weather.current.windSpeedMph} mph`}` : "";
-  return (
-    <section className={`weather-section ${expanded ? "weather-section--expanded" : "weather-section--collapsed"}`} aria-live="polite">
-      <button className="weather-toggle" type="button" aria-expanded={expanded} aria-controls="field-weather-details" onClick={onToggle}>
-        <span className="weather-toggle__symbol" aria-hidden="true">{weather ? weatherSymbol(weather.current.description) : "☀"}</span>
-        <span className="weather-toggle__copy">
-          <span className="weather-toggle__eyebrow">FIELD WEATHER</span>
-          <strong>{weather ? `${temperature} · ${weather.locationLabel}` : "Local weather & forecast"}</strong>
-          <small>{weather ? `${weather.current.description} · Wind ${wind}` : "Current conditions, hourly wind, alerts, and seven-day outlook"}</small>
-        </span>
-        {!!weather?.alerts.length && <span className="weather-toggle__alert">{weather.alerts.length} ALERT{weather.alerts.length === 1 ? "" : "S"}</span>}
-        <span className="weather-toggle__action">{expanded ? "CLOSE" : "OPEN"}<i aria-hidden="true">⌄</i></span>
-      </button>
-      {expanded && <div id="field-weather-details" className="weather-details">
-        <div className="weather-heading">
-          <div><h2>{weather?.locationLabel || "Weather at your location"}</h2><p>{weather ? "Official National Weather Service conditions and forecast." : "Allow location access to load conditions where you are standing."}</p></div>
-          <button className="button weather-locate" disabled={loading} onClick={onLocate}>{loading ? "Locating…" : weather ? "Refresh location" : "Use my location"}</button>
-        </div>
-        {error && <div className="weather-error" role="alert"><strong>Weather unavailable</strong><span>{error}</span></div>}
-        {!weather && !error && <div className="weather-empty"><span>⌖</span><p><strong>Current conditions. Hourly wind. Seven-day outlook.</strong><small>Your precise location is used only to request this forecast and is not saved by BlindIQ.</small></p></div>}
-        {weather && <>
-          {!!weather.alerts.length && <div className="weather-alerts">{weather.alerts.map((alert) => <article key={alert.id}><span>!</span><div><strong>{alert.event}</strong><p>{alert.headline}</p></div></article>)}</div>}
-          <div className="current-weather">
-            <div className="weather-symbol">{weatherSymbol(weather.current.description)}</div>
-            <div className="current-temp"><strong>{temperature}</strong><span>{weather.current.description}</span></div>
-            <div className="weather-facts"><p><span>WIND</span><strong>{wind}</strong></p><p><span>HUMIDITY</span><strong>{weather.current.humidity === null ? "—" : `${weather.current.humidity}%`}</strong></p><p><span>GPS ACCURACY</span><strong>{position ? `±${Math.max(1, Math.round(position.accuracyMeters * 3.28084))} ft` : "—"}</strong></p></div>
-          </div>
-          {!!weather.hourly.length && <div className="forecast-block"><div className="forecast-title"><strong>Next 12 hours</strong><span>Swipe to view →</span></div><div className="hourly-strip">{weather.hourly.map((period) => <article key={period.startTime}><span>{formatHour(period.startTime)}</span><b>{weatherSymbol(period.shortForecast)}</b><strong>{period.temperature}°</strong><small>{period.windDirection} {period.windSpeed}</small><i>{period.precipitationChance ?? 0}% rain</i></article>)}</div></div>}
-          {!!dayPeriods.length && <div className="forecast-block"><div className="forecast-title"><strong>Seven-day outlook</strong><span>NWS forecast</span></div><div className="daily-list">{dayPeriods.map((period) => <article key={period.startTime}><div><strong>{period.name}</strong><span>{period.shortForecast}</span></div><b>{weatherSymbol(period.shortForecast)}</b><p><strong>{period.temperature}°{period.temperatureUnit}</strong><span>{period.windDirection} {period.windSpeed}</span></p></article>)}</div></div>}
-          <footer className="weather-source"><span>Updated {new Date(weather.retrievedAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span><a href="https://www.weather.gov/" target="_blank" rel="noreferrer">National Weather Service ↗</a></footer>
-        </>}
-      </div>}
-    </section>
-  );
-}
-
 function LegalDocument({ onClose }: { onClose?: () => void }) {
   return (
     <article className="legal-document">
@@ -133,7 +80,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.30",
+      "Submitted from BlindIQ v1.31",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -344,15 +291,11 @@ export default function App() {
   const [accountUserId, setAccountUserId] = useState("");
   const [isPremium, setIsPremium] = useState(isDemoMode);
   const [subscriptionStatus, setSubscriptionStatus] = useState(isDemoMode ? "active" : "inactive");
-  const [devicePosition, setDevicePosition] = useState<DevicePosition | null>(null);
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [weatherLoading, setWeatherLoading] = useState(false);
-  const [weatherError, setWeatherError] = useState("");
-  const [weatherExpanded, setWeatherExpanded] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installGuideOpen, setInstallGuideOpen] = useState(false);
   const selected = states.find((state) => state.code === stateCode) ?? states[0];
+  const dashboardSeasonStatus = getDashboardSeasonStatus(selected);
   const duckCount = selected.birds.filter((bird) => bird.group === "Ducks").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
   const gooseCount = selected.birds.filter((bird) => bird.group === "Geese").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
   const duckDailyLimit = selected.duckDailyLimits?.[zone] ?? selected.duckDailyLimit ?? 6;
@@ -473,21 +416,6 @@ export default function App() {
       cancelled = true;
     };
   }, []);
-
-  async function loadLocalWeather() {
-    setWeatherLoading(true);
-    setWeatherError("");
-    try {
-      const position = await getDevicePosition();
-      setDevicePosition(position);
-      const result = await getWeather(position);
-      setWeather(result);
-    } catch (cause) {
-      setWeatherError(cause instanceof Error ? cause.message : "BlindIQ could not load weather for this location.");
-    } finally {
-      setWeatherLoading(false);
-    }
-  }
 
   async function installBlindIq() {
     if (!installPrompt) return;
@@ -662,8 +590,6 @@ export default function App() {
             </select>
           </section>
 
-          <WeatherPanel weather={weather} position={devicePosition} loading={weatherLoading} error={weatherError} expanded={weatherExpanded} onToggle={() => setWeatherExpanded((current) => !current)} onLocate={loadLocalWeather} />
-
           {selected.dataNotice && (
             <aside className="data-notice" role="alert">
               <div>!</div>
@@ -671,9 +597,9 @@ export default function App() {
             </aside>
           )}
 
-          <section className={`status-banner ${selected.dataStatus === "archived" ? "status-banner--reference" : "status-banner--closed"}`}>
-            <div className="status-icon">×</div>
-            <div><span>WATERFOWL SEASON</span><strong>{selected.dataStatus === "archived" ? "CURRENT DATA PENDING" : "CLOSED TODAY"}</strong><p>{selected.dataStatus === "archived" ? `${selected.seasonYear} is displayed for reference only.` : `You’re in ${selected.name}. Here are the currently loaded dates.`}</p></div>
+          <section className={`status-banner status-banner--${dashboardSeasonStatus.kind}`} role="status">
+            <div className="status-icon">{dashboardSeasonStatus.icon}</div>
+            <div><span>WATERFOWL SEASON</span><strong>{dashboardSeasonStatus.headline}</strong><p>{dashboardSeasonStatus.message}</p></div>
           </section>
 
           <div className="hunt-actions">
@@ -717,7 +643,7 @@ export default function App() {
             <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.30</small>
+            <small className="version-stamp">BlindIQ v1.31</small>
           </footer>
         </div>
       )}
@@ -826,7 +752,7 @@ export default function App() {
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.30</small>
+          <small className="version-stamp">BlindIQ v1.31</small>
         </div>
       )}
     </Shell>
