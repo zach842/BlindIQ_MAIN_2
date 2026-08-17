@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 28 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $10.99/year membership.
 
-This package is **BlindIQ v1.31**. It adds date-aware **Open Today**, **Partially Open**, and **Closed Today** dashboard states, beginning with a fully structured North Dakota 2026–2027 calendar. It also removes the weather widget from the current interface. The release retains the prominent any-device login message, public-domain USFWS waterfowl references, the **Not sure?** guide, branded hunt sharing, **Only $10.99/year**, permanent hunt history, and Test Hunt mode.
+This package is **BlindIQ v1.32**. It adds a compact **Group Hunt Mode — In Development** notice immediately beneath Test Hunt without changing the current individual-hunt workflow. It retains date-aware **Open Today**, **Partially Open**, and **Closed Today** dashboard states, the prominent any-device login message, public-domain USFWS waterfowl references, the **Not sure?** guide, branded hunt sharing, **Only $10.99/year**, permanent hunt history, and Test Hunt mode.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -23,6 +23,7 @@ This package is **BlindIQ v1.31**. It adds date-aware **Open Today**, **Partiall
 - Automatic restoration of an authenticated Supabase session on that device
 - Current-tab-only access when device remembrance is not selected
 - Remembered-device data and the local session cleared immediately at logout
+- Compact **Group Hunt Mode — In Development** preview beneath Test Hunt
 - User-selectable default hunting state saved to the Supabase profile
 - Improved compact BlindIQ wordmark contrast in the app header
 - Small, always-visible **+ HOME** action beside the user bubble

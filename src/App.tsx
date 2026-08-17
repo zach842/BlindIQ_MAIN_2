@@ -604,7 +604,13 @@ export default function App() {
 
           <div className="hunt-actions">
             <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => startHunt(false)}><span>{selected.dataStatus === "archived" ? "LIVE HUNT UNAVAILABLE" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot guide a live hunt" : isPremium ? "Save a real hunt →" : "$10.99/year →"}</small></button>
-            <button className="button button--test" type="button" onClick={() => startHunt(true)}><span>TEST HUNT</span><small>Practice without changing live totals →</small></button>
+            <div className="hunt-secondary-actions">
+              <button className="button button--test" type="button" onClick={() => startHunt(true)}><span>TEST HUNT</span><small>Practice without changing live totals →</small></button>
+              <div className="group-hunt-teaser" role="note" aria-label="Group Hunt Mode In Development">
+                <span>GROUP HUNT MODE</span>
+                <small>IN DEVELOPMENT</small>
+              </div>
+            </div>
           </div>
 
           <section className="section">

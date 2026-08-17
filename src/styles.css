@@ -200,6 +200,10 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .button--start:disabled { cursor: not-allowed; filter: grayscale(.2); }
 .button--test { min-height: 74px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border: 1px solid var(--forest); color: var(--forest); background: #e4e8df; font-family: "Barlow Condensed"; font-size: 22px; }
 .button--test small { max-width: 145px; color: #53665c; font: 600 10px/1.35 Inter; text-align: right; }
+.hunt-secondary-actions { display: grid; gap: 8px; }
+.group-hunt-teaser { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px dashed #9c8c67; border-radius: 7px; color: var(--forest); background: #f1ede2; }
+.group-hunt-teaser span { font: 800 15px/1 "Barlow Condensed", Impact, sans-serif; letter-spacing: .5px; }
+.group-hunt-teaser small { color: #80601f; font-size: 8px; font-weight: 900; letter-spacing: 1.2px; white-space: nowrap; }
 .bottom-nav { position: fixed; inset: auto 0 0; height: 68px; display: flex; justify-content: center; gap: clamp(34px, 12vw, 130px); background: rgba(251,250,246,.97); backdrop-filter: blur(12px); border-top: 1px solid var(--line); z-index: 20; }
 .bottom-nav button { border: 0; background: none; color: var(--muted); font-size: 10px; font-weight: 700; min-width: 60px; }
 .bottom-nav .icon { display: block; margin: 0 auto 3px; }
@@ -440,6 +444,7 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
   .community-card > .button { grid-column: 1 / -1; width: 100%; }
   .hunt-actions { grid-template-columns: 1fr; }
   .button--test small { max-width: none; }
+  .group-hunt-teaser { min-height: 48px; }
   .simulation-notice { align-items: flex-start; flex-direction: column; gap: 5px; }
   .feedback-form { padding: 19px; }
   .legal-modal { padding: 0; }
