@@ -1,5 +1,20 @@
 # BlindIQ Deployment Notes
 
+## v1.34 — Clear installation action and focused hunt modes
+
+- Removed the **Group Hunt Mode — In Development** placeholder from the dashboard.
+- Replaced the ambiguous **+ HOME** control with an explicit **ADD TO HOME SCREEN** action.
+- Kept the complete iPhone and Android installation guide behind the newly labeled action.
+- Advanced the visible release marker, package version, and PWA cache to **v1.34**.
+
+## v1.33 — Digital field guide and field log brand alignment
+
+- Defined BlindIQ consistently as the **digital field guide and field log for waterfowl hunters**.
+- Rebuilt welcome, login, and signup copy around the product promise: **Know the regulations. Log the birds. Save the hunts.**
+- Added a compact three-part product explainer to the welcome and authentication screens.
+- Updated dashboard, season overview, bird-identification guide, active hunt logger, live guidance, hunt summary, history, account membership copy, metadata, sharing language, and legal disclaimer where the new positioning improves clarity.
+- Updated the visible release marker, package version, and PWA cache to **v1.33**.
+
 ## v1.31 — North Dakota live season status and focused dashboard
 
 - Replaced the hard-coded closed banner with date-aware **Open Today**, **Partially Open**, **Closed Today**, and reference states.

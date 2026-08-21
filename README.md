@@ -2,9 +2,9 @@
 
 **HUNT WITH CONFIDENCE**
 
-BlindIQ is a mobile-first waterfowl hunting companion. This React + Vite foundation includes authentication, 28 state dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $10.99/year membership.
+BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 28 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $10.99/year membership.
 
-This package is **BlindIQ v1.32**. It adds a compact **Group Hunt Mode — In Development** notice immediately beneath Test Hunt without changing the current individual-hunt workflow. It retains date-aware **Open Today**, **Partially Open**, and **Closed Today** dashboard states, the prominent any-device login message, public-domain USFWS waterfowl references, the **Not sure?** guide, branded hunt sharing, **Only $10.99/year**, permanent hunt history, and Test Hunt mode.
+This package is **BlindIQ v1.34**. It establishes consistent product language across the welcome, login, signup, dashboard, field guide, live field log, hunt summary, history, account, metadata, and documentation: BlindIQ is the digital field guide and field log for waterfowl hunters. It retains date-aware **Open Today**, **Partially Open**, and **Closed Today** dashboard states, public-domain USFWS waterfowl references, the **Not sure?** guide, branded hunt sharing, **Only $10.99/year**, permanent hunt history, and Test Hunt mode.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -23,10 +23,9 @@ This package is **BlindIQ v1.32**. It adds a compact **Group Hunt Mode — In De
 - Automatic restoration of an authenticated Supabase session on that device
 - Current-tab-only access when device remembrance is not selected
 - Remembered-device data and the local session cleared immediately at logout
-- Compact **Group Hunt Mode — In Development** preview beneath Test Hunt
 - User-selectable default hunting state saved to the Supabase profile
 - Improved compact BlindIQ wordmark contrast in the app header
-- Small, always-visible **+ HOME** action beside the user bubble
+- Clearly labeled **ADD TO HOME SCREEN** action beside the user bubble
 - Step-by-step home-screen instructions for both iPhone and Android
 - Native Android install prompt when the browser makes it available
 - Dedicated opaque iPhone, Android, and Android maskable home-screen icons
@@ -151,7 +150,7 @@ If the phone cannot connect, make sure both devices are on the same non-guest ne
 For the most reliable test, use the live HTTPS Vercel address.
 
 1. Open BlindIQ in **Safari**.
-2. Log in and tap the small **+ HOME** button beside the user bubble.
+2. Log in and tap **ADD TO HOME SCREEN** beside the user bubble.
 3. Read the iPhone instructions, then close the guide.
 4. Tap Safari's **Share** button—the square with the upward arrow.
 5. Scroll down and tap **Add to Home Screen**.
@@ -160,13 +159,13 @@ For the most reliable test, use the live HTTPS Vercel address.
 ### Add BlindIQ to an Android home screen
 
 1. Open BlindIQ in **Chrome**.
-2. Log in and tap the small **+ HOME** button beside the user bubble.
+2. Log in and tap **ADD TO HOME SCREEN** beside the user bubble.
 3. If **Install BlindIQ now** appears, tap it and confirm installation.
 4. Otherwise, open Chrome's three-dot menu.
 5. Tap **Install app** or **Add to Home screen**.
 6. Confirm the installation.
 
-After installation, BlindIQ opens in its own app-style window. The **+ HOME** action remains available so the device instructions can always be reopened. Browser wording can vary slightly by phone and operating-system version.
+After installation, BlindIQ opens in its own app-style window. The **ADD TO HOME SCREEN** action remains available so the device instructions can always be reopened. Browser wording can vary slightly by phone and operating-system version.
 
 ## 4. Upload to GitHub
 

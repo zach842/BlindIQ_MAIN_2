@@ -133,7 +133,7 @@ export function downloadHuntShareFile(file: File) {
 export async function shareHuntFile(file: File, input: HuntShareInput) {
   const data: ShareData = {
     title: `My ${input.state} hunt — BlindIQ`,
-    text: `${input.duckCount + input.gooseCount} birds logged with BlindIQ. Hunt with confidence.`,
+    text: `${input.duckCount + input.gooseCount} birds logged with BlindIQ—the digital field guide and field log for waterfowl hunters.`,
     files: [file],
   };
   if (navigator.share && navigator.canShare?.(data)) {
@@ -143,4 +143,3 @@ export async function shareHuntFile(file: File, input: HuntShareInput) {
   downloadHuntShareFile(file);
   return "downloaded" as const;
 }
-

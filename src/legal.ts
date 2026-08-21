@@ -12,7 +12,7 @@ export const termsSections = [
   {
     title: "2. Hunting companion only — not legal advice",
     paragraphs: [
-      "BlindIQ is an informational hunting companion. It is not a law firm, government agency, wildlife agency, law-enforcement authority, guide, outfitter, safety service, or substitute for official regulations. Nothing in the Service is legal advice, a legal opinion, permission to hunt, proof of compliance, or a guarantee that a shot, location, species, season, method, or activity is lawful.",
+      "BlindIQ is a digital field guide and field log for waterfowl hunters. It is not a law firm, government agency, wildlife agency, law-enforcement authority, professional hunting guide, outfitter, safety service, or substitute for official regulations. Nothing in the Service is legal advice, a legal opinion, permission to hunt, proof of compliance, or a guarantee that a shot, location, species, season, method, or activity is lawful.",
       "HUNTING LAWS, EMERGENCY ORDERS, SEASON DATES, ZONE BOUNDARIES, BAG AND POSSESSION LIMITS, SPECIES AND SEX RESTRICTIONS, SHOOTING HOURS, LICENSES, STAMPS, PERMITS, PROPERTY ACCESS RULES, AND AREA-SPECIFIC RESTRICTIONS MAY CHANGE OR MAY NOT BE FULLY REFLECTED IN THE SERVICE. YOU MUST CONSULT THE CURRENT OFFICIAL FEDERAL, STATE, TRIBAL, COUNTY, MUNICIPAL, REFUGE, WILDLIFE-MANAGEMENT-AREA, AND LANDOWNER SOURCES THAT APPLY TO YOUR HUNT.",
     ],
   },

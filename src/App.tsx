@@ -37,6 +37,16 @@ function Icon({ children }: { children: string }) {
   return <span className="icon" aria-hidden="true">{children}</span>;
 }
 
+function BrandPromise({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={`brand-promise ${compact ? "brand-promise--compact" : ""}`} aria-label="Know the regulations, log the birds, save the hunts">
+      <div><span>01</span><strong>Know the regulations</strong></div>
+      <div><span>02</span><strong>Log the birds</strong></div>
+      <div><span>03</span><strong>Save the hunts</strong></div>
+    </div>
+  );
+}
+
 function BirdReferencePhoto({ bird }: { bird: BirdRule }) {
   const photo = birdPhotoFor(bird);
   return (
@@ -53,7 +63,7 @@ function LegalDocument({ onClose }: { onClose?: () => void }) {
         <div><p className="eyebrow">BLINDIQ LEGAL</p><h1>Terms of Use & User Agreement</h1><p>Effective {TERMS_EFFECTIVE_DATE} • Version {TERMS_VERSION}</p></div>
         {onClose && <button className="legal-close" onClick={onClose} aria-label="Close user agreement">×</button>}
       </header>
-      <aside className="legal-warning"><strong>Important hunting-law notice</strong><p>BlindIQ is an informational hunting companion—not legal advice or permission to hunt. You remain solely responsible for verifying official regulations and every shot you take.</p></aside>
+      <aside className="legal-warning"><strong>Important hunting-law notice</strong><p>BlindIQ is a digital field guide and field log—not legal advice or permission to hunt. You remain solely responsible for verifying official regulations and every shot you take.</p></aside>
       {termsSections.map((section) => <section key={section.title}><h2>{section.title}</h2>{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</section>)}
       <footer><p>This draft is designed for BlindIQ’s current product and should be reviewed by a qualified attorney before broad commercial launch.</p></footer>
     </article>
@@ -80,7 +90,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.31",
+      "Submitted from BlindIQ v1.34",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -125,12 +135,12 @@ function BirdGuide({ onBack }: { onBack: () => void }) {
     <div className="bird-guide-page">
       <header className="bird-guide-header">
         <button type="button" onClick={onBack}>←</button>
-        <div><span>WATERFOWL REFERENCE</span><strong>Not sure?</strong></div>
+        <div><span>BLINDIQ FIELD GUIDE</span><strong>Not sure?</strong></div>
         <button className="bird-guide-done" type="button" onClick={onBack}>Back to hunt</button>
       </header>
       <div className="bird-guide-content">
         <section className="bird-guide-intro">
-          <p className="eyebrow">FIELD IDENTIFICATION</p>
+          <p className="eyebrow">DIGITAL FIELD GUIDE • FIELD IDENTIFICATION</p>
           <h1>Check the bird before you log it.</h1>
           <p>Compare the photo and identifying markers below. Plumage can change with sex, age, season, distance, and lighting.</p>
           <aside><strong>If you cannot positively identify a live bird, do not take the shot.</strong> This guide is a visual reference—not a legal determination. Verify species and current rules with official sources.</aside>
@@ -201,7 +211,10 @@ function Shell({ view, setView, children, userName, isPremium, installUi }: { vi
       <header className="topbar">
         <button className="brand-button" onClick={() => setView(isPremium ? "dashboard" : "account")}><Brand compact /></button>
         <div className="topbar-actions">
-          <button className="home-install-button" type="button" onClick={installUi.openGuide} aria-label="Add BlindIQ to your home screen"><span>＋</span> HOME</button>
+          <button className="home-install-button" type="button" onClick={installUi.openGuide} aria-label="Add BlindIQ to your home screen">
+            <span aria-hidden="true">＋</span>
+            <strong>ADD TO<br />HOME SCREEN</strong>
+          </button>
           <button className="avatar" onClick={() => setView("account")} aria-label="Account">{userName.slice(0, 1).toUpperCase()}</button>
         </div>
       </header>
@@ -248,10 +261,11 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
       <div className="auth-card">
         <Brand />
         <div className="auth-copy">
-          <p className="eyebrow">{mode === "login" ? "WELCOME BACK" : "JOIN BLINDIQ"}</p>
-          <h1>{mode === "login" ? "Continue your hunt log" : "Start your hunt log"}</h1>
-          <p>{mode === "login" ? "Review past hunts, check regulations, or start today’s hunt." : isDemoMode ? "Create a temporary demo account and try the hunt log." : "Create your BlindIQ account to log hunts, track your daily bag, and keep regulations within reach."}</p>
+          <p className="eyebrow">BLINDIQ • DIGITAL FIELD GUIDE + FIELD LOG</p>
+          <h1>{mode === "login" ? "Continue your field log" : "Build your waterfowl field log"}</h1>
+          <p>{mode === "login" ? "Know the regulations, log the birds, and return to every hunt you have saved." : isDemoMode ? "Create a temporary demo account and try the digital field guide and hunt log." : "Create your BlindIQ account to know the regulations, log the birds, and save your hunts in one place."}</p>
         </div>
+        <BrandPromise compact />
         {mode === "login" && <div className="auth-device-note"><span aria-hidden="true">●</span><p><strong>Any internet-connected device</strong><small>Sign in from your phone, tablet, or computer to access your account and hunt history.</small></p></div>}
         <form onSubmit={submit}>
           {mode === "signup" && <label>Display username<input required autoComplete="nickname" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Example: ChesapeakeHunter" /></label>}
@@ -550,10 +564,11 @@ export default function App() {
         <div className="welcome-content">
           <Brand />
           <div className="welcome-copy">
-            <p className="eyebrow">YOUR WATERFOWL HUNT LOG</p>
-            <h1>Log hunts.<br />Know the regs.</h1>
+            <p className="eyebrow">DIGITAL FIELD GUIDE + FIELD LOG FOR WATERFOWL HUNTERS</p>
+            <h1>Know the regs.<br />Log the birds.<br />Save the hunts.</h1>
             <p className="welcome-price">Only $10.99/year</p>
-            <p className="welcome-intro">Record every bird, track your daily bag, and keep the rules for your state within reach.</p>
+            <p className="welcome-intro">BlindIQ puts clear waterfowl regulations and your complete hunt history in one field-ready website app.</p>
+            <BrandPromise />
             <div className="welcome-device-note"><span aria-hidden="true">●</span> Use BlindIQ on any internet-connected device</div>
           </div>
           <div className="welcome-actions">
@@ -582,7 +597,7 @@ export default function App() {
     <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}>
       {view === "dashboard" && (
         <div className="page dashboard">
-          <div className="greeting"><p>Good morning, {userName}</p><h1>Where are you hunting?</h1></div>
+          <div className="greeting"><p className="eyebrow">BLINDIQ • DIGITAL FIELD GUIDE + FIELD LOG</p><h1>Where are you hunting?</h1><small>Know the regulations. Log the birds. Save the hunts.</small></div>
           <section className="state-picker">
             <label htmlFor="state">HUNTING STATE</label>
             <select id="state" value={stateCode} onChange={(e) => selectState(e.target.value)}>
@@ -606,15 +621,11 @@ export default function App() {
             <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => startHunt(false)}><span>{selected.dataStatus === "archived" ? "LIVE HUNT UNAVAILABLE" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot guide a live hunt" : isPremium ? "Save a real hunt →" : "$10.99/year →"}</small></button>
             <div className="hunt-secondary-actions">
               <button className="button button--test" type="button" onClick={() => startHunt(true)}><span>TEST HUNT</span><small>Practice without changing live totals →</small></button>
-              <div className="group-hunt-teaser" role="note" aria-label="Group Hunt Mode In Development">
-                <span>GROUP HUNT MODE</span>
-                <small>IN DEVELOPMENT</small>
-              </div>
             </div>
           </div>
 
           <section className="section">
-            <div className="section-heading"><div><p className="eyebrow">SEASON OVERVIEW</p><h2>{selected.name} waterfowl</h2></div><span className="verified">{selected.seasonYear ?? "Demo data"}</span></div>
+            <div className="section-heading"><div><p className="eyebrow">DIGITAL FIELD GUIDE • SEASON OVERVIEW</p><h2>{selected.name} waterfowl</h2></div><span className="verified">{selected.seasonYear ?? "Demo data"}</span></div>
             <p className="muted">{selected.overview}</p>
             <div className="season-list">
               {selected.seasons.map((season) => (
@@ -646,10 +657,10 @@ export default function App() {
           </section>
 
           <footer className="dashboard-end">
-            <aside className="disclaimer"><Icon>!</Icon><p><strong>Hunting companion—not legal advice.</strong> BlindIQ simplifies regulations and tracks harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
+            <aside className="disclaimer"><Icon>!</Icon><p><strong>Digital field guide and field log—not legal advice.</strong> BlindIQ simplifies regulations and records harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.31</small>
+            <small className="version-stamp">BlindIQ v1.34</small>
           </footer>
         </div>
       )}
@@ -659,7 +670,7 @@ export default function App() {
           {toast && <div className="toast">✓ {toast}</div>}
           <header className="hunt-header">
             <button onClick={() => setView("dashboard")}>←</button>
-            <div><span>{isSimulation ? "TEST HUNT" : "ACTIVE HUNT"}</span><strong>{selected.name}</strong></div>
+            <div><span>{isSimulation ? "FIELD LOG • TEST HUNT" : "FIELD LOG • ACTIVE HUNT"}</span><strong>{selected.name}</strong></div>
             <button className="end-button" onClick={() => setView("summary")}>Finish</button>
           </header>
           <div className="hunt-content">
@@ -675,7 +686,7 @@ export default function App() {
               <p>{duckCount >= duckDailyLimit ? "Daily duck bag filled. Stop harvesting ducks." : `${duckDailyLimit - duckCount} duck${duckDailyLimit - duckCount === 1 ? "" : "s"} remain in the aggregate bag.`}</p>
             </section>
             <section className="harvest-panel">
-              <div className="section-heading harvest-heading"><div><p className="eyebrow">LOG A BIRD</p><h2>What did you harvest?</h2></div><div className="harvest-heading__actions"><span>{duckCount + gooseCount} logged</span><button type="button" onClick={() => setView("bird-guide")}>Not sure? <b>Open ID guide</b></button></div></div>
+              <div className="section-heading harvest-heading"><div><p className="eyebrow">DIGITAL FIELD LOG • LOG A BIRD</p><h2>What did you harvest?</h2></div><div className="harvest-heading__actions"><span>{duckCount + gooseCount} logged</span><button type="button" onClick={() => setView("bird-guide")}>Not sure? <b>Open field guide</b></button></div></div>
               <div className="bird-list">
                 {selected.birds.map((bird) => (
                   <article className={remaining(bird) === 0 ? "bird-row bird-row--full" : "bird-row"} key={bird.id}>
@@ -689,7 +700,7 @@ export default function App() {
               </div>
             </section>
             <section className="legal-next">
-              <p className="eyebrow">LIVE GUIDANCE</p>
+              <p className="eyebrow">FIELD GUIDE • LIVE GUIDANCE</p>
               <h2>You may still harvest</h2>
               <div className="legal-grid">
                 {availableBirds.slice(0, 8).map((bird) => <div key={bird.id}><span>✓</span><p><strong>{bird.label}</strong><small>{remaining(bird)} remaining</small></p></div>)}
@@ -707,7 +718,7 @@ export default function App() {
       {view === "summary" && (
         <div className="page summary-page">
           {!huntSaved && <button className="back-link" onClick={() => setView("hunt")}>← Back to hunt</button>}
-          <div className={`summary-hero ${isSimulation ? "summary-hero--simulation" : ""}`}><span>{isSimulation ? "TEST HUNT COMPLETE" : "HUNT COMPLETE"}</span><h1>{isSimulation ? "Test complete." : "Good hunt."}</h1><p>{selected.name} • {zone}</p></div>
+          <div className={`summary-hero ${isSimulation ? "summary-hero--simulation" : ""}`}><span>{isSimulation ? "TEST FIELD LOG COMPLETE" : "FIELD LOG COMPLETE"}</span><h1>{isSimulation ? "Test complete." : "Hunt logged."}</h1><p>{selected.name} • {zone}</p></div>
           <section className="summary-total"><span>TOTAL HARVEST</span><strong>{duckCount + gooseCount}</strong><p>{duckCount} ducks • {gooseCount} geese</p></section>
           <section className="section"><h2>Today’s harvest</h2>{entries.length ? entries.map((entry) => <div className="summary-row" key={entry.id}><span>{entry.label}</span><strong>× {entry.count}</strong></div>) : <p className="empty">No birds logged. You can still save a zero-harvest hunt.</p>}</section>
           {toast && <div className="inline-toast">{toast}</div>}
@@ -723,7 +734,7 @@ export default function App() {
 
       {view === "history" && (
         <div className="page">
-          <div className="page-title"><p className="eyebrow">YOUR SEASON</p><h1>My hunts</h1><p>Saved securely to your account. Test hunts are labeled and excluded from live totals.</p></div>
+          <div className="page-title"><p className="eyebrow">DIGITAL FIELD LOG • YOUR SEASON</p><h1>My hunts</h1><p>Your saved waterfowl field log, available from any internet-connected device. Test hunts are labeled and excluded from live totals.</p></div>
           {!isPremium && <section className="locked-card"><span>MEMBERSHIP REQUIRED</span><h2>Unlock your hunt history</h2><p>Activate your BlindIQ membership to save and revisit every hunt.</p><button className="button button--gold" onClick={() => setView("account")}>View membership</button></section>}
           {isPremium && <>
           <div className="stats-strip"><div><strong>{liveHistory.length}</strong><span>Live hunts</span></div><div><strong>{liveBirdCount}</strong><span>Live birds</span></div><div><strong>{new Set(liveHistory.map((hunt) => hunt.state)).size}</strong><span>States</span></div></div>
@@ -748,9 +759,9 @@ export default function App() {
           </section>
           <section className="premium-card">
             <p className="eyebrow">BLINDIQ ANNUAL MEMBERSHIP</p>
-            <h2>Every hunt. One clear answer.</h2>
+            <h2>Know the regulations. Log the birds. Save the hunts.</h2>
             <div className="price"><strong>$10.99</strong><span>/ year</span></div>
-            <ul><li>✓ State regulation dashboards</li><li>✓ Live harvest and bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ New member tools as they launch</li></ul>
+            <ul><li>✓ Digital state waterfowl field guides</li><li>✓ Bird logging and live bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ New field tools as they launch</li></ul>
             {isPremium ? <div className="membership-active"><span>✓</span><div><strong>Membership active</strong><small>Verified through your BlindIQ membership record.</small></div></div> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); }}>Start annual membership</button>}
             <small>Secure checkout is powered by Stripe. Renewal and discount terms are shown before confirmation.</small>
           </section>
@@ -758,7 +769,7 @@ export default function App() {
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.31</small>
+          <small className="version-stamp">BlindIQ v1.34</small>
         </div>
       )}
     </Shell>

@@ -1,7 +1,7 @@
 {
-  "name": "BlindIQ — Hunt With Confidence",
+  "name": "BlindIQ — Digital Waterfowl Field Guide & Log",
   "short_name": "BlindIQ",
-  "description": "Waterfowl hunt logging, daily harvest tracking, and clear regulations.",
+  "description": "Know the regulations, log the birds, and save the hunts with BlindIQ's digital field guide and field log for waterfowl hunters.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
