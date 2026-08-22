@@ -5,11 +5,34 @@ import type { HarvestEntry, HuntRecord, NewHuntRecord } from "./types";
 const REMEMBERED_DEVICE_KEY = "blindiq-remembered-device";
 const ACTIVE_TAB_KEY = "blindiq-active-tab";
 const DEMO_HUNTS_KEY = "blindiq-demo-hunts-v1";
+const OFFLINE_USER_KEY = "blindiq-offline-user-v1";
+const OFFLINE_SUBSCRIPTION_KEY = "blindiq-offline-subscription-v1";
+const OFFLINE_DEFAULT_STATE_KEY = "blindiq-offline-default-state-v1";
+const OFFLINE_HUNTS_KEY = "blindiq-offline-hunts-v1";
+const PENDING_HUNTS_KEY = "blindiq-pending-hunts-v1";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 type RememberedDevice = {
   userId: string;
   expiresAt: number;
+};
+
+type OfflineUser = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+type SubscriptionSnapshot = {
+  status: string;
+  isPremium: boolean;
+  currentPeriodEnd: string | null;
+};
+
+type PendingHunt = {
+  offlineId: string;
+  huntedAt: string;
+  input: NewHuntRecord;
 };
 
 export const appConfig = {
@@ -25,6 +48,61 @@ export const supabase =
     : null;
 
 export const isDemoMode = !supabase;
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) as T : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Offline mode remains best effort if the browser blocks local storage.
+  }
+}
+
+function cacheOfflineUser(user: OfflineUser) {
+  writeJson(OFFLINE_USER_KEY, user);
+}
+
+function cachedOfflineUser() {
+  return readJson<OfflineUser | null>(OFFLINE_USER_KEY, null);
+}
+
+function cachedSubscription(): SubscriptionSnapshot {
+  return readJson<SubscriptionSnapshot>(OFFLINE_SUBSCRIPTION_KEY, {
+    status: "inactive",
+    isPremium: false,
+    currentPeriodEnd: null,
+  });
+}
+
+function cachedHunts() {
+  return readJson<HuntRecord[]>(OFFLINE_HUNTS_KEY, []);
+}
+
+function cacheHunts(records: HuntRecord[]) {
+  writeJson(OFFLINE_HUNTS_KEY, records);
+}
+
+function pendingHunts() {
+  return readJson<PendingHunt[]>(PENDING_HUNTS_KEY, []);
+}
+
+function cachePendingHunts(records: PendingHunt[]) {
+  writeJson(PENDING_HUNTS_KEY, records);
+}
+
+function isConnectivityError(error: unknown) {
+  if (!navigator.onLine) return true;
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /failed to fetch|network|load failed|fetch failed/i.test(message);
+}
 
 function readRememberedDevice() {
   try {
@@ -88,6 +166,15 @@ export function forgetRememberedDevice() {
   }
 }
 
+function clearOfflineAccountCache() {
+  try {
+    [OFFLINE_USER_KEY, OFFLINE_SUBSCRIPTION_KEY, OFFLINE_DEFAULT_STATE_KEY, OFFLINE_HUNTS_KEY, PENDING_HUNTS_KEY]
+      .forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // The Supabase local session is still cleared below when available.
+  }
+}
+
 export function displayNameFor(user: User) {
   const username = user.user_metadata?.username;
   if (typeof username === "string" && username.trim()) return username.trim();
@@ -106,7 +193,9 @@ export async function signIn(email: string, password: string, shouldRemember = t
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
   rememberDevice(data.user.id, shouldRemember);
-  return { id: data.user.id, name: displayNameFor(data.user), email: data.user.email ?? email };
+  const user = { id: data.user.id, name: displayNameFor(data.user), email: data.user.email ?? email };
+  cacheOfflineUser(user);
+  return user;
 }
 
 export async function signUp(username: string, email: string, password: string, shouldRemember = true) {
@@ -125,28 +214,35 @@ export async function signUp(username: string, email: string, password: string, 
   });
   if (error) throw error;
   if (data.session && data.user) rememberDevice(data.user.id, shouldRemember);
-  return {
+  const user = {
     name: data.user ? displayNameFor(data.user) : username,
     id: data.user?.id ?? "",
     email,
     confirmationRequired: !data.session,
   };
+  if (data.session && data.user) cacheOfflineUser({ id: user.id, name: user.name, email: user.email });
+  return user;
 }
 
 export async function getDefaultState() {
   if (!supabase) return localStorage.getItem("blindiq-default-state") || "MD";
+  if (!navigator.onLine) return localStorage.getItem(OFFLINE_DEFAULT_STATE_KEY) || "MD";
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return "MD";
   const { data, error } = await supabase.from("profiles").select("default_state").eq("id", userData.user.id).maybeSingle();
   if (error) throw error;
-  return data?.default_state || "MD";
+  const stateCode = data?.default_state || "MD";
+  localStorage.setItem(OFFLINE_DEFAULT_STATE_KEY, stateCode);
+  return stateCode;
 }
 
 export async function saveDefaultState(stateCode: string) {
+  localStorage.setItem(OFFLINE_DEFAULT_STATE_KEY, stateCode);
   if (!supabase) {
     localStorage.setItem("blindiq-default-state", stateCode);
     return;
   }
+  if (!navigator.onLine) return;
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error("Log in before saving a default state.");
   const { error } = await supabase.from("profiles").update({ default_state: stateCode, updated_at: new Date().toISOString() }).eq("id", userData.user.id);
@@ -183,8 +279,17 @@ export async function restoreRememberedUser() {
       : null;
   }
 
-  const { data, error } = await supabase.auth.getUser();
   const expectedUserId = device?.userId ?? tabUserId;
+  if (!navigator.onLine) {
+    const cachedUser = cachedOfflineUser();
+    if (cachedUser && cachedUser.id === expectedUserId) {
+      markActiveTab(cachedUser.id);
+      return cachedUser;
+    }
+    return null;
+  }
+
+  const { data, error } = await supabase.auth.getUser();
   if (error || !data.user || data.user.id !== expectedUserId) {
     forgetRememberedDevice();
     await supabase.auth.signOut({ scope: "local" });
@@ -192,22 +297,32 @@ export async function restoreRememberedUser() {
   }
 
   markActiveTab(data.user.id);
-  return {
+  const user = {
     id: data.user.id,
     name: displayNameFor(data.user),
     email: data.user.email ?? "",
   };
+  cacheOfflineUser(user);
+  return user;
 }
 
 export async function signOut() {
   forgetRememberedDevice();
-  if (supabase) await supabase.auth.signOut({ scope: "local" });
+  clearOfflineAccountCache();
+  if (supabase) {
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Local app data has already been cleared, including during offline logout.
+    }
+  }
 }
 
 export async function getSubscription() {
   if (!supabase) {
     return { status: "active", isPremium: true, currentPeriodEnd: null as string | null };
   }
+  if (!navigator.onLine) return cachedSubscription();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return { status: "inactive", isPremium: false, currentPeriodEnd: null };
   const { data, error } = await supabase
@@ -217,11 +332,13 @@ export async function getSubscription() {
     .maybeSingle();
   if (error) throw error;
   const status = data?.status ?? "inactive";
-  return {
+  const snapshot = {
     status,
     isPremium: status === "active" || status === "trialing",
     currentPeriodEnd: data?.current_period_end ?? null,
   };
+  writeJson(OFFLINE_SUBSCRIPTION_KEY, snapshot);
+  return snapshot;
 }
 
 function formatHuntDate(value: string) {
@@ -266,12 +383,38 @@ function readDemoHunts(): HuntRecord[] {
 
 export async function listHunts(): Promise<HuntRecord[]> {
   if (!supabase) return readDemoHunts();
+  if (!navigator.onLine) return cachedHunts();
   const { data, error } = await supabase
     .from("hunts")
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries")
     .order("hunted_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []).map(rowToHuntRecord);
+  if (error) {
+    if (isConnectivityError(error)) return cachedHunts();
+    throw error;
+  }
+  const records = (data ?? []).map(rowToHuntRecord);
+  cacheHunts(records);
+  return records;
+}
+
+function offlineRecord(input: NewHuntRecord, huntedAt: string, id = `offline-${crypto.randomUUID()}`): HuntRecord {
+  return {
+    id,
+    date: formatHuntDate(huntedAt),
+    huntedAt,
+    stateCode: input.stateCode,
+    state: input.state,
+    zone: input.zone,
+    entries: input.entries,
+    isSimulation: input.isSimulation,
+  };
+}
+
+function queueOfflineHunt(input: NewHuntRecord, huntedAt: string) {
+  const record = offlineRecord(input, huntedAt);
+  cachePendingHunts([...pendingHunts(), { offlineId: record.id, huntedAt, input }]);
+  cacheHunts([record, ...cachedHunts().filter((hunt) => hunt.id !== record.id)]);
+  return record;
 }
 
 export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> {
@@ -293,8 +436,13 @@ export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> 
     return record;
   }
 
+  if (!navigator.onLine) return queueOfflineHunt(input, huntedAt);
+
   const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) throw new Error("Log in before saving a hunt.");
+  if (userError || !userData.user) {
+    if (isConnectivityError(userError)) return queueOfflineHunt(input, huntedAt);
+    throw new Error("Log in before saving a hunt.");
+  }
 
   const { data, error } = await supabase
     .from("hunts")
@@ -308,15 +456,61 @@ export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> 
       season_year: input.seasonYear ?? null,
       entries: input.entries,
       bird_count: birdCount,
-      app_version: "1.31",
+      app_version: "1.36",
     })
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries")
     .single();
-  if (error) throw error;
-  return rowToHuntRecord(data);
+  if (error) {
+    if (isConnectivityError(error)) return queueOfflineHunt(input, huntedAt);
+    throw error;
+  }
+  const record = rowToHuntRecord(data);
+  cacheHunts([record, ...cachedHunts().filter((hunt) => hunt.id !== record.id)]);
+  return record;
+}
+
+export async function syncPendingHunts() {
+  if (!supabase || !navigator.onLine) return 0;
+  const queue = pendingHunts();
+  if (!queue.length) return 0;
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) return 0;
+
+  let synced = 0;
+  const remainingQueue: PendingHunt[] = [];
+  for (let index = 0; index < queue.length; index += 1) {
+    const item = queue[index];
+    const birdCount = item.input.entries.reduce((sum, entry) => sum + entry.count, 0);
+    const { error } = await supabase.from("hunts").insert({
+      user_id: userData.user.id,
+      hunted_at: item.huntedAt,
+      state_code: item.input.stateCode,
+      state_name: item.input.state,
+      zone: item.input.zone,
+      is_simulation: item.input.isSimulation,
+      season_year: item.input.seasonYear ?? null,
+      entries: item.input.entries,
+      bird_count: birdCount,
+      app_version: "1.36-offline-sync",
+    });
+    if (error) {
+      remainingQueue.push(...queue.slice(index));
+      break;
+    }
+    synced += 1;
+  }
+
+  cachePendingHunts(remainingQueue);
+  if (synced) {
+    const records = await listHunts();
+    cacheHunts(records.filter((hunt) => !hunt.id.startsWith("offline-")));
+  }
+  return synced;
 }
 
 export function beginCheckout(userId: string, email: string) {
+  if (!navigator.onLine) return "offline";
   if (appConfig.stripeCheckoutUrl) {
     const checkout = new URL(appConfig.stripeCheckoutUrl);
     if (userId && userId !== "demo-user") checkout.searchParams.set("client_reference_id", userId);

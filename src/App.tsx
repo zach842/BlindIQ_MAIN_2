@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { states } from "./data";
-import { beginCheckout, getDefaultState, getSubscription, isDemoMode, listHunts, restoreRememberedUser, saveDefaultState, saveHuntRecord, signIn, signOut, signUp } from "./services";
+import { beginCheckout, getDefaultState, getSubscription, isDemoMode, listHunts, restoreRememberedUser, saveDefaultState, saveHuntRecord, signIn, signOut, signUp, syncPendingHunts } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
 import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
@@ -23,6 +23,12 @@ type InstallUi = {
 };
 
 const sortedStates = [...states].sort((first, second) => first.name.localeCompare(second.name, "en"));
+const INSTALL_NUDGE_SESSION_KEY = "blindiq-install-nudge-shown-v1";
+
+function isInstalledApp() {
+  const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
+  return window.matchMedia("(display-mode: standalone)").matches || navigatorWithStandalone.standalone === true;
+}
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -90,7 +96,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.34",
+      "Submitted from BlindIQ v1.36",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -175,9 +181,14 @@ function InstallGuide({ canPrompt, onInstall, onClose }: { canPrompt: boolean; o
     <div className="install-guide" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
       <div className="install-guide__panel">
         <button className="install-guide__close" type="button" onClick={onClose} aria-label="Close installation instructions">×</button>
-        <p className="eyebrow">ADD BLINDIQ TO YOUR PHONE</p>
-        <h2 id="install-guide-title">One tap from the blind.</h2>
-        <p className="install-guide__intro">Add BlindIQ to your home screen for fast access without searching for the website.</p>
+        <p className="eyebrow">DO THIS BEFORE YOUR NEXT HUNT</p>
+        <h2 id="install-guide-title">Add BlindIQ to your Home Screen.</h2>
+        <p className="install-guide__intro">Open BlindIQ like a regular phone app and keep your loaded field guide and hunt logger available when service drops.</p>
+        <div className="install-guide__benefits" aria-label="Home Screen and offline benefits">
+          <div><strong>1 TAP</strong><span>Open from your Home Screen</span></div>
+          <div><strong>OFFLINE</strong><span>View loaded rules and bird references</span></div>
+          <div><strong>SYNC</strong><span>Log hunts offline and sync later</span></div>
+        </div>
         {canPrompt && <button className="button button--gold button--wide install-guide__native" type="button" onClick={() => void onInstall()}>Install BlindIQ now</button>}
         <div className="install-guide__devices">
           <section className="install-guide__device">
@@ -199,13 +210,13 @@ function InstallGuide({ canPrompt, onInstall, onClose }: { canPrompt: boolean; o
             </ol>
           </section>
         </div>
-        <p className="install-guide__note">The wording may vary slightly by phone and browser version.</p>
+        <p className="install-guide__note">Load BlindIQ once while connected before relying on offline mode. Account creation, membership checkout, regulation updates, and the first login on a device still require internet. Menu wording may vary slightly by phone and browser.</p>
       </div>
     </div>
   );
 }
 
-function Shell({ view, setView, children, userName, isPremium, installUi }: { view: View; setView: (v: View) => void; children: React.ReactNode; userName: string; isPremium: boolean; installUi: InstallUi }) {
+function Shell({ view, setView, children, userName, isPremium, installUi, isOnline }: { view: View; setView: (v: View) => void; children: React.ReactNode; userName: string; isPremium: boolean; installUi: InstallUi; isOnline: boolean }) {
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -218,6 +229,7 @@ function Shell({ view, setView, children, userName, isPremium, installUi }: { vi
           <button className="avatar" onClick={() => setView("account")} aria-label="Account">{userName.slice(0, 1).toUpperCase()}</button>
         </div>
       </header>
+      {!isOnline && <aside className="offline-banner" role="status"><span aria-hidden="true">●</span><p><strong>OFFLINE MODE</strong> Loaded regulations and the field guide remain available. Hunts saved now will sync when your connection returns.</p></aside>}
       <main>{children}</main>
       {view !== "hunt" && view !== "bird-guide" && view !== "summary" && (
         <nav className="bottom-nav" aria-label="Main navigation">
@@ -266,6 +278,10 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
           <p>{mode === "login" ? "Know the regulations, log the birds, and return to every hunt you have saved." : isDemoMode ? "Create a temporary demo account and try the digital field guide and hunt log." : "Create your BlindIQ account to know the regulations, log the birds, and save your hunts in one place."}</p>
         </div>
         <BrandPromise compact />
+        <aside className="trial-callout">
+          <span>7 DAYS FREE</span>
+          <p><strong>Try the complete BlindIQ field guide and hunt logger.</strong><small>New members: seven days free, then $10.99/year. Cancel before the trial ends to avoid being charged.</small></p>
+        </aside>
         {mode === "login" && <div className="auth-device-note"><span aria-hidden="true">●</span><p><strong>Any internet-connected device</strong><small>Sign in from your phone, tablet, or computer to access your account and hunt history.</small></p></div>}
         <form onSubmit={submit}>
           {mode === "signup" && <label>Display username<input required autoComplete="nickname" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Example: ChesapeakeHunter" /></label>}
@@ -275,7 +291,7 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
           {mode === "signup" && <label className="agreement-check"><input required type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} /><span>I have read and agree to the <button type="button" onClick={() => setShowTerms(true)}>Terms of Use and User Agreement</button>, including the hunting-law disclaimer, release, and limitation of liability.</span></label>}
           {error && <div className="auth-error" role="alert">{error}</div>}
           {success && <div className="auth-success" role="status">{success}</div>}
-          <button className="button button--gold button--wide" disabled={loading} type="submit">{loading ? "Please wait…" : mode === "login" ? "Log in" : "Create account"}</button>
+          <button className="button button--gold button--wide" disabled={loading} type="submit">{loading ? "Please wait…" : mode === "login" ? "Log in" : "Create account & start free trial"}</button>
         </form>
         <p className="auth-switch">{mode === "login" ? "New to BlindIQ?" : "Already have an account?"} <button onClick={onSwitch}>{mode === "login" ? "Create account" : "Log in"}</button></p>
         {isDemoMode && <div className="demo-note">{mode === "login" ? <>Demo login: <strong>hunter</strong> / <strong>confidence</strong></> : "Demo mode — your new account opens immediately but is not saved yet."}</div>}
@@ -305,9 +321,11 @@ export default function App() {
   const [accountUserId, setAccountUserId] = useState("");
   const [isPremium, setIsPremium] = useState(isDemoMode);
   const [subscriptionStatus, setSubscriptionStatus] = useState(isDemoMode ? "active" : "inactive");
+  const [subscriptionPeriodEnd, setSubscriptionPeriodEnd] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installGuideOpen, setInstallGuideOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
   const selected = states.find((state) => state.code === stateCode) ?? states[0];
   const dashboardSeasonStatus = getDashboardSeasonStatus(selected);
   const duckCount = selected.birds.filter((bird) => bird.group === "Ducks").reduce((sum, bird) => sum + (harvest[bird.id] ?? 0), 0);
@@ -364,6 +382,7 @@ export default function App() {
     function markInstalled() {
       setInstallPrompt(null);
       setInstallGuideOpen(false);
+      sessionStorage.setItem(INSTALL_NUDGE_SESSION_KEY, "installed");
     }
 
     window.addEventListener("beforeinstallprompt", captureInstallPrompt);
@@ -373,6 +392,40 @@ export default function App() {
       window.removeEventListener("appinstalled", markInstalled);
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function flushOfflineHunts() {
+      if (!accountUserId || !isPremium || !navigator.onLine) return;
+      try {
+        const synced = await syncPendingHunts();
+        if (!synced || cancelled) return;
+        setHistory(await listHunts());
+        if (!cancelled) setToast(`${synced} offline hunt${synced === 1 ? "" : "s"} synced.`);
+      } catch {
+        if (!cancelled) setToast("You are back online, but offline hunts could not sync yet. BlindIQ will try again later.");
+      }
+    }
+
+    function handleOffline() {
+      setIsOnline(false);
+    }
+
+    function handleOnline() {
+      setIsOnline(true);
+      void flushOfflineHunts();
+    }
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    void flushOfflineHunts();
+    return () => {
+      cancelled = true;
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [accountUserId, isPremium]);
 
   useEffect(() => {
     if (!isPremium || !accountUserId) {
@@ -417,7 +470,12 @@ export default function App() {
         setHarvest({});
         setIsPremium(membership.isPremium);
         setSubscriptionStatus(membership.status);
+        setSubscriptionPeriodEnd(membership.currentPeriodEnd);
         setView(membership.isPremium ? "dashboard" : "account");
+        if (membership.isPremium && !isInstalledApp() && sessionStorage.getItem(INSTALL_NUDGE_SESSION_KEY) !== "shown") {
+          sessionStorage.setItem(INSTALL_NUDGE_SESSION_KEY, "shown");
+          setInstallGuideOpen(true);
+        }
       } catch {
         if (!cancelled) setToast("Your saved login could not be restored. Please log in again.");
       } finally {
@@ -454,8 +512,13 @@ export default function App() {
       selectState(validState);
       setIsPremium(membership.isPremium);
       setSubscriptionStatus(membership.status);
+      setSubscriptionPeriodEnd(membership.currentPeriodEnd);
       if (membership.isPremium) {
         setView("dashboard");
+        if (!isInstalledApp()) {
+          sessionStorage.setItem(INSTALL_NUDGE_SESSION_KEY, "shown");
+          setInstallGuideOpen(true);
+        }
       } else {
         const checkoutResult = beginCheckout(user.id, user.email);
         if (checkoutResult === "demo") {
@@ -508,7 +571,7 @@ export default function App() {
       });
       setHistory((current) => [record, ...current.filter((hunt) => hunt.id !== record.id)]);
       setHuntSaved(true);
-      setToast(isSimulation ? "Test hunt saved. You can share it or view My Hunts." : "Hunt saved. You can share it or view My Hunts.");
+      setToast(record.id.startsWith("offline-") ? "Hunt saved offline. It will sync automatically when service returns." : isSimulation ? "Test hunt saved. You can share it or view My Hunts." : "Hunt saved. You can share it or view My Hunts.");
     } catch (cause) {
       setToast(cause instanceof Error ? `Hunt not saved: ${cause.message}` : "Hunt not saved. Please try again.");
     } finally {
@@ -566,13 +629,13 @@ export default function App() {
           <div className="welcome-copy">
             <p className="eyebrow">DIGITAL FIELD GUIDE + FIELD LOG FOR WATERFOWL HUNTERS</p>
             <h1>Know the regs.<br />Log the birds.<br />Save the hunts.</h1>
-            <p className="welcome-price">Only $10.99/year</p>
+            <div className="welcome-trial"><strong>7 DAYS FREE</strong><span>Then only $10.99/year</span></div>
             <p className="welcome-intro">BlindIQ puts clear waterfowl regulations and your complete hunt history in one field-ready website app.</p>
             <BrandPromise />
-            <div className="welcome-device-note"><span aria-hidden="true">●</span> Use BlindIQ on any internet-connected device</div>
+            <div className="welcome-device-note"><span aria-hidden="true">●</span> Installable website app • Works offline after first load</div>
           </div>
           <div className="welcome-actions">
-            <button className="button button--gold button--wide" onClick={() => setView("signup")}>Get started</button>
+            <button className="button button--gold button--wide" onClick={() => setView("signup")}>Start my 7-day free trial</button>
             <button className="button button--ghost button--wide" onClick={() => setView("login")}>I already have an account</button>
           </div>
           <small>Always verify current rules with the official wildlife agency before hunting.</small>
@@ -586,15 +649,15 @@ export default function App() {
   }
 
   if (view === "terms") {
-    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}><div className="page legal-page"><button className="back-link legal-back" onClick={() => setView("account")}>← Back to account</button><LegalDocument /></div></Shell>;
+    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi} isOnline={isOnline}><div className="page legal-page"><button className="back-link legal-back" onClick={() => setView("account")}>← Back to account</button><LegalDocument /></div></Shell>;
   }
 
   if (view === "feedback") {
-    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}><FeedbackForm stateName={selected.name} accountEmail={accountEmail} onBack={() => setView(feedbackReturn)} /></Shell>;
+    return <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi} isOnline={isOnline}><FeedbackForm stateName={selected.name} accountEmail={accountEmail} onBack={() => setView(feedbackReturn)} /></Shell>;
   }
 
   return (
-    <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi}>
+    <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi} isOnline={isOnline}>
       {view === "dashboard" && (
         <div className="page dashboard">
           <div className="greeting"><p className="eyebrow">BLINDIQ • DIGITAL FIELD GUIDE + FIELD LOG</p><h1>Where are you hunting?</h1><small>Know the regulations. Log the birds. Save the hunts.</small></div>
@@ -660,7 +723,7 @@ export default function App() {
             <aside className="disclaimer"><Icon>!</Icon><p><strong>Digital field guide and field log—not legal advice.</strong> BlindIQ simplifies regulations and records harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.34</small>
+            <small className="version-stamp">BlindIQ v1.36</small>
           </footer>
         </div>
       )}
@@ -743,7 +806,7 @@ export default function App() {
           {historyError && <div className="history-error" role="alert"><strong>Saved hunts could not be loaded.</strong><span>{historyError}</span></div>}
           {!historyLoading && !historyError && history.length === 0 && <section className="empty-history"><h2>No hunts saved yet.</h2><p>Start a live hunt or use Test Hunt to practice. Zero-bird hunts can also be saved.</p></section>}
           <div className="history-list">
-            {history.map((hunt) => <article className={hunt.isSimulation ? "history-row--simulation" : ""} key={hunt.id}><div className="date-tile"><strong>{hunt.date.split(" ")[1]?.replace(",", "")}</strong><span>{hunt.date.split(" ")[0]?.slice(0, 3)}</span></div><div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}</strong><span>{hunt.zone}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.count} ${entry.label}`).join(" • ") : "Zero-bird hunt"}</p></div><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b></article>)}
+            {history.map((hunt) => <article className={hunt.isSimulation ? "history-row--simulation" : ""} key={hunt.id}><div className="date-tile"><strong>{hunt.date.split(" ")[1]?.replace(",", "")}</strong><span>{hunt.date.split(" ")[0]?.slice(0, 3)}</span></div><div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}{hunt.id.startsWith("offline-") && <em>OFFLINE</em>}</strong><span>{hunt.zone}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.count} ${entry.label}`).join(" • ") : "Zero-bird hunt"}</p></div><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b></article>)}
           </div>
           </>}
         </div>
@@ -752,7 +815,7 @@ export default function App() {
       {view === "account" && (
         <div className="page account-page">
           <div className="page-title"><p className="eyebrow">{isPremium ? "MEMBERSHIP" : "ONE LAST STEP"}</p><h1>{isPremium ? "Your BlindIQ account" : "Activate your membership"}</h1>{!isPremium && <p>Complete secure checkout to unlock the hunt dashboard.</p>}</div>
-          <section className="profile-card"><div className="profile-avatar">{userName.slice(0, 1)}</div><div><strong>{userName}</strong><span>{accountEmail || `@${userName.toLowerCase()}`}</span></div><span className="demo-pill">{isDemoMode ? "DEMO" : isPremium ? "ACTIVE" : "INACTIVE"}</span></section>
+          <section className="profile-card"><div className="profile-avatar">{userName.slice(0, 1)}</div><div><strong>{userName}</strong><span>{accountEmail || `@${userName.toLowerCase()}`}</span></div><span className="demo-pill">{isDemoMode ? "DEMO" : subscriptionStatus === "trialing" ? "TRIAL" : isPremium ? "ACTIVE" : "INACTIVE"}</span></section>
           <section className="default-state-card">
             <div><p className="eyebrow">HUNTING PREFERENCE</p><h2>Default state</h2><p>BlindIQ will open your dashboard with this state selected.</p></div>
             <label htmlFor="default-state">DEFAULT HUNTING STATE<select id="default-state" value={defaultStateCode} onChange={async (e) => { const code = e.target.value; setDefaultStateCode(code); try { await saveDefaultState(code); selectState(code); setToast(`${states.find((state) => state.code === code)?.name} saved as your default state.`); } catch (cause) { setToast(cause instanceof Error ? cause.message : "Unable to save your default state."); } }}>{sortedStates.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}</select></label>
@@ -760,16 +823,17 @@ export default function App() {
           <section className="premium-card">
             <p className="eyebrow">BLINDIQ ANNUAL MEMBERSHIP</p>
             <h2>Know the regulations. Log the birds. Save the hunts.</h2>
-            <div className="price"><strong>$10.99</strong><span>/ year</span></div>
+            <div className="trial-price"><strong>7 DAYS FREE</strong><span>Full access from the first hunt.</span></div>
+            <div className="price"><strong>$10.99</strong><span>/ year after trial</span></div>
             <ul><li>✓ Digital state waterfowl field guides</li><li>✓ Bird logging and live bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ New field tools as they launch</li></ul>
-            {isPremium ? <div className="membership-active"><span>✓</span><div><strong>Membership active</strong><small>Verified through your BlindIQ membership record.</small></div></div> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); }}>Start annual membership</button>}
-            <small>Secure checkout is powered by Stripe. Renewal and discount terms are shown before confirmation.</small>
+            {isPremium ? <div className="membership-active"><span>✓</span><div><strong>{subscriptionStatus === "trialing" ? "Free trial active" : "Membership active"}</strong><small>{subscriptionStatus === "trialing" && subscriptionPeriodEnd ? `Trial period ends ${new Date(subscriptionPeriodEnd).toLocaleDateString()}.` : "Verified through your BlindIQ membership record."}</small></div></div> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); if (result === "offline") setToast("Connect to the internet to start your free trial."); }}>Start 7-day free trial</button>}
+            <small>New members receive seven days free, then $10.99/year unless cancelled before the trial ends. Secure checkout is powered by Stripe.</small>
           </section>
           {toast && <div className="inline-toast">{toast}</div>}
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
-          <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
+          <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setSubscriptionPeriodEnd(membership.currentPeriodEnd); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button type="button" onClick={() => setInstallGuideOpen(true)}>Add BlindIQ to Home Screen <span>›</span></button><button>Offline field mode <span>{isOnline ? "READY" : "ACTIVE"}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.34</small>
+          <small className="version-stamp">BlindIQ v1.36</small>
         </div>
       )}
     </Shell>

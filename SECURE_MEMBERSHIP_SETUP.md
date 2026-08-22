@@ -99,10 +99,12 @@ You will add 'STRIPE_WEBHOOK_SECRET` after creating the Stripe endpoint.
 1. In Stripe, open **Product catalog** and select the BlindIQ annual membership product.
 2. Add a new price of **$10.99 USD** with **Recurring** billing and a **Yearly** interval.
 3. Create a new Payment Link that uses that new yearly price.
-4. Turn on **Allow promotion codes** and confirm the customer-facing `100Ducks` promotion code is eligible for this product.
-5. Set the after-payment redirect to the production BlindIQ website.
-6. Copy the new `price_...` ID and `https://buy.stripe.com/...` Payment Link into Vercel as described below.
-7. Complete one checkout in Stripe test mode before replacing the live link.
+4. Turn on **Include a free trial** and set the trial length to **7 days**.
+5. Require a payment method during signup if the $10.99 annual membership should begin automatically when the trial ends unless the member cancels.
+6. Turn on **Allow promotion codes** and confirm any customer-facing promotion code is eligible for this product.
+7. Set the after-payment redirect to the production BlindIQ website.
+8. Copy the new `price_...` ID and `https://buy.stripe.com/...` Payment Link into Vercel as described below.
+9. Complete one checkout with a new email in Stripe test mode before replacing the live link.
 
 Changing the words in BlindIQ does not change what Stripe charges. The Payment Link’s recurring price is the billing authority.
 
@@ -129,6 +131,8 @@ In Supabase **Authentication → URL Configuration**:
 In the Stripe Payment Link:
 
 - Set after-payment behavior to redirect to the production BlindIQ address.
+- Confirm **Include a free trial** is enabled for **7 days**.
+- Confirm whether the member must enter a payment method before starting the trial.
 - Confirm promotion codes are enabled.
 
 ## Part 7 — Test securely
@@ -140,17 +144,18 @@ Use a new email address for a complete test:
 3. Log in.
 4. Open Account.
 5. Start annual membership.
-6. Enter promotion code `100Ducks`.
-7. Complete checkout.
-8. Return to BlindIQ.
-9. Open Account and select **Refresh membership**.
-10. Confirm the status becomes `active` and Start Hunt unlocks.
+6. Confirm Stripe shows a seven-day free trial and the correct $10.99/year post-trial price.
+7. Enter an active promotion code if testing a campaign.
+8. Complete checkout.
+9. Return to BlindIQ.
+10. Open Account and select **Refresh membership**.
+11. Confirm the status becomes `trialing` and Start Hunt unlocks.
 
 In Supabase, verify that the tester has:
 
 - A row in `profiles`
 - A row in `subscriptions`
-- `status = active`
+- `status = trialing` during the seven-day trial, then `active` after the first successful payment
 - Stripe customer and subscription IDs
 
 ## Security model

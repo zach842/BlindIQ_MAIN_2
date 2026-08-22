@@ -1,5 +1,23 @@
 # BlindIQ Deployment Notes
 
+## v1.36 — Seven-day launch trial
+
+- Extended the new-member free trial from three days to **seven days**.
+- Updated the welcome, login, signup, Account membership, Stripe setup, deployment documentation, visible release markers, hunt metadata, and offline cache version.
+- Retained the automatic post-login Home Screen installation prompt and offline field mode introduced in v1.35.
+
+## v1.35 — Three-day trial, guided installation, and offline field mode
+
+- Added prominent **3 DAYS FREE** messaging to the welcome, login, signup, and Account membership screens, with the $10.99 yearly price clearly stated.
+- Added automatic post-login **Add BlindIQ to Your Home Screen** guidance for active and trialing members who have not installed the website app.
+- Expanded the installation guide with one-tap, offline, and automatic-sync benefits plus iPhone and Android instructions.
+- Added a visible connectivity banner whenever the device is offline.
+- Rebuilt the service worker to cache the production app shell, interface assets, loaded regulation data, and the complete waterfowl reference-image library.
+- Added offline account, membership, default-state, and hunt-history snapshots for field access after the first connected load.
+- Added an offline hunt queue: hunts saved without service stay visible on the device and sync to Supabase automatically after reconnection.
+- Added **OFFLINE** labels to unsynced history entries and precise field-mode limitations in the UI and README.
+- Advanced the visible release marker, package version, checkout metadata, and PWA cache to **v1.35**.
+
 ## v1.34 — Clear installation action and focused hunt modes
 
 - Removed the **Group Hunt Mode — In Development** placeholder from the dashboard.

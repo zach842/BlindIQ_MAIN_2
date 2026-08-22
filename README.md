@@ -2,15 +2,16 @@
 
 **HUNT WITH CONFIDENCE**
 
-BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 28 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a $10.99/year membership.
+BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 28 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.34**. It establishes consistent product language across the welcome, login, signup, dashboard, field guide, live field log, hunt summary, history, account, metadata, and documentation: BlindIQ is the digital field guide and field log for waterfowl hunters. It retains date-aware **Open Today**, **Partially Open**, and **Closed Today** dashboard states, public-domain USFWS waterfowl references, the **Not sure?** guide, branded hunt sharing, **Only $10.99/year**, permanent hunt history, and Test Hunt mode.
+This package is **BlindIQ v1.36**. It includes a prominent **7 Days Free** offer throughout onboarding, an automatic post-login installation prompt, and a practical offline field mode. After one connected load, the installed website app can reopen cached regulations and the bird guide without service; hunters can also save hunts offline and have them uploaded to their account when service returns.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
 ## What works now
 
 - Welcome, login, and account-creation screens
+- Prominent seven-day free-trial messaging on welcome, login, signup, and membership screens
 - Hunt-log-first welcome and authentication messaging
 - Supabase email/password authentication when environment settings are present
 - Automatic Stripe Checkout after signup or login for inactive members
@@ -26,10 +27,14 @@ This package is **BlindIQ v1.34**. It establishes consistent product language ac
 - User-selectable default hunting state saved to the Supabase profile
 - Improved compact BlindIQ wordmark contrast in the app header
 - Clearly labeled **ADD TO HOME SCREEN** action beside the user bubble
+- Automatic post-login **Add BlindIQ to Your Home Screen** prompt, shown once per browser session until installed
 - Step-by-step home-screen instructions for both iPhone and Android
 - Native Android install prompt when the browser makes it available
 - Dedicated opaque iPhone, Android, and Android maskable home-screen icons
-- Installable web-app manifest and update-aware service worker
+- Installable web-app manifest and update-aware offline service worker
+- Cached app shell, loaded regulations, and complete in-app bird-reference library for offline field access after the first connected load
+- Offline hunt-saving queue with automatic Supabase synchronization when the device reconnects
+- Visible offline banner and unsynced-hunt labels so field status is never ambiguous
 - Date-aware dashboard status with separate **Open Today**, **Partially Open**, and **Closed Today** banners
 - North Dakota’s complete structured 2026–2027 waterfowl calendar, including its August early Canada goose zones
 - Weather and forecast controls removed from the current interface for a more focused dashboard
@@ -60,8 +65,8 @@ This package is **BlindIQ v1.34**. It establishes consistent product language ac
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
 - End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
-- Visible v1.31 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
-- Account and $10.99/year annual membership presentation
+- Visible v1.36 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
 
@@ -167,6 +172,18 @@ For the most reliable test, use the live HTTPS Vercel address.
 
 After installation, BlindIQ opens in its own app-style window. The **ADD TO HOME SCREEN** action remains available so the device instructions can always be reopened. Browser wording can vary slightly by phone and operating-system version.
 
+### Test offline field mode
+
+1. While connected to the internet, open the deployed BlindIQ site and log in.
+2. Add BlindIQ to the phone's Home Screen and open it once from the new icon.
+3. Browse the selected state's dashboard and open the bird field guide once.
+4. Turn on Airplane Mode or disable Wi-Fi and mobile data.
+5. Reopen BlindIQ from the Home Screen. The app, loaded regulation data, and bird references should remain available.
+6. Save a hunt while offline. It will appear in My Hunts with an **OFFLINE** label.
+7. Restore service and leave BlindIQ open. The queued hunt will upload automatically and the label will clear after history refreshes.
+
+The first login, membership checkout, account verification, regulation updates, and first app load require internet access. Offline mode uses the last app and regulation package successfully loaded on that device, so hunters must reconnect before a hunt to receive the newest published release.
+
 ## 4. Upload to GitHub
 
 ### Easiest method: GitHub Desktop
@@ -232,7 +249,7 @@ VITE_STRIPE_PRICE_ID=price_REPLACE_WITH_10_99_ANNUAL_PRICE_ID
 VITE_STRIPE_CHECKOUT_URL=https://buy.stripe.com/REPLACE_WITH_10_99_ANNUAL_LINK
 ```
 
-Do not reuse the previous Payment Link. The new Stripe Payment Link must use the $10.99 yearly recurring price. It must also have promotion codes enabled for `100Ducks` to work.
+The Stripe Payment Link must use the $10.99 yearly recurring price, include a **seven-day free trial**, and have promotion codes enabled for any active customer-facing promotion code.
 
 For production, membership entitlement must be confirmed server-side with Stripe webhooks. A browser environment variable alone must never be trusted to decide whether a customer has active access.
 
@@ -241,6 +258,17 @@ For production, membership entitlement must be confirmed server-side with Stripe
 Stripe does not allow an existing price amount to be edited. Create a new **$10.99 USD recurring yearly** price and a new Payment Link, then replace `VITE_STRIPE_CHECKOUT_URL` in Vercel. Update `VITE_STRIPE_PRICE_ID` to the new `price_...` identifier for configuration consistency. The existing Stripe webhook endpoint and signing secret remain valid when the new price and link are created in the same Stripe account; the webhook records the price actually used by the subscription.
 
 Existing subscriptions do not automatically move to a new price. Decide separately whether existing members keep their original renewal price or whether each existing subscription should be migrated to the new yearly price. Review proration and customer notice before migrating active subscriptions.
+
+### Seven-day Stripe trial checklist
+
+1. Open the current $10.99 yearly subscription Payment Link in Stripe.
+2. Edit its subscription options and turn on **Include a free trial**.
+3. Set the trial length to **7 days**.
+4. Require a payment method during signup if the membership should begin automatically after the trial unless the member cancels.
+5. Confirm the post-checkout redirect points to the production BlindIQ address and save the link.
+6. If Stripe creates a different Payment Link URL, replace `VITE_STRIPE_CHECKOUT_URL` in Vercel and redeploy.
+
+The existing membership webhook already recognizes Stripe's `trialing` status as authorized access. Test the full flow with a new email address before advertising the offer.
 
 ## v1.23 regulation sources
 
