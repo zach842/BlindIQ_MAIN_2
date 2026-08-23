@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { states } from "./data";
-import { beginCheckout, getDefaultState, getSubscription, isDemoMode, listHunts, restoreRememberedUser, saveDefaultState, saveHuntRecord, signIn, signOut, signUp, syncPendingHunts } from "./services";
+import { beginCheckout, getDefaultState, getSubscription, isDemoMode, listHunts, openCustomerPortal, restoreRememberedUser, saveDefaultState, saveHuntRecord, signIn, signOut, signUp, syncPendingHunts } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
 import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
@@ -96,7 +96,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.36",
+      "Submitted from BlindIQ v1.37",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -315,6 +315,7 @@ export default function App() {
   const [savingHunt, setSavingHunt] = useState(false);
   const [huntSaved, setHuntSaved] = useState(false);
   const [sharingHunt, setSharingHunt] = useState(false);
+  const [managingMembership, setManagingMembership] = useState(false);
   const [isSimulation, setIsSimulation] = useState(false);
   const [toast, setToast] = useState("");
   const [accountEmail, setAccountEmail] = useState("");
@@ -543,6 +544,21 @@ export default function App() {
     }
   }
 
+  async function manageMembership() {
+    if (managingMembership) return;
+    setManagingMembership(true);
+    setToast("");
+    try {
+      const result = await openCustomerPortal();
+      if (result === "demo") setToast("Membership management becomes available when Supabase and Stripe are connected.");
+      if (result === "offline") setToast("Connect to the internet to manage or cancel your membership.");
+    } catch (cause) {
+      setToast(cause instanceof Error ? cause.message : "Membership management could not be opened.");
+    } finally {
+      setManagingMembership(false);
+    }
+  }
+
   function addBird(bird: BirdRule) {
     if (remaining(bird) <= 0) return;
     setHarvest((current) => ({ ...current, [bird.id]: (current[bird.id] ?? 0) + 1 }));
@@ -723,7 +739,7 @@ export default function App() {
             <aside className="disclaimer"><Icon>!</Icon><p><strong>Digital field guide and field log—not legal advice.</strong> BlindIQ simplifies regulations and records harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.36</small>
+            <small className="version-stamp">BlindIQ v1.37</small>
           </footer>
         </div>
       )}
@@ -826,14 +842,14 @@ export default function App() {
             <div className="trial-price"><strong>7 DAYS FREE</strong><span>Full access from the first hunt.</span></div>
             <div className="price"><strong>$10.99</strong><span>/ year after trial</span></div>
             <ul><li>✓ Digital state waterfowl field guides</li><li>✓ Bird logging and live bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ New field tools as they launch</li></ul>
-            {isPremium ? <div className="membership-active"><span>✓</span><div><strong>{subscriptionStatus === "trialing" ? "Free trial active" : "Membership active"}</strong><small>{subscriptionStatus === "trialing" && subscriptionPeriodEnd ? `Trial period ends ${new Date(subscriptionPeriodEnd).toLocaleDateString()}.` : "Verified through your BlindIQ membership record."}</small></div></div> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); if (result === "offline") setToast("Connect to the internet to start your free trial."); }}>Start 7-day free trial</button>}
+            {isPremium ? <><div className="membership-active"><span>✓</span><div><strong>{subscriptionStatus === "trialing" ? "Free trial active" : "Membership active"}</strong><small>{subscriptionStatus === "trialing" && subscriptionPeriodEnd ? `Trial period ends ${new Date(subscriptionPeriodEnd).toLocaleDateString()}.` : "Verified through your BlindIQ membership record."}</small></div></div><button className="button membership-manage-button button--wide" type="button" disabled={managingMembership} onClick={() => void manageMembership()}>{managingMembership ? "Opening secure billing…" : subscriptionStatus === "trialing" ? "Manage or cancel free trial" : "Manage or cancel membership"}</button><small className="membership-manage-note">Opens Stripe securely to cancel, update your payment method, or review billing.</small></> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); if (result === "offline") setToast("Connect to the internet to start your free trial."); }}>Start 7-day free trial</button>}
             <small>New members receive seven days free, then $10.99/year unless cancelled before the trial ends. Secure checkout is powered by Stripe.</small>
           </section>
           {toast && <div className="inline-toast">{toast}</div>}
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setSubscriptionPeriodEnd(membership.currentPeriodEnd); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button type="button" onClick={() => setInstallGuideOpen(true)}>Add BlindIQ to Home Screen <span>›</span></button><button>Offline field mode <span>{isOnline ? "READY" : "ACTIVE"}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.36</small>
+          <small className="version-stamp">BlindIQ v1.37</small>
         </div>
       )}
     </Shell>

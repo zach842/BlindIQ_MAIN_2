@@ -2,3 +2,6 @@ project_id = "bkspxwqtiaerhlsyvels"
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.stripe-customer-portal]
+verify_jwt = true

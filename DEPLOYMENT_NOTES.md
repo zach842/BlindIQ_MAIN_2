@@ -1,5 +1,14 @@
 # BlindIQ Deployment Notes
 
+## v1.37 — Self-service membership and trial cancellation
+
+- Added **Manage or cancel free trial** and **Manage or cancel membership** controls to the Account page.
+- Added an authenticated Supabase Edge Function that creates short-lived Stripe Customer Portal sessions for the signed-in member only.
+- Kept the Stripe secret key and service-role key entirely server-side; the browser supplies only the member's authenticated Supabase session.
+- Documented Stripe Customer Portal activation, cancellation settings, the required `BLINDIQ_APP_URL` secret, and deployment steps.
+- Confirmed the existing Stripe webhook handles subscription updates and cancellations made through the portal.
+- Advanced visible release markers, hunt metadata, package version, and offline cache to **v1.37**.
+
 ## v1.36 — Seven-day launch trial
 
 - Extended the new-member free trial from three days to **seven days**.

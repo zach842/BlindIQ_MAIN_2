@@ -456,7 +456,7 @@ export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> 
       season_year: input.seasonYear ?? null,
       entries: input.entries,
       bird_count: birdCount,
-      app_version: "1.36",
+      app_version: "1.37",
     })
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries")
     .single();
@@ -492,7 +492,7 @@ export async function syncPendingHunts() {
       season_year: item.input.seasonYear ?? null,
       entries: item.input.entries,
       bird_count: birdCount,
-      app_version: "1.36-offline-sync",
+      app_version: "1.37-offline-sync",
     });
     if (error) {
       remainingQueue.push(...queue.slice(index));
@@ -519,4 +519,31 @@ export function beginCheckout(userId: string, email: string) {
     return;
   }
   return "demo";
+}
+
+export async function openCustomerPortal() {
+  if (!navigator.onLine) return "offline" as const;
+  if (!supabase) return "demo" as const;
+
+  const { data, error } = await supabase.functions.invoke("stripe-customer-portal", {
+    method: "POST",
+  });
+  if (error) {
+    let message = error.message || "Unable to open membership management.";
+    if ("context" in error && error.context instanceof Response) {
+      try {
+        const payload = await error.context.clone().json();
+        if (payload?.error && typeof payload.error === "string") message = payload.error;
+      } catch {
+        // Fall back to the Supabase Functions error when no JSON body is available.
+      }
+    }
+    throw new Error(message);
+  }
+  if (!data?.url || typeof data.url !== "string") {
+    throw new Error(data?.error || "Stripe did not return a membership-management link.");
+  }
+
+  window.location.assign(data.url);
+  return "redirecting" as const;
 }

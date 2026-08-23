@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 28 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.36**. It includes a prominent **7 Days Free** offer throughout onboarding, an automatic post-login installation prompt, and a practical offline field mode. After one connected load, the installed website app can reopen cached regulations and the bird guide without service; hunters can also save hunts offline and have them uploaded to their account when service returns.
+This package is **BlindIQ v1.37**. It includes a prominent **7 Days Free** offer throughout onboarding, secure Stripe customer-portal access from the Account page, an automatic post-login installation prompt, and a practical offline field mode. After one connected load, the installed website app can reopen cached regulations and the bird guide without service; hunters can also save hunts offline and have them uploaded to their account when service returns.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -15,6 +15,8 @@ This package is **BlindIQ v1.36**. It includes a prominent **7 Days Free** offer
 - Hunt-log-first welcome and authentication messaging
 - Supabase email/password authentication when environment settings are present
 - Automatic Stripe Checkout after signup or login for inactive members
+- Secure **Manage or cancel free trial / membership** action for verified members
+- Stripe-hosted cancellation, payment-method, invoice, and billing management without exposing secret keys in the browser
 - Demo-mode fallback when Supabase settings are absent
 - Twenty-eight selectable states: Arkansas, California, Delaware, Florida, Idaho, Illinois, Iowa, Kansas, Louisiana, Maryland, Michigan, Minnesota, Missouri, Montana, Nebraska, New Jersey, New York, North Carolina, North Dakota, Ohio, Oregon, Pennsylvania, South Carolina, Texas, Virginia, Washington, West Virginia, and Wisconsin
 - Alphabetical state choices on both the dashboard and account settings screens
@@ -65,7 +67,7 @@ This package is **BlindIQ v1.36**. It includes a prominent **7 Days Free** offer
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
 - End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
-- Visible v1.36 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.37 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
@@ -269,6 +271,18 @@ Existing subscriptions do not automatically move to a new price. Decide separate
 6. If Stripe creates a different Payment Link URL, replace `VITE_STRIPE_CHECKOUT_URL` in Vercel and redeploy.
 
 The existing membership webhook already recognizes Stripe's `trialing` status as authorized access. Test the full flow with a new email address before advertising the offer.
+
+### Stripe customer portal and cancellation
+
+BlindIQ v1.37 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
+
+Activation requires three dashboard steps:
+
+1. In Stripe, activate the Customer Portal and enable **Cancel subscriptions**.
+2. In Supabase, deploy `supabase/functions/stripe-customer-portal/index.ts` as an Edge Function named `stripe-customer-portal` with JWT verification kept **on**.
+3. In Supabase Edge Function secrets, add `BLINDIQ_APP_URL=https://blindiq.app`. The existing `STRIPE_SECRET_KEY` is reused server-side.
+
+No new Vercel environment variable is required. The existing `stripe-webhook` function already listens for `customer.subscription.updated` and `customer.subscription.deleted`, so a cancellation made in Stripe is written back to the BlindIQ membership record.
 
 ## v1.23 regulation sources
 

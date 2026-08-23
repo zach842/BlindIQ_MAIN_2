@@ -59,7 +59,7 @@ Use the Stripe secret key from the same mode as the Payment Link. A live Payment
 
 Do not place this key in Vercel, React source code, GitHub, screenshots, email, or chat.
 
-You will add 'STRIPE_WEBHOOK_SECRET` after creating the Stripe endpoint.
+You will add `STRIPE_WEBHOOK_SECRET` after creating the Stripe endpoint.
 
 ## Part 4 — Register the webhook in Stripe
 
@@ -92,7 +92,46 @@ You will add 'STRIPE_WEBHOOK_SECRET` after creating the Stripe endpoint.
 9. Paste the `whsec_` value there.
 10. Redeploy `stripe-webhook` if Supabase requests it.
 
-## Part 5 — Configure Vercel
+## Part 5 — Activate membership management and cancellation
+
+### Configure the Stripe Customer Portal
+
+1. Open the Stripe Dashboard in the same Live or Test mode used by the BlindIQ Payment Link.
+2. Open **Settings → Billing → Customer portal**. If Stripe's navigation has changed, use the Dashboard search for **Customer portal**.
+3. Activate the portal.
+4. Enable customers to update payment methods and view billing history.
+5. Enable **Cancel subscriptions**.
+6. Choose whether cancellations happen immediately or at the end of the current billing period. For the seven-day trial, confirm a trialing member can cancel before the first charge.
+7. Save the portal configuration.
+
+### Deploy the authenticated Supabase function
+
+1. Open **Edge Functions** in Supabase.
+2. Create a function named exactly:
+
+   ```text
+   stripe-customer-portal
+   ```
+
+3. Replace the sample code with the complete contents of:
+
+   ```text
+   supabase/functions/stripe-customer-portal/index.ts
+   ```
+
+4. Keep JWT verification **on** for this function. Unlike the public Stripe webhook, this function is available only to a signed-in BlindIQ member.
+5. Deploy the function.
+6. Open **Edge Functions → Secrets** and add:
+
+   ```text
+   BLINDIQ_APP_URL=https://blindiq.app
+   ```
+
+The function reuses the existing `STRIPE_SECRET_KEY` in Supabase. Do not add the secret key to Vercel or React. It looks up `stripe_customer_id` from the authenticated member's own `subscriptions` row; the browser cannot submit a different Stripe customer ID.
+
+The existing `stripe-webhook` function already handles `customer.subscription.updated` and `customer.subscription.deleted`. Those events keep the BlindIQ membership row synchronized after a portal cancellation.
+
+## Part 6 — Configure Vercel
 
 ### Change the annual Stripe price to $10.99
 
@@ -121,7 +160,7 @@ Apply them to Production, Preview, and Development, then redeploy.
 
 The Stripe price must be **$10.99 USD, recurring yearly**. Stripe price amounts are immutable, so create a new price and a new Payment Link instead of editing or reusing the previous link.
 
-## Part 6 — Configure return URLs
+## Part 7 — Configure return URLs
 
 In Supabase **Authentication → URL Configuration**:
 
@@ -135,7 +174,7 @@ In the Stripe Payment Link:
 - Confirm whether the member must enter a payment method before starting the trial.
 - Confirm promotion codes are enabled.
 
-## Part 7 — Test securely
+## Part 8 — Test securely
 
 Use a new email address for a complete test:
 
@@ -150,6 +189,10 @@ Use a new email address for a complete test:
 9. Return to BlindIQ.
 10. Open Account and select **Refresh membership**.
 11. Confirm the status becomes `trialing` and Start Hunt unlocks.
+12. Open Account and select **Manage or cancel free trial**.
+13. Confirm Stripe's customer portal opens for the same member.
+14. Cancel the trial in Stripe, return to BlindIQ, and select **Refresh membership**.
+15. Confirm the status reflects the cancellation behavior selected in Stripe.
 
 In Supabase, verify that the tester has:
 
@@ -167,3 +210,5 @@ In Supabase, verify that the tester has:
 - The webhook uses the checkout `client_reference_id` to associate the Stripe subscription with the authenticated Supabase user.
 - Row-level security allows each hunter to read only their own profile and subscription.
 - Membership access is based on the verified database row, not a redirect URL or browser flag.
+- The customer-portal function verifies the signed-in Supabase user and retrieves that user's Stripe customer ID server-side.
+- Stripe creates a short-lived portal link for cancellation and billing changes; BlindIQ never receives card details.
