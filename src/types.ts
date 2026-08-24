@@ -57,6 +57,8 @@ export type HuntRecord = {
   zone: string;
   entries: HarvestEntry[];
   isSimulation: boolean;
+  photoPath?: string | null;
+  photoUrl?: string | null;
 };
 
 export type NewHuntRecord = {

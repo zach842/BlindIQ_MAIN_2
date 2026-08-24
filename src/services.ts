@@ -10,6 +10,7 @@ const OFFLINE_SUBSCRIPTION_KEY = "blindiq-offline-subscription-v1";
 const OFFLINE_DEFAULT_STATE_KEY = "blindiq-offline-default-state-v1";
 const OFFLINE_HUNTS_KEY = "blindiq-offline-hunts-v1";
 const PENDING_HUNTS_KEY = "blindiq-pending-hunts-v1";
+const HUNT_PHOTOS_BUCKET = "hunt-photos";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 type RememberedDevice = {
@@ -357,6 +358,7 @@ function rowToHuntRecord(row: {
   zone: string;
   is_simulation: boolean;
   entries: unknown;
+  photo_path: string | null;
 }): HuntRecord {
   return {
     id: row.id,
@@ -367,7 +369,30 @@ function rowToHuntRecord(row: {
     zone: row.zone,
     isSimulation: row.is_simulation,
     entries: Array.isArray(row.entries) ? row.entries as HarvestEntry[] : [],
+    photoPath: row.photo_path,
   };
+}
+
+async function addPrivatePhotoUrls(records: HuntRecord[]) {
+  if (!supabase) return records;
+  const paths = records.flatMap((record) => record.photoPath ? [record.photoPath] : []);
+  if (!paths.length) return records;
+
+  const { data, error } = await supabase.storage.from(HUNT_PHOTOS_BUCKET).createSignedUrls(paths, 60 * 60);
+  if (error) return records;
+  const signedUrls = new Map(
+    (data ?? []).flatMap((item) => item.path && item.signedUrl ? [[item.path, item.signedUrl] as const] : []),
+  );
+  return records.map((record) => ({ ...record, photoUrl: record.photoPath ? signedUrls.get(record.photoPath) ?? null : null }));
+}
+
+function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Photo preview could not be saved."));
+    reader.onerror = () => reject(new Error("Photo preview could not be saved."));
+    reader.readAsDataURL(blob);
+  });
 }
 
 function readDemoHunts(): HuntRecord[] {
@@ -386,13 +411,13 @@ export async function listHunts(): Promise<HuntRecord[]> {
   if (!navigator.onLine) return cachedHunts();
   const { data, error } = await supabase
     .from("hunts")
-    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries")
+    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,photo_path")
     .order("hunted_at", { ascending: false });
   if (error) {
     if (isConnectivityError(error)) return cachedHunts();
     throw error;
   }
-  const records = (data ?? []).map(rowToHuntRecord);
+  const records = await addPrivatePhotoUrls((data ?? []).map(rowToHuntRecord));
   cacheHunts(records);
   return records;
 }
@@ -417,11 +442,12 @@ function queueOfflineHunt(input: NewHuntRecord, huntedAt: string) {
   return record;
 }
 
-export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> {
+export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null): Promise<HuntRecord> {
   const huntedAt = new Date().toISOString();
   const birdCount = input.entries.reduce((sum, entry) => sum + entry.count, 0);
 
   if (!supabase) {
+    const photoUrl = photo ? await blobToDataUrl(photo) : null;
     const record: HuntRecord = {
       id: crypto.randomUUID(),
       date: formatHuntDate(huntedAt),
@@ -431,22 +457,43 @@ export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> 
       zone: input.zone,
       entries: input.entries,
       isSimulation: input.isSimulation,
+      photoPath: null,
+      photoUrl,
     };
-    localStorage.setItem(DEMO_HUNTS_KEY, JSON.stringify([record, ...readDemoHunts()]));
+    try {
+      localStorage.setItem(DEMO_HUNTS_KEY, JSON.stringify([record, ...readDemoHunts()]));
+    } catch {
+      throw new Error("This browser does not have enough local space for that photo. Remove the photo and save again.");
+    }
     return record;
   }
 
+  if (photo && !navigator.onLine) {
+    throw new Error("Connect to the internet to save this photo, or remove it and save the hunt offline.");
+  }
   if (!navigator.onLine) return queueOfflineHunt(input, huntedAt);
 
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) {
-    if (isConnectivityError(userError)) return queueOfflineHunt(input, huntedAt);
+    if (isConnectivityError(userError) && !photo) return queueOfflineHunt(input, huntedAt);
+    if (isConnectivityError(userError)) throw new Error("Connect to the internet to save this photo, or remove it and save the hunt offline.");
     throw new Error("Log in before saving a hunt.");
+  }
+
+  const huntId = crypto.randomUUID();
+  let photoPath: string | null = null;
+  if (photo) {
+    photoPath = `${userData.user.id}/${huntId}/harvest.jpg`;
+    const { error: photoError } = await supabase.storage
+      .from(HUNT_PHOTOS_BUCKET)
+      .upload(photoPath, photo, { cacheControl: "3600", contentType: "image/jpeg", upsert: false });
+    if (photoError) throw new Error(`Photo upload failed: ${photoError.message}`);
   }
 
   const { data, error } = await supabase
     .from("hunts")
     .insert({
+      id: huntId,
       user_id: userData.user.id,
       hunted_at: huntedAt,
       state_code: input.stateCode,
@@ -456,15 +503,18 @@ export async function saveHuntRecord(input: NewHuntRecord): Promise<HuntRecord> 
       season_year: input.seasonYear ?? null,
       entries: input.entries,
       bird_count: birdCount,
-      app_version: "1.37",
+      photo_path: photoPath,
+      app_version: "1.39",
     })
-    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries")
+    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,photo_path")
     .single();
   if (error) {
-    if (isConnectivityError(error)) return queueOfflineHunt(input, huntedAt);
+    if (photoPath) await supabase.storage.from(HUNT_PHOTOS_BUCKET).remove([photoPath]);
+    if (isConnectivityError(error) && !photo) return queueOfflineHunt(input, huntedAt);
+    if (isConnectivityError(error)) throw new Error("Connect to the internet to save this photo, or remove it and save the hunt offline.");
     throw error;
   }
-  const record = rowToHuntRecord(data);
+  const [record] = await addPrivatePhotoUrls([rowToHuntRecord(data)]);
   cacheHunts([record, ...cachedHunts().filter((hunt) => hunt.id !== record.id)]);
   return record;
 }
@@ -492,7 +542,7 @@ export async function syncPendingHunts() {
       season_year: item.input.seasonYear ?? null,
       entries: item.input.entries,
       bird_count: birdCount,
-      app_version: "1.37-offline-sync",
+      app_version: "1.39-offline-sync",
     });
     if (error) {
       remainingQueue.push(...queue.slice(index));

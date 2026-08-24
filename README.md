@@ -2,9 +2,9 @@
 
 **HUNT WITH CONFIDENCE**
 
-BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 28 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
+BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 29 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.37**. It includes a prominent **7 Days Free** offer throughout onboarding, secure Stripe customer-portal access from the Account page, an automatic post-login installation prompt, and a practical offline field mode. After one connected load, the installed website app can reopen cached regulations and the bird guide without service; hunters can also save hunts offline and have them uploaded to their account when service returns.
+This package is **BlindIQ v1.39**. It adds private harvest-photo capture to the Save Hunt flow while retaining South Dakota’s official 2026–2027 package, the prominent **7 Days Free** offer, secure Stripe customer-portal access, guided installation, and practical offline field mode. Hunters can take or choose a harvest photo, preview or remove it before saving, and reopen the private image from My Hunts.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -18,7 +18,7 @@ This package is **BlindIQ v1.37**. It includes a prominent **7 Days Free** offer
 - Secure **Manage or cancel free trial / membership** action for verified members
 - Stripe-hosted cancellation, payment-method, invoice, and billing management without exposing secret keys in the browser
 - Demo-mode fallback when Supabase settings are absent
-- Twenty-eight selectable states: Arkansas, California, Delaware, Florida, Idaho, Illinois, Iowa, Kansas, Louisiana, Maryland, Michigan, Minnesota, Missouri, Montana, Nebraska, New Jersey, New York, North Carolina, North Dakota, Ohio, Oregon, Pennsylvania, South Carolina, Texas, Virginia, Washington, West Virginia, and Wisconsin
+- Twenty-nine selectable states: Arkansas, California, Delaware, Florida, Idaho, Illinois, Iowa, Kansas, Louisiana, Maryland, Michigan, Minnesota, Missouri, Montana, Nebraska, New Jersey, New York, North Carolina, North Dakota, Ohio, Oregon, Pennsylvania, South Carolina, South Dakota, Texas, Virginia, Washington, West Virginia, and Wisconsin
 - Alphabetical state choices on both the dashboard and account settings screens
 - Required click-to-accept Terms of Use and User Agreement during account creation
 - Agreement version and acceptance time recorded with new Supabase accounts
@@ -39,6 +39,7 @@ This package is **BlindIQ v1.37**. It includes a prominent **7 Days Free** offer
 - Visible offline banner and unsynced-hunt labels so field status is never ambiguous
 - Date-aware dashboard status with separate **Open Today**, **Partially Open**, and **Closed Today** banners
 - North Dakota’s complete structured 2026–2027 waterfowl calendar, including its August early Canada goose zones
+- South Dakota’s final 2026–2027 duck, goose, youth, swan, snipe and light-goose calendar, four duck zones, two regular goose units, August resident management take, nonresident unit guidance, and Traditional-versus-Three-Duck warnings
 - Weather and forecast controls removed from the current interface for a more focused dashboard
 - Closed-today banner and loaded season dates
 - Duck and goose seasons, zones, shooting hours, bag rules, and official links
@@ -58,6 +59,9 @@ This package is **BlindIQ v1.37**. It includes a prominent **7 Days Free** offer
 - Species, sex, parent-species, and zone-specific bag-limit logic
 - Live list of birds that remain available under loaded demo rules
 - Hunt summary and permanent account-scoped Supabase history
+- Optional harvest-photo capture or camera-roll selection on the Save Hunt screen
+- In-browser photo resizing and compression before upload
+- Private, account-owned Supabase Storage photos with short-lived signed viewing links in My Hunts
 - Branded 1080 × 1350 hunt-share card generated privately in the browser
 - Native phone sharing to compatible installed apps such as Facebook, Instagram, Messages, and Mail
 - Separate image-download fallback for browsers that do not support file sharing
@@ -67,7 +71,7 @@ This package is **BlindIQ v1.37**. It includes a prominent **7 Days Free** offer
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
 - End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
-- Visible v1.37 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.39 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
@@ -181,10 +185,10 @@ After installation, BlindIQ opens in its own app-style window. The **ADD TO HOME
 3. Browse the selected state's dashboard and open the bird field guide once.
 4. Turn on Airplane Mode or disable Wi-Fi and mobile data.
 5. Reopen BlindIQ from the Home Screen. The app, loaded regulation data, and bird references should remain available.
-6. Save a hunt while offline. It will appear in My Hunts with an **OFFLINE** label.
+6. Save a hunt without a photo while offline. It will appear in My Hunts with an **OFFLINE** label.
 7. Restore service and leave BlindIQ open. The queued hunt will upload automatically and the label will clear after history refreshes.
 
-The first login, membership checkout, account verification, regulation updates, and first app load require internet access. Offline mode uses the last app and regulation package successfully loaded on that device, so hunters must reconnect before a hunt to receive the newest published release.
+The first login, membership checkout, account verification, regulation updates, first app load, and harvest-photo upload require internet access. Hunts without photos can still be queued offline. If a photo is selected while offline, BlindIQ asks the hunter to reconnect or remove the photo before saving. Offline mode uses the last app and regulation package successfully loaded on that device, so hunters must reconnect before a hunt to receive the newest published release.
 
 ## 4. Upload to GitHub
 
@@ -274,7 +278,7 @@ The existing membership webhook already recognizes Stripe's `trialing` status as
 
 ### Stripe customer portal and cancellation
 
-BlindIQ v1.37 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
+BlindIQ v1.39 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
 
 Activation requires three dashboard steps:
 
@@ -283,6 +287,11 @@ Activation requires three dashboard steps:
 3. In Supabase Edge Function secrets, add `BLINDIQ_APP_URL=https://blindiq.app`. The existing `STRIPE_SECRET_KEY` is reused server-side.
 
 No new Vercel environment variable is required. The existing `stripe-webhook` function already listens for `customer.subscription.updated` and `customer.subscription.deleted`, so a cancellation made in Stripe is written back to the BlindIQ membership record.
+
+## v1.38 regulation sources
+
+- **South Dakota:** [South Dakota GFP waterfowl hub](https://gfp.sd.gov/waterfowl/), [official 2026 key dates](https://gfp.sd.gov/events/keydates/), [final April 2026 Commission Book](https://gfp.sd.gov/UserDocs/nav/April_2026_Commission_Book.pdf), [2026 nonresident guide](https://gfp.sd.gov/UserDocs/nav/NonresidentWaterfowl_.pdf), [duck-limit choices](https://gfp.sd.gov/three-duck-limit/), and [youth waterfowl rules](https://gfp.sd.gov/youth-waterfowl/)
+- When the general GFP waterfowl landing page conflicts with the later final 2026 Commission action, BlindIQ uses the final action. That is why v1.38 shows an eight-bird Canada goose limit for the August Management Take and Early Fall season rather than an older fifteen-bird value.
 
 ## v1.23 regulation sources
 
@@ -340,6 +349,18 @@ Paste it into the query editor and click **Run** once. This adds the default sta
 
 The included agreement is a product-specific working draft, not a substitute for legal advice. Have a qualified attorney review the agreement, business name/entity, governing-law provision, privacy practices, and subscription terms before broad commercial launch.
 
+## Apply the private hunt-photo database update
+
+Before deploying v1.39, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
+
+```text
+supabase/migrations/20260823235658_hunt_photos.sql
+```
+
+Paste it into the query editor and click **Run** once. This adds the optional photo path to each hunt, creates a private `hunt-photos` Storage bucket with a 5 MB JPEG limit, and installs user-owned upload, view, and delete policies. Run this migration **before** deploying the new front end; otherwise My Hunts cannot read the new `photo_path` field.
+
+No new Vercel environment variable is required. The existing signed-in Supabase account controls access. Harvest photos are compressed in the browser and stored in a folder belonging to that user; the app creates a short-lived private viewing link when My Hunts loads.
+
 ## Project structure
 
 ```text
@@ -347,6 +368,7 @@ src/
 ├── App.tsx       Screens, navigation, and interactive hunt flow
 ├── data.ts       Season-versioned state regulations and bird rules
 ├── legal.ts      Versioned Terms of Use and User Agreement
+├── huntPhotos.ts Private harvest-photo validation and compression
 ├── location.ts   Reserved location/forecast service for a possible future release; not currently shown
 ├── seasonStatus.ts Date-aware state season-status resolver
 ├── services.ts   Supabase/Stripe configuration boundary

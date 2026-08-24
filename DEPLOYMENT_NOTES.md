@@ -1,5 +1,27 @@
 # BlindIQ Deployment Notes
 
+## v1.39 — Private harvest photos
+
+- Added an optional **Add a harvest photo** card to the live-hunt Save Hunt screen.
+- Added direct phone-camera capture and photo-library selection using the device’s native picker.
+- Added an on-screen preview plus replace and remove controls before the hunt is saved.
+- Added browser-side resizing and JPEG compression before upload, with clear 20 MB source and 5 MB stored-image limits.
+- Added a private Supabase Storage bucket, account-folder access policies, and an owner-prefixed hunt-table constraint.
+- Added secure one-hour signed photo links and harvest thumbnails in My Hunts; selecting a thumbnail opens the saved image.
+- Preserved offline hunt saving for hunts without photos. Photo-backed hunts clearly request a connection rather than silently dropping the image.
+- Added the required `20260823235658_hunt_photos.sql` deployment migration and advanced visible release markers, hunt metadata, package version, and offline cache to **v1.39**.
+
+## v1.38 — South Dakota 2026–2027 waterfowl package
+
+- Added South Dakota as BlindIQ’s twenty-ninth selectable state with final 2026–2027 agency dates and limits.
+- Added all four duck zones, both regular Canada goose units, the resident-only August Management Take, Early Fall Canada Goose, youth waterfowl, white-fronted goose, fall light goose, 2027 Spring Conservation Order, tundra swan and Wilson’s snipe.
+- Added date-aware South Dakota status periods; during August 15–31 the dashboard correctly shows **PARTIALLY OPEN** for the resident-only August Canada Goose Management Take.
+- Added the Traditional six-duck bag with mallard, hen, wood duck, pintail, redhead, canvasback and scaup restrictions plus the first-nine-days bonus blue-winged teal rule.
+- Added a prominent warning that the live species logger models only the Traditional option; hunters selecting South Dakota’s season-long Three-Duck option must use its three-any-duck limit instead.
+- Added finalized 2026 goose limits: eight during the August Management Take and Early Fall season, eight in regular Unit 1, four in Unit 2, three white-fronted geese and fifty fall light geese.
+- Added nonresident unit/duration guidance, permit and stamp notes, youth rules, nontoxic-shot requirements and official GFP source links.
+- Advanced visible release markers, hunt metadata, package version, and offline cache to **v1.38**.
+
 ## v1.37 — Self-service membership and trial cancellation
 
 - Added **Manage or cancel free trial** and **Manage or cancel membership** controls to the Account page.
