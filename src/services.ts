@@ -1,5 +1,6 @@
 import { createClient, type User } from "@supabase/supabase-js";
 import { TERMS_VERSION } from "./legal";
+import { migrationStatus, previewMigrationData, type MigrationData, type MigrationRegion, type MigrationSnapshot } from "./migration";
 import type { HarvestEntry, HuntRecord, NewHuntRecord } from "./types";
 
 const REMEMBERED_DEVICE_KEY = "blindiq-remembered-device";
@@ -10,6 +11,7 @@ const OFFLINE_SUBSCRIPTION_KEY = "blindiq-offline-subscription-v1";
 const OFFLINE_DEFAULT_STATE_KEY = "blindiq-offline-default-state-v1";
 const OFFLINE_HUNTS_KEY = "blindiq-offline-hunts-v1";
 const PENDING_HUNTS_KEY = "blindiq-pending-hunts-v1";
+const MIGRATION_CACHE_KEY = "blindiq-migration-pulse-v1";
 const HUNT_PHOTOS_BUCKET = "hunt-photos";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -342,6 +344,80 @@ export async function getSubscription() {
   return snapshot;
 }
 
+function cachedMigrationData() {
+  const cached = readJson<MigrationData | null>(MIGRATION_CACHE_KEY, null);
+  return cached ? { ...cached, mode: "cached" as const } : null;
+}
+
+function stringArray(value: unknown) {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+export async function getMigrationData(): Promise<MigrationData> {
+  if (!supabase) return previewMigrationData();
+  if (!navigator.onLine) return cachedMigrationData() ?? previewMigrationData();
+
+  const [regionResult, snapshotResult] = await Promise.all([
+    supabase
+      .from("migration_regions")
+      .select("id,flyway,name,short_name,state_codes,description,latitude,longitude,display_order")
+      .eq("active", true)
+      .order("flyway")
+      .order("display_order"),
+    supabase
+      .from("migration_snapshots")
+      .select("region_id,observed_index,forecast_index,confidence,direction,trend,status,summary,drivers,sources,generated_at,valid_through")
+      .eq("species_group", "all-waterfowl")
+      .order("generated_at", { ascending: false })
+      .limit(100),
+  ]);
+
+  if (regionResult.error || snapshotResult.error) {
+    const cached = cachedMigrationData();
+    if (cached) return cached;
+    return previewMigrationData();
+  }
+
+  const regions: MigrationRegion[] = (regionResult.data ?? []).map((row) => ({
+    id: row.id,
+    flyway: row.flyway === "Mississippi" ? "Mississippi" : "Atlantic",
+    name: row.name,
+    shortName: row.short_name,
+    states: stringArray(row.state_codes),
+    description: row.description,
+    latitude: Number(row.latitude),
+    longitude: Number(row.longitude),
+    displayOrder: Number(row.display_order),
+  }));
+
+  const newestByRegion = new Map<string, MigrationSnapshot>();
+  for (const row of snapshotResult.data ?? []) {
+    if (newestByRegion.has(row.region_id)) continue;
+    const forecastIndex = Number(row.forecast_index);
+    newestByRegion.set(row.region_id, {
+      regionId: row.region_id,
+      observedIndex: Number(row.observed_index),
+      forecastIndex,
+      confidence: Number(row.confidence),
+      direction: row.direction === "northbound" || row.direction === "staging" ? row.direction : "southbound",
+      trend: row.trend === "rising" || row.trend === "falling" ? row.trend : "steady",
+      status: row.status || migrationStatus(forecastIndex),
+      summary: row.summary,
+      drivers: stringArray(row.drivers),
+      sources: stringArray(row.sources),
+      generatedAt: row.generated_at,
+      validThrough: row.valid_through,
+    });
+  }
+
+  const snapshots = [...newestByRegion.values()];
+  if (!regions.length || !snapshots.length) return previewMigrationData();
+  const retrievedAt = snapshots.reduce((latest, snapshot) => snapshot.generatedAt > latest ? snapshot.generatedAt : latest, snapshots[0].generatedAt);
+  const result: MigrationData = { regions, snapshots, mode: "live", retrievedAt };
+  writeJson(MIGRATION_CACHE_KEY, result);
+  return result;
+}
+
 function formatHuntDate(value: string) {
   return new Date(value).toLocaleDateString("en-US", {
     month: "long",
@@ -504,7 +580,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       entries: input.entries,
       bird_count: birdCount,
       photo_path: photoPath,
-      app_version: "1.39",
+      app_version: "1.41",
     })
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,photo_path")
     .single();
@@ -542,7 +618,7 @@ export async function syncPendingHunts() {
       season_year: item.input.seasonYear ?? null,
       entries: item.input.entries,
       bird_count: birdCount,
-      app_version: "1.39-offline-sync",
+      app_version: "1.41-offline-sync",
     });
     if (error) {
       remainingQueue.push(...queue.slice(index));

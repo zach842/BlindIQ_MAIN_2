@@ -1,5 +1,23 @@
 # BlindIQ Deployment Notes
 
+## v1.41 — Atlantic + Mississippi Migration Pulse
+
+- Added a dedicated **Migration** destination to the member navigation and a prominent dashboard entry point.
+- Added Atlantic and Mississippi Flyway tabs with North, Mid, and South planning regions for each flyway.
+- Added flyway pulse, current weather-condition signal, 48-hour movement potential, trend, direction, confidence, source transparency, and explanatory drivers.
+- Added explicit live, offline-cache, and preview modes so a missing backend feed never creates a broken or misleading screen.
+- Added Supabase tables for regions, snapshots, private normalized observations, and server-only source-run health records with Row Level Security.
+- Added a server-only Supabase Edge Function that retrieves National Weather Service forecasts and calculates a transparent weather-and-season movement-potential score.
+- Added a four-times-daily Supabase Cron script and complete one-time setup guide; after setup, migration data updates do not require GitHub commits or Vercel deployments.
+- Kept observation and radar partner feeds out of this release until commercial-use permission and attribution are approved.
+- Advanced package, visible release markers, hunt metadata, service-worker registration, and offline cache to **v1.41**.
+
+## v1.40 — Group Hunt preview
+
+- Restored **Group Hunt Mode — In Development** directly below Test Hunt on the dashboard.
+- Kept the preview intentionally non-interactive so hunters do not mistake it for a finished hunt mode.
+- Advanced package, visible release markers, hunt metadata, service-worker registration, and offline cache to **v1.40**.
+
 ## v1.39 — Private harvest photos
 
 - Added an optional **Add a harvest photo** card to the live-hunt Save Hunt screen.

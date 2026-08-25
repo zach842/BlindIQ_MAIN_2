@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 29 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.39**. It adds private harvest-photo capture to the Save Hunt flow while retaining South Dakota’s official 2026–2027 package, the prominent **7 Days Free** offer, secure Stripe customer-portal access, guided installation, and practical offline field mode. Hunters can take or choose a harvest photo, preview or remove it before saving, and reopen the private image from My Hunts.
+This package is **BlindIQ v1.41**. It introduces **Migration Pulse** for both the Atlantic and Mississippi Flyways, with six broad monitoring regions, a 48-hour movement-potential interface, offline caching, and a Supabase updater designed to refresh automatically every six hours. It also retains the clearly labeled **Group Hunt Mode — In Development** preview, private harvest-photo capture, the prominent **7 Days Free** offer, secure Stripe customer-portal access, guided installation, and practical offline field mode.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -71,7 +71,14 @@ This package is **BlindIQ v1.39**. It adds private harvest-photo capture to the 
 - **Better the Community** form for regulation errors, app bugs, feature ideas, and general feedback
 - End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
-- Visible v1.39 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Group Hunt Mode — In Development preview directly below Test Hunt
+- Migration Pulse for the Atlantic and Mississippi Flyways
+- North, Mid, and South monitoring regions in each flyway
+- Weather-driven 48-hour movement potential using current National Weather Service forecasts and a transparent seasonal baseline
+- Clearly labeled live, cached, and preview modes—without presenting modeled conditions as confirmed bird observations
+- Automatic six-hour Supabase refresh scaffolding, source-run health logs, and server-only raw observations
+- Offline access to the last successfully loaded Migration Pulse snapshot
+- Visible v1.41 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
@@ -278,7 +285,7 @@ The existing membership webhook already recognizes Stripe's `trialing` status as
 
 ### Stripe customer portal and cancellation
 
-BlindIQ v1.39 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
+BlindIQ v1.41 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
 
 Activation requires three dashboard steps:
 
@@ -337,6 +344,16 @@ The current `src/services.ts` file is the boundary for live services:
 
 The secure Stripe webhook, subscription schema, row-level security policies, and membership gating are included. Follow `SECURE_MEMBERSHIP_SETUP.md` to activate them in Supabase and Stripe.
 
+## Activate Atlantic + Mississippi Migration Pulse
+
+The member interface works immediately in a clearly marked seasonal preview mode. To activate automatic National Weather Service updates, follow `MIGRATION_PULSE_SETUP.md`. The one-time setup applies:
+
+- `supabase/migrations/20260825135713_migration_pulse.sql` for the secured database tables;
+- `supabase/functions/migration-refresh/index.ts` for the server-only updater; and
+- `supabase/cron/migration_refresh_schedule.sql` for the six-hour schedule.
+
+Once configured, Supabase refreshes Migration Pulse without a GitHub upload or Vercel redeployment. A secret Supabase API key is stored only in Supabase Vault and must never be placed in the React app or a `VITE_` environment variable.
+
 ## Apply the default-state and agreement database update
 
 Before deploying this version, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
@@ -351,7 +368,7 @@ The included agreement is a product-specific working draft, not a substitute for
 
 ## Apply the private hunt-photo database update
 
-Before deploying v1.39, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
+Before deploying v1.41, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
 
 ```text
 supabase/migrations/20260823235658_hunt_photos.sql
@@ -370,6 +387,8 @@ src/
 ├── legal.ts      Versioned Terms of Use and User Agreement
 ├── huntPhotos.ts Private harvest-photo validation and compression
 ├── location.ts   Reserved location/forecast service for a possible future release; not currently shown
+├── migration.ts  Atlantic and Mississippi regions, types, and transparent preview model
+├── MigrationPage.tsx Migration Pulse interface and source transparency
 ├── seasonStatus.ts Date-aware state season-status resolver
 ├── services.ts   Supabase/Stripe configuration boundary
 ├── styles.css    BlindIQ design system and responsive layout

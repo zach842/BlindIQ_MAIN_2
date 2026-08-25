@@ -6,9 +6,10 @@ import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
 import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
 import { getDashboardSeasonStatus } from "./seasonStatus";
 import { prepareHuntPhoto } from "./huntPhotos";
+import MigrationPage from "./MigrationPage";
 import type { BirdRule, HarvestEntry, HuntRecord } from "./types";
 
-type View = "welcome" | "login" | "signup" | "dashboard" | "hunt" | "bird-guide" | "summary" | "history" | "account" | "terms" | "feedback";
+type View = "welcome" | "login" | "signup" | "dashboard" | "migration" | "hunt" | "bird-guide" | "summary" | "history" | "account" | "terms" | "feedback";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -97,7 +98,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.39",
+      "Submitted from BlindIQ v1.41",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -235,6 +236,7 @@ function Shell({ view, setView, children, userName, isPremium, installUi, isOnli
       {view !== "hunt" && view !== "bird-guide" && view !== "summary" && (
         <nav className="bottom-nav" aria-label="Main navigation">
           {isPremium && <button className={view === "dashboard" ? "active" : ""} onClick={() => setView("dashboard")}><Icon>⌂</Icon>Home</button>}
+          {isPremium && <button className={view === "migration" ? "active" : ""} onClick={() => setView("migration")}><Icon>⇅</Icon>Migration</button>}
           {isPremium && <button className={view === "history" ? "active" : ""} onClick={() => setView("history")}><Icon>≡</Icon>My Hunts</button>}
           <button className={view === "account" ? "active" : ""} onClick={() => setView("account")}><Icon>○</Icon>Account</button>
         </nav>
@@ -735,8 +737,18 @@ export default function App() {
             <button className="button button--gold button--start" disabled={selected.dataStatus === "archived"} onClick={() => startHunt(false)}><span>{selected.dataStatus === "archived" ? "LIVE HUNT UNAVAILABLE" : isPremium ? "START HUNT" : "UNLOCK START HUNT"}</span><small>{selected.dataStatus === "archived" ? "Archived rules cannot guide a live hunt" : isPremium ? "Save a real hunt →" : "$10.99/year →"}</small></button>
             <div className="hunt-secondary-actions">
               <button className="button button--test" type="button" onClick={() => startHunt(true)}><span>TEST HUNT</span><small>Practice without changing live totals →</small></button>
+              <aside className="group-hunt-preview" aria-label="Group Hunt Mode in development">
+                <span>GROUP HUNT MODE</span>
+                <small>IN DEVELOPMENT</small>
+              </aside>
             </div>
           </div>
+
+          <button className="migration-teaser" type="button" onClick={() => setView("migration")}>
+            <span className="migration-teaser__mark">⇅</span>
+            <span><small>NEW • EARLY ACCESS</small><strong>Migration Pulse</strong><b>Atlantic + Mississippi Flyways</b></span>
+            <em>Open forecast →</em>
+          </button>
 
           <section className="section">
             <div className="section-heading"><div><p className="eyebrow">DIGITAL FIELD GUIDE • SEASON OVERVIEW</p><h2>{selected.name} waterfowl</h2></div><span className="verified">{selected.seasonYear ?? "Demo data"}</span></div>
@@ -774,7 +786,7 @@ export default function App() {
             <aside className="disclaimer"><Icon>!</Icon><p><strong>Digital field guide and field log—not legal advice.</strong> BlindIQ simplifies regulations and records harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.39</small>
+            <small className="version-stamp">BlindIQ v1.41</small>
           </footer>
         </div>
       )}
@@ -886,6 +898,8 @@ export default function App() {
         </div>
       )}
 
+      {view === "migration" && <MigrationPage stateCode={stateCode} isOnline={isOnline} />}
+
       {view === "account" && (
         <div className="page account-page">
           <div className="page-title"><p className="eyebrow">{isPremium ? "MEMBERSHIP" : "ONE LAST STEP"}</p><h1>{isPremium ? "Your BlindIQ account" : "Activate your membership"}</h1>{!isPremium && <p>Complete secure checkout to unlock the hunt dashboard.</p>}</div>
@@ -899,7 +913,7 @@ export default function App() {
             <h2>Know the regulations. Log the birds. Save the hunts.</h2>
             <div className="trial-price"><strong>7 DAYS FREE</strong><span>Full access from the first hunt.</span></div>
             <div className="price"><strong>$10.99</strong><span>/ year after trial</span></div>
-            <ul><li>✓ Digital state waterfowl field guides</li><li>✓ Bird logging and live bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ New field tools as they launch</li></ul>
+            <ul><li>✓ Digital state waterfowl field guides</li><li>✓ Bird logging and live bag-limit guidance</li><li>✓ Unlimited saved hunt history</li><li>✓ Atlantic + Mississippi Migration Pulse</li></ul>
             {isPremium ? <><div className="membership-active"><span>✓</span><div><strong>{subscriptionStatus === "trialing" ? "Free trial active" : "Membership active"}</strong><small>{subscriptionStatus === "trialing" && subscriptionPeriodEnd ? `Trial period ends ${new Date(subscriptionPeriodEnd).toLocaleDateString()}.` : "Verified through your BlindIQ membership record."}</small></div></div><button className="button membership-manage-button button--wide" type="button" disabled={managingMembership} onClick={() => void manageMembership()}>{managingMembership ? "Opening secure billing…" : subscriptionStatus === "trialing" ? "Manage or cancel free trial" : "Manage or cancel membership"}</button><small className="membership-manage-note">Opens Stripe securely to cancel, update your payment method, or review billing.</small></> : <button className="button button--gold button--wide" onClick={() => { const result = beginCheckout(accountUserId, accountEmail); if (result === "demo") setToast("Demo checkout — add Stripe settings to accept payment"); if (result === "offline") setToast("Connect to the internet to start your free trial."); }}>Start 7-day free trial</button>}
             <small>New members receive seven days free, then $10.99/year unless cancelled before the trial ends. Secure checkout is powered by Stripe.</small>
           </section>
@@ -907,7 +921,7 @@ export default function App() {
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setSubscriptionPeriodEnd(membership.currentPeriodEnd); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button type="button" onClick={() => setInstallGuideOpen(true)}>Add BlindIQ to Home Screen <span>›</span></button><button>Offline field mode <span>{isOnline ? "READY" : "ACTIVE"}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.39</small>
+          <small className="version-stamp">BlindIQ v1.41</small>
         </div>
       )}
     </Shell>
