@@ -64,7 +64,7 @@ export default function MigrationPage({ stateCode, isOnline }: { stateCode: stri
     <div className="page migration-page">
       <header className="migration-heading">
         <div><p className="eyebrow">BLINDIQ MIGRATION PULSE • EARLY ACCESS</p><h1>Follow the flyways.</h1><p>Daily movement potential for the Atlantic and Mississippi Flyways—built for planning, not promising birds.</p></div>
-        <div className="migration-heading__score"><span>FLYWAY PULSE</span><strong>{flywayAverage}</strong><small>{migrationStatus(flywayAverage)}</small></div>
+        <div className="migration-heading__score"><span>FLYWAY PULSE</span><strong>{flywayAverage}<em>/100</em></strong><small>{migrationStatus(flywayAverage)}</small></div>
       </header>
 
       <div className="flyway-tabs" role="tablist" aria-label="Choose a flyway">

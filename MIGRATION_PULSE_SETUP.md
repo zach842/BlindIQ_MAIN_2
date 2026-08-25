@@ -1,6 +1,6 @@
 # BlindIQ Migration Pulse setup
 
-BlindIQ v1.41 includes the complete Atlantic and Mississippi Flyway interface, a safe seasonal preview, offline cache support, database tables, and an automated weather-driven updater. The website app runs immediately after deployment. Complete this one-time Supabase setup to replace the preview with automatic six-hour updates.
+BlindIQ v1.42 includes the complete Atlantic and Mississippi Flyway interface, an explicit **##/100** Flyway Pulse score, a safe seasonal preview, offline cache support, database tables, and an automated weather-driven updater. The website app runs immediately after deployment. Complete this one-time Supabase setup to replace the preview with automatic six-hour updates.
 
 ## What the first automated version measures
 

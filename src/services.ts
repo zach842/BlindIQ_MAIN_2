@@ -580,7 +580,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       entries: input.entries,
       bird_count: birdCount,
       photo_path: photoPath,
-      app_version: "1.41",
+      app_version: "1.42",
     })
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,photo_path")
     .single();
@@ -618,7 +618,7 @@ export async function syncPendingHunts() {
       season_year: item.input.seasonYear ?? null,
       entries: item.input.entries,
       bird_count: birdCount,
-      app_version: "1.41-offline-sync",
+      app_version: "1.42-offline-sync",
     });
     if (error) {
       remainingQueue.push(...queue.slice(index));

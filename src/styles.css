@@ -462,6 +462,7 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .migration-heading__score { min-height: 130px; display: flex; flex-direction: column; justify-content: center; padding: 18px; border: 1px solid #987b39; border-radius: 9px; color: white; background: radial-gradient(circle at 75% 20%, rgba(211,166,63,.28), transparent 35%), var(--deep); text-align: center; }
 .migration-heading__score span { color: var(--gold); font-size: 8px; font-weight: 900; letter-spacing: 1.4px; }
 .migration-heading__score strong { color: white; font: 800 58px/.9 "Barlow Condensed", Impact, sans-serif; }
+.migration-heading__score strong em { margin-left: 2px; font: inherit; font-size: .36em; font-style: normal; letter-spacing: .2px; opacity: .82; vertical-align: .18em; }
 .migration-heading__score small { margin-top: 6px; color: #d4ded8; font-size: 9px; font-weight: 800; text-transform: uppercase; }
 .flyway-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-bottom: 12px; }
 .flyway-tabs button { min-height: 58px; display: flex; justify-content: center; align-items: baseline; gap: 8px; border: 1px solid #b8b5aa; border-radius: 8px; color: var(--forest); background: var(--paper); font: 800 24px/1 "Barlow Condensed", Impact, sans-serif; }

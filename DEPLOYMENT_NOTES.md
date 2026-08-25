@@ -1,5 +1,10 @@
 # BlindIQ Deployment Notes
 
+## v1.42 — Migration Pulse Score Clarity
+
+- Changed the flyway-wide Migration Pulse score to an explicit **##/100** display.
+- Retained the Atlantic and Mississippi Flyway early-access interface, Group Hunt Mode preview, and all v1.41 functionality.
+
 ## v1.41 — Atlantic + Mississippi Migration Pulse
 
 - Added a dedicated **Migration** destination to the member navigation and a prominent dashboard entry point.
