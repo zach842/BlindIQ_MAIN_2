@@ -1,5 +1,16 @@
 # BlindIQ Deployment Notes
 
+## v1.43 — Hunt. Log. Share + Remembered-Device Reliability
+
+- Replaced the main welcome message with **Hunt. Log. Share**.
+- Added a matching transparent BlindIQ logo asset with **HUNT. LOG. SHARE** in place of the previous tagline.
+- Updated generated hunt-share cards to use the new logo and brand line.
+- Made Supabase browser-session persistence, token refresh, and confirmation-link handling explicit.
+- Preserved the 30-day device choice during temporary network or Supabase verification failures instead of treating them as a logout.
+- Preserved the remember-device choice when signup requires email confirmation.
+- Restored the signed-in user before refreshing subscription and default-state details, preventing a nonessential refresh failure from returning the app to the welcome screen.
+- Clarified that remembered access applies separately to the current browser or installed Home Screen app.
+
 ## v1.42 — Migration Pulse Score Clarity
 
 - Changed the flyway-wide Migration Pulse score to an explicit **##/100** display.

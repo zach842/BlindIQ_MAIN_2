@@ -35,7 +35,7 @@ function isInstalledApp() {
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`brand ${compact ? "brand--compact" : ""}`} aria-label="BlindIQ">
-      <img src="/blindiq-logo.png" alt={compact ? "" : "BlindIQ — Hunt With Confidence"} />
+      <img src="/blindiq-logo-hunt-log-share.png" alt={compact ? "" : "BlindIQ — Hunt. Log. Share"} />
       {compact && <strong>BLIND<span>IQ</span></strong>}
     </div>
   );
@@ -98,7 +98,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.42",
+      "Submitted from BlindIQ v1.43",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -290,7 +290,7 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
           {mode === "signup" && <label>Display username<input required autoComplete="nickname" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Example: ChesapeakeHunter" /></label>}
           <label>{isDemoMode && mode === "login" ? "Username" : "Email address"}<input required type={isDemoMode && mode === "login" ? "text" : "email"} autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
           <label>Password<input required autoComplete={mode === "login" ? "current-password" : "new-password"} type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
-          <label className="remember-device"><input type="checkbox" checked={rememberDevice} onChange={(e) => setRememberDevice(e.target.checked)} /><span><strong>Remember this device for 30 days</strong><small>Use only on a private phone or computer. BlindIQ never stores your password.</small></span></label>
+          <label className="remember-device"><input type="checkbox" checked={rememberDevice} onChange={(e) => setRememberDevice(e.target.checked)} /><span><strong>Remember this device for 30 days</strong><small>Keeps this browser or installed Home Screen app signed in for up to 30 days. Use only on a private device; BlindIQ never stores your password.</small></span></label>
           {mode === "signup" && <label className="agreement-check"><input required type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} /><span>I have read and agree to the <button type="button" onClick={() => setShowTerms(true)}>Terms of Use and User Agreement</button>, including the hunting-law disclaimer, release, and limitation of liability.</span></label>}
           {error && <div className="auth-error" role="alert">{error}</div>}
           {success && <div className="auth-success" role="status">{success}</div>}
@@ -495,12 +495,16 @@ export default function App() {
       try {
         const user = await restoreRememberedUser();
         if (!user || cancelled) return;
-        const [membership, savedState] = await Promise.all([getSubscription(), getDefaultState()]);
-        if (cancelled) return;
-        const nextState = states.find((state) => state.code === savedState) ?? states[0];
         setUserName(user.name);
         setAccountEmail(user.email);
         setAccountUserId(user.id);
+        const [membershipResult, savedStateResult] = await Promise.allSettled([getSubscription(), getDefaultState()]);
+        if (cancelled) return;
+        const membership = membershipResult.status === "fulfilled"
+          ? membershipResult.value
+          : { status: "inactive", isPremium: false, currentPeriodEnd: null };
+        const savedState = savedStateResult.status === "fulfilled" ? savedStateResult.value : "MD";
+        const nextState = states.find((state) => state.code === savedState) ?? states[0];
         setDefaultStateCode(nextState.code);
         setStateCode(nextState.code);
         setZone(nextState.zones[0]);
@@ -509,6 +513,9 @@ export default function App() {
         setSubscriptionStatus(membership.status);
         setSubscriptionPeriodEnd(membership.currentPeriodEnd);
         setView(membership.isPremium ? "dashboard" : "account");
+        if (membershipResult.status === "rejected" || savedStateResult.status === "rejected") {
+          setToast("Your login was restored, but some account details could not be refreshed. Please try again when connected.");
+        }
         if (membership.isPremium && !isInstalledApp() && sessionStorage.getItem(INSTALL_NUDGE_SESSION_KEY) !== "shown") {
           sessionStorage.setItem(INSTALL_NUDGE_SESSION_KEY, "shown");
           setInstallGuideOpen(true);
@@ -681,7 +688,7 @@ export default function App() {
           <Brand />
           <div className="welcome-copy">
             <p className="eyebrow">DIGITAL FIELD GUIDE + FIELD LOG FOR WATERFOWL HUNTERS</p>
-            <h1>Know the regs.<br />Log the birds.<br />Save the hunts.</h1>
+            <h1>Hunt.<br />Log.<br />Share</h1>
             <div className="welcome-trial"><strong>7 DAYS FREE</strong><span>Then only $10.99/year</span></div>
             <p className="welcome-intro">BlindIQ puts clear waterfowl regulations and your complete hunt history in one field-ready website app.</p>
             <BrandPromise />
@@ -786,7 +793,7 @@ export default function App() {
             <aside className="disclaimer"><Icon>!</Icon><p><strong>Digital field guide and field log—not legal advice.</strong> BlindIQ simplifies regulations and records harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.42</small>
+            <small className="version-stamp">BlindIQ v1.43</small>
           </footer>
         </div>
       )}
@@ -921,7 +928,7 @@ export default function App() {
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setSubscriptionPeriodEnd(membership.currentPeriodEnd); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button type="button" onClick={() => setInstallGuideOpen(true)}>Add BlindIQ to Home Screen <span>›</span></button><button>Offline field mode <span>{isOnline ? "READY" : "ACTIVE"}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await signOut(); sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.42</small>
+          <small className="version-stamp">BlindIQ v1.43</small>
         </div>
       )}
     </Shell>

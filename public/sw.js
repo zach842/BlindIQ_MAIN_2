@@ -1,4 +1,4 @@
-const CACHE_NAME = "blindiq-offline-v1.42";
+const CACHE_NAME = "blindiq-offline-v1.43";
 
 const CORE_ASSETS = [
   "/",
@@ -6,6 +6,7 @@ const CORE_ASSETS = [
   "/manifest.webmanifest",
   "/favicon.svg",
   "/blindiq-logo.png",
+  "/blindiq-logo-hunt-log-share.png",
   "/duck-home-page.png",
   "/apple-touch-icon.png",
   "/icon-192.png",

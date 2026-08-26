@@ -47,7 +47,14 @@ export const appConfig = {
 
 export const supabase =
   appConfig.supabaseUrl && appConfig.supabasePublishableKey
-    ? createClient(appConfig.supabaseUrl, appConfig.supabasePublishableKey)
+    ? createClient(appConfig.supabaseUrl, appConfig.supabasePublishableKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          flowType: "pkce",
+        },
+      })
     : null;
 
 export const isDemoMode = !supabase;
@@ -216,7 +223,9 @@ export async function signUp(username: string, email: string, password: string, 
     },
   });
   if (error) throw error;
-  if (data.session && data.user) rememberDevice(data.user.id, shouldRemember);
+  // Keep the user's device choice even when email confirmation is enabled and
+  // Supabase does not return a session until the confirmation link is opened.
+  if (data.user) rememberDevice(data.user.id, shouldRemember);
   const user = {
     name: data.user ? displayNameFor(data.user) : username,
     id: data.user?.id ?? "",
@@ -230,10 +239,17 @@ export async function signUp(username: string, email: string, password: string, 
 export async function getDefaultState() {
   if (!supabase) return localStorage.getItem("blindiq-default-state") || "MD";
   if (!navigator.onLine) return localStorage.getItem(OFFLINE_DEFAULT_STATE_KEY) || "MD";
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError) {
+    if (isConnectivityError(userError)) return localStorage.getItem(OFFLINE_DEFAULT_STATE_KEY) || "MD";
+    throw userError;
+  }
   if (!userData.user) return "MD";
   const { data, error } = await supabase.from("profiles").select("default_state").eq("id", userData.user.id).maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (isConnectivityError(error)) return localStorage.getItem(OFFLINE_DEFAULT_STATE_KEY) || "MD";
+    throw error;
+  }
   const stateCode = data?.default_state || "MD";
   localStorage.setItem(OFFLINE_DEFAULT_STATE_KEY, stateCode);
   return stateCode;
@@ -283,8 +299,8 @@ export async function restoreRememberedUser() {
   }
 
   const expectedUserId = device?.userId ?? tabUserId;
+  const cachedUser = cachedOfflineUser();
   if (!navigator.onLine) {
-    const cachedUser = cachedOfflineUser();
     if (cachedUser && cachedUser.id === expectedUserId) {
       markActiveTab(cachedUser.id);
       return cachedUser;
@@ -292,8 +308,48 @@ export async function restoreRememberedUser() {
     return null;
   }
 
+  // First restore the persisted Supabase session locally. A remote verification
+  // follows, but a temporary network failure must not erase a valid 30-day
+  // device choice.
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) {
+    if (isConnectivityError(sessionError) && cachedUser?.id === expectedUserId) {
+      markActiveTab(cachedUser.id);
+      return cachedUser;
+    }
+    if (!isConnectivityError(sessionError)) {
+      forgetRememberedDevice();
+      await supabase.auth.signOut({ scope: "local" });
+    }
+    return null;
+  }
+
+  const sessionUser = sessionData.session?.user;
+  if (!sessionUser) {
+    // This is normal immediately after signup when email confirmation is
+    // required. Preserve the opt-in so the confirmation redirect can restore.
+    return null;
+  }
+  if (sessionUser.id !== expectedUserId) {
+    forgetRememberedDevice();
+    await supabase.auth.signOut({ scope: "local" });
+    return null;
+  }
+
   const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user || data.user.id !== expectedUserId) {
+  if (error || !data.user) {
+    if (error && isConnectivityError(error)) {
+      const fallbackUser = cachedUser?.id === expectedUserId
+        ? cachedUser
+        : {
+            id: sessionUser.id,
+            name: displayNameFor(sessionUser),
+            email: sessionUser.email ?? "",
+          };
+      markActiveTab(fallbackUser.id);
+      cacheOfflineUser(fallbackUser);
+      return fallbackUser;
+    }
     forgetRememberedDevice();
     await supabase.auth.signOut({ scope: "local" });
     return null;
@@ -326,14 +382,21 @@ export async function getSubscription() {
     return { status: "active", isPremium: true, currentPeriodEnd: null as string | null };
   }
   if (!navigator.onLine) return cachedSubscription();
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError) {
+    if (isConnectivityError(userError)) return cachedSubscription();
+    throw userError;
+  }
   if (!userData.user) return { status: "inactive", isPremium: false, currentPeriodEnd: null };
   const { data, error } = await supabase
     .from("subscriptions")
     .select("status,current_period_end")
     .eq("user_id", userData.user.id)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (isConnectivityError(error)) return cachedSubscription();
+    throw error;
+  }
   const status = data?.status ?? "inactive";
   const snapshot = {
     status,
@@ -580,7 +643,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       entries: input.entries,
       bird_count: birdCount,
       photo_path: photoPath,
-      app_version: "1.42",
+      app_version: "1.43",
     })
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,photo_path")
     .single();
@@ -618,7 +681,7 @@ export async function syncPendingHunts() {
       season_year: item.input.seasonYear ?? null,
       entries: item.input.entries,
       bird_count: birdCount,
-      app_version: "1.42-offline-sync",
+      app_version: "1.43-offline-sync",
     });
     if (error) {
       remainingQueue.push(...queue.slice(index));

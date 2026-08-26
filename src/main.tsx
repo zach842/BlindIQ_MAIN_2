@@ -19,7 +19,7 @@ if ("serviceWorker" in navigator) {
     });
 
     void navigator.serviceWorker
-      .register("/sw.js?v=1.42", { updateViaCache: "none" })
+      .register("/sw.js?v=1.43", { updateViaCache: "none" })
       .then((registration) => registration.update())
       .catch(() => {
         // The app remains fully usable if a browser blocks service workers.

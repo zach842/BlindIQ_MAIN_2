@@ -37,7 +37,7 @@ export async function createHuntShareFile(input: HuntShareInput) {
 
   const [background, logo] = await Promise.all([
     loadImage("/duck-home-page.png"),
-    loadImage("/blindiq-logo.png"),
+    loadImage("/blindiq-logo-hunt-log-share.png"),
   ]);
 
   const backgroundRatio = Math.max(canvas.width / background.width, canvas.height / background.height);
@@ -111,7 +111,7 @@ export async function createHuntShareFile(input: HuntShareInput) {
   context.fillStyle = "#d3a63f";
   context.font = "800 27px Inter, sans-serif";
   context.textAlign = "right";
-  context.fillText("BLINDIQ.APP  •  HUNT WITH CONFIDENCE", 1008, 1247);
+  context.fillText("BLINDIQ.APP  •  HUNT. LOG. SHARE", 1008, 1247);
   context.textAlign = "left";
 
   const blob = await canvasBlob(canvas);
