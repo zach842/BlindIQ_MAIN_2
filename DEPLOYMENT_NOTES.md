@@ -1,5 +1,9 @@
 # BlindIQ Deployment Notes
 
+## v1.44 — Restored Closed Logo Border
+
+This release restores the complete lower gold border around the BlindIQ **Hunt. Log. Share** badge everywhere the primary logo is displayed, including the device-check screen, authentication experience, app header, and generated hunt-sharing visuals. It retains the remembered-device reliability improvements and all Migration Pulse functionality from v1.43.
+
 ## v1.43 — Hunt. Log. Share + Remembered-Device Reliability
 
 - Replaced the main welcome message with **Hunt. Log. Share**.

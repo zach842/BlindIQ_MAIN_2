@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 29 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.43**. The primary brand line is now **Hunt. Log. Share**, and the 30-day remembered-device flow now survives temporary connection failures, supports email-confirmation signup flows, and restores the signed-in user before refreshing nonessential account details. Migration Pulse continues to display its flyway-wide movement-potential score explicitly in `##/100` format across the Atlantic and Mississippi Flyways.
+This package is **BlindIQ v1.44**. The BlindIQ **Hunt. Log. Share** badge now has a complete closed gold border across the loading, app, and sharing experiences. The 30-day remembered-device flow continues to survive temporary connection failures, supports email-confirmation signup flows, and restores the signed-in user before refreshing nonessential account details. Migration Pulse continues to display its flyway-wide movement-potential score explicitly in `##/100` format across the Atlantic and Mississippi Flyways.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -78,7 +78,7 @@ This package is **BlindIQ v1.43**. The primary brand line is now **Hunt. Log. Sh
 - Clearly labeled live, cached, and preview modes—without presenting modeled conditions as confirmed bird observations
 - Automatic six-hour Supabase refresh scaffolding, source-run health logs, and server-only raw observations
 - Offline access to the last successfully loaded Migration Pulse snapshot
-- Visible v1.43 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.44 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
@@ -285,7 +285,7 @@ The existing membership webhook already recognizes Stripe's `trialing` status as
 
 ### Stripe customer portal and cancellation
 
-BlindIQ v1.43 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
+BlindIQ v1.44 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
 
 Activation requires three dashboard steps:
 
@@ -368,7 +368,7 @@ The included agreement is a product-specific working draft, not a substitute for
 
 ## Apply the private hunt-photo database update
 
-Before deploying v1.43, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
+Before deploying v1.44, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
 
 ```text
 supabase/migrations/20260823235658_hunt_photos.sql
