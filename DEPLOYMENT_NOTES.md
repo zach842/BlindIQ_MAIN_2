@@ -1,5 +1,17 @@
 # BlindIQ Deployment Notes
 
+## v1.52 — Pacific Flyway + Nationwide Flyway Coverage
+
+This release completes the four-flyway Migration Pulse interface by adding Alaska & North Pacific, Pacific Northwest, and Pacific Southwest planning regions. It identifies divided western states with an asterisk, adds automatic Pacific selection for the eight complete Pacific member states, expands member alert preferences, advances offline caching, and updates the scheduled function from nine to twelve regions. The cumulative `202608270003_add_pacific_flyway.sql` update can take an existing two-flyway or three-flyway database directly to all four.
+
+## v1.51 — Central Flyway Migration Pulse
+
+This release adds the official Central Flyway as the third complete Migration Pulse report. It includes Northern Central, Central Plains, and Southern Central planning regions; automatic state-aware selection; live and preview `##/100` scores; offline caching; Central Flyway notification preferences; and nine-region scheduled refresh coverage. Existing projects must run `supabase/migrations/202608270002_add_central_flyway.sql` once and redeploy the updated `migration-refresh` Edge Function before the Central report can show live data.
+
+## v1.50 — Field Alerts + Notification Center
+
+This release adds opt-in website-app push notifications and a private in-app Notification Center. Members can choose season, regulation, Migration Pulse, unfinished-hunt, trial, and saved-hunt alerts; follow states and the Atlantic/Mississippi Flyways; and select a `45/100`, `65/100`, or `80/100` migration threshold. The server-side scheduler deduplicates events, checks every 15 minutes, and disables expired device endpoints. Complete `PUSH_NOTIFICATIONS_SETUP.md` before expecting real push delivery.
+
 ## v1.44 — Restored Closed Logo Border
 
 This release restores the complete lower gold border around the BlindIQ **Hunt. Log. Share** badge everywhere the primary logo is displayed, including the device-check screen, authentication experience, app header, and generated hunt-sharing visuals. It retains the remembered-device reliability improvements and all Migration Pulse functionality from v1.43.

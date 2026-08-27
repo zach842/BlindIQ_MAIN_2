@@ -63,12 +63,12 @@ export default function MigrationPage({ stateCode, isOnline }: { stateCode: stri
   return (
     <div className="page migration-page">
       <header className="migration-heading">
-        <div><p className="eyebrow">BLINDIQ MIGRATION PULSE • EARLY ACCESS</p><h1>Follow the flyways.</h1><p>Daily movement potential for the Atlantic and Mississippi Flyways—built for planning, not promising birds.</p></div>
+        <div><p className="eyebrow">BLINDIQ MIGRATION PULSE • EARLY ACCESS</p><h1>Follow the flyways.</h1><p>Daily movement potential across all four U.S. administrative flyways—built for planning, not promising birds.</p></div>
         <div className="migration-heading__score"><span>FLYWAY PULSE</span><strong>{flywayAverage}<em>/100</em></strong><small>{migrationStatus(flywayAverage)}</small></div>
       </header>
 
       <div className="flyway-tabs" role="tablist" aria-label="Choose a flyway">
-        {(["Atlantic", "Mississippi"] as const).map((name) => (
+        {(["Atlantic", "Mississippi", "Central", "Pacific"] as const).map((name) => (
           <button className={flyway === name ? "active" : ""} type="button" role="tab" aria-selected={flyway === name} key={name} onClick={() => setFlyway(name)}>{name}<small>Flyway</small></button>
         ))}
       </div>
@@ -96,7 +96,7 @@ export default function MigrationPage({ stateCode, isOnline }: { stateCode: stri
             );
           })}
         </div>
-        <small className="migration-map-note">Regional indicators are planning summaries, not exact bird locations, legal flyway boundaries, or public-land boundaries. Official flyway lines may divide states.</small>
+        <small className="migration-map-note">Regional indicators are planning summaries, not exact bird locations, legal flyway boundaries, or public-land boundaries. An asterisk marks a state divided between the Central and Pacific administrative flyways.</small>
       </section>
 
       {selectedRegion && selectedSnapshot && (
@@ -117,7 +117,7 @@ export default function MigrationPage({ stateCode, isOnline }: { stateCode: stri
         <div><p className="eyebrow">SOURCE TRANSPARENCY</p><h2>What powers Migration Pulse</h2><p>The automatic starter model uses current National Weather Service forecasts with a transparent seasonal baseline. Licensed observation and radar feeds can be added later without changing this interface.</p></div>
         <div className="migration-source-list">
           <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noreferrer"><span>LIVE WEATHER</span><strong>National Weather Service</strong><small>Wind, temperature, precipitation, and forecast timing ↗</small></a>
-          <a href="https://www.fws.gov/library/collections/waterfowl-population-status-reports" target="_blank" rel="noreferrer"><span>REFERENCE CONTEXT</span><strong>U.S. Fish & Wildlife Service</strong><small>Annual population and habitat reports—not a live score input ↗</small></a>
+          <a href="https://www.fws.gov/partner/migratory-bird-program-administrative-flyways" target="_blank" rel="noreferrer"><span>OFFICIAL FLYWAY CONTEXT</span><strong>U.S. Fish & Wildlife Service</strong><small>Administrative flyway membership and divided-state boundaries ↗</small></a>
           <article><span>FUTURE LICENSED FEEDS</span><strong>Observation + radar partners</strong><small>Not ingested until commercial permission and attribution are approved.</small></article>
         </div>
       </section>

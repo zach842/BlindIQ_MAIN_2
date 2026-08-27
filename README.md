@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 29 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.44**. The BlindIQ **Hunt. Log. Share** badge now has a complete closed gold border across the loading, app, and sharing experiences. The 30-day remembered-device flow continues to survive temporary connection failures, supports email-confirmation signup flows, and restores the signed-in user before refreshing nonessential account details. Migration Pulse continues to display its flyway-wide movement-potential score explicitly in `##/100` format across the Atlantic and Mississippi Flyways.
+This package is **BlindIQ v1.52**. Migration Pulse now covers all four U.S. administrative flyways: Atlantic, Mississippi, Central, and Pacific. The Pacific report adds Alaska & North Pacific, Pacific Northwest, and Pacific Southwest planning regions, divided-state labeling, live weather-driven scores, offline preview/cache behavior, state-aware flyway selection, and Pacific Flyway alert preferences. Existing Hunt. Log. Share, Field Alerts, offline, account, membership, field-guide, harvest-photo, and hunt-history functionality remains intact.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -72,13 +72,17 @@ This package is **BlindIQ v1.44**. The BlindIQ **Hunt. Log. Share** badge now ha
 - End-of-dashboard and Account links to the community form, with context-aware Back navigation
 - Prepared feedback and support emails addressed to office@blindiq.app
 - Group Hunt Mode — In Development preview directly below Test Hunt
-- Migration Pulse for the Atlantic and Mississippi Flyways
-- North, Mid, and South monitoring regions in each flyway
+- Migration Pulse for all four U.S. administrative flyways
+- North, Mid, and South monitoring regions in each flyway, including official divided-state labeling for Central and Pacific
 - Weather-driven 48-hour movement potential using current National Weather Service forecasts and a transparent seasonal baseline
 - Clearly labeled live, cached, and preview modes—without presenting modeled conditions as confirmed bird observations
 - Automatic six-hour Supabase refresh scaffolding, source-run health logs, and server-only raw observations
 - Offline access to the last successfully loaded Migration Pulse snapshot
-- Visible v1.44 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Member-controlled Field Alerts page and in-app Notification Center
+- Web Push support for installed iPhone/iPad website apps, Android, and compatible desktop browsers
+- Automated season, regulation, Migration Pulse, unfinished-hunt, trial, and saved-hunt milestone events
+- State, flyway, alert-category, and migration-threshold preferences
+- Visible v1.52 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
@@ -248,12 +252,14 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_STRIPE_PRICE_ID=
 VITE_STRIPE_CHECKOUT_URL=
+VITE_WEB_PUSH_PUBLIC_KEY=
 ```
 
 - Blank values keep the app in demo mode.
 - `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` connect authentication.
 - `VITE_STRIPE_PRICE_ID` identifies the $10.99 recurring annual price in Stripe.
 - `VITE_STRIPE_CHECKOUT_URL` can temporarily point to a Stripe Payment Link.
+- `VITE_WEB_PUSH_PUBLIC_KEY` is the public half of the Web Push VAPID key pair. The private half stays only in Supabase.
 
 After creating the new $10.99 recurring annual Stripe price and Payment Link, set:
 
@@ -285,7 +291,7 @@ The existing membership webhook already recognizes Stripe's `trialing` status as
 
 ### Stripe customer portal and cancellation
 
-BlindIQ v1.44 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
+BlindIQ v1.52 includes a **Manage or cancel free trial** button for trialing members and a **Manage or cancel membership** button for active members. These buttons open Stripe's secure customer portal; BlindIQ never handles card details directly.
 
 Activation requires three dashboard steps:
 
@@ -344,11 +350,13 @@ The current `src/services.ts` file is the boundary for live services:
 
 The secure Stripe webhook, subscription schema, row-level security policies, and membership gating are included. Follow `SECURE_MEMBERSHIP_SETUP.md` to activate them in Supabase and Stripe.
 
-## Activate Atlantic + Mississippi Migration Pulse
+## Activate all four Migration Pulse flyways
 
 The member interface works immediately in a clearly marked seasonal preview mode. To activate automatic National Weather Service updates, follow `MIGRATION_PULSE_SETUP.md`. The one-time setup applies:
 
 - `supabase/migrations/20260825135713_migration_pulse.sql` for the secured database tables;
+- `supabase/migrations/202608270002_add_central_flyway.sql` is retained for anyone who previously deployed the Central-only v1.51 update;
+- `supabase/migrations/202608270003_add_pacific_flyway.sql` is the current cumulative Central + Pacific update for an existing two-flyway deployment. If v1.51 was never deployed, run only this file;
 - `supabase/functions/migration-refresh/index.ts` for the server-only updater; and
 - `supabase/cron/migration_refresh_schedule.sql` for the six-hour schedule.
 
@@ -366,9 +374,13 @@ Paste it into the query editor and click **Run** once. This adds the default sta
 
 The included agreement is a product-specific working draft, not a substitute for legal advice. Have a qualified attorney review the agreement, business name/entity, governing-law provision, privacy practices, and subscription terms before broad commercial launch.
 
+## Activate website-app push alerts
+
+The notification interface is included in the build. Complete the one-time database, VAPID-key, Edge Function, Vercel variable, and 15-minute scheduler setup in `PUSH_NOTIFICATIONS_SETUP.md`. Push delivery will not begin until those steps are completed.
+
 ## Apply the private hunt-photo database update
 
-Before deploying v1.44, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
+Before deploying this version, open **Supabase → SQL Editor → New query**. Copy the complete contents of:
 
 ```text
 supabase/migrations/20260823235658_hunt_photos.sql
@@ -387,8 +399,10 @@ src/
 ├── legal.ts      Versioned Terms of Use and User Agreement
 ├── huntPhotos.ts Private harvest-photo validation and compression
 ├── location.ts   Reserved location/forecast service for a possible future release; not currently shown
-├── migration.ts  Atlantic and Mississippi regions, types, and transparent preview model
+├── migration.ts  All four flyways, region types, and transparent preview model
 ├── MigrationPage.tsx Migration Pulse interface and source transparency
+├── notifications.ts Browser push registration, preferences, and inbox services
+├── NotificationsPage.tsx Member Field Alerts and Notification Center interface
 ├── seasonStatus.ts Date-aware state season-status resolver
 ├── services.ts   Supabase/Stripe configuration boundary
 ├── styles.css    BlindIQ design system and responsive layout

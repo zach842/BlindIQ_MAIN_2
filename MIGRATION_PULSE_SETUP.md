@@ -1,6 +1,6 @@
 # BlindIQ Migration Pulse setup
 
-BlindIQ v1.44 includes the complete Atlantic and Mississippi Flyway interface, an explicit **##/100** Flyway Pulse score, a safe seasonal preview, offline cache support, database tables, and an automated weather-driven updater. The website app runs immediately after deployment. Complete this one-time Supabase setup to replace the preview with automatic six-hour updates.
+BlindIQ v1.52 includes the complete Atlantic, Mississippi, Central, and Pacific Flyway interface, an explicit **##/100** Flyway Pulse score, a safe seasonal preview, offline cache support, database tables, and an automated weather-driven updater. The website app runs immediately after deployment. Complete this one-time Supabase setup to replace the preview with automatic six-hour updates.
 
 ## What the first automated version measures
 
@@ -10,7 +10,7 @@ Migration Pulse combines:
 - National Weather Service wind direction and speed;
 - 48-hour temperature change;
 - precipitation and freezing-weather pressure; and
-- broad North, Mid, and South monitoring regions in both flyways.
+- broad North, Mid, and South monitoring regions in all four U.S. flyways.
 
 It reports **movement potential**, not confirmed bird counts or exact bird locations. BlindIQ does not ingest eBird, BirdCast, forum, or commercial observation data unless the appropriate commercial rights and attribution terms are approved.
 
@@ -23,7 +23,9 @@ It reports **movement potential**, not confirmed bird counts or exact bird locat
 5. Copy the entire file into the query editor.
 6. Choose **Run**.
 
-This creates six public planning regions, time-stamped forecast snapshots, private source observations, and private update-health logs. Row Level Security lets signed-in members read the region and forecast summaries while keeping raw update records server-only.
+This creates twelve public planning regions, time-stamped forecast snapshots, private source observations, and private update-health logs. Row Level Security lets signed-in members read the region and forecast summaries while keeping raw update records server-only.
+
+If Migration Pulse is already active in your Supabase project, do not rerun the original migration. Instead, run the cumulative `supabase/migrations/202608270003_add_pacific_flyway.sql` once and then redeploy the updated `migration-refresh` function in Step 2. That update safely adds both Central and Pacific when upgrading directly from the original two-flyway release.
 
 ## Step 2 — Deploy the scheduled updater
 
@@ -98,7 +100,7 @@ The query returns a request ID because `pg_net` sends the request asynchronously
 
 In **Table Editor**, confirm:
 
-- `migration_regions` contains six rows;
+- `migration_regions` contains twelve rows;
 - `migration_snapshots` contains fresh rows; and
 - `migration_source_runs` shows `success` or `partial` with a recent completion time.
 

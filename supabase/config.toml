@@ -16,3 +16,13 @@ entrypoint = "./functions/migration-refresh/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/migration-refresh/*.html" ]
+
+[functions.notification-test]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/notification-test/index.ts"
+
+[functions.notification-process]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/notification-process/index.ts"

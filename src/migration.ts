@@ -1,4 +1,4 @@
-export type FlywayName = "Atlantic" | "Mississippi";
+export type FlywayName = "Atlantic" | "Mississippi" | "Central" | "Pacific";
 
 export type MigrationRegion = {
   id: string;
@@ -103,10 +103,78 @@ export const migrationRegions: MigrationRegion[] = [
     longitude: -91.45,
     displayOrder: 3,
   },
+  {
+    id: "central-north",
+    flyway: "Central",
+    name: "Northern Central",
+    shortName: "North",
+    states: ["MT*", "ND", "SD"],
+    description: "Northern Great Plains, prairie potholes, and upper Central Flyway staging areas.",
+    latitude: 45.45,
+    longitude: -101.2,
+    displayOrder: 1,
+  },
+  {
+    id: "central-mid",
+    flyway: "Central",
+    name: "Central Plains",
+    shortName: "Mid",
+    states: ["WY*", "CO*", "NE", "KS"],
+    description: "High Plains reservoirs, Platte corridor, and central agricultural stopover habitat.",
+    latitude: 40.45,
+    longitude: -99.45,
+    displayOrder: 2,
+  },
+  {
+    id: "central-south",
+    flyway: "Central",
+    name: "Southern Central",
+    shortName: "South",
+    states: ["NM*", "OK", "TX"],
+    description: "Southern High Plains, Red River corridor, and Gulf Coast wintering habitat.",
+    latitude: 34.75,
+    longitude: -99.25,
+    displayOrder: 3,
+  },
+  {
+    id: "pacific-north",
+    flyway: "Pacific",
+    name: "Alaska & North Pacific",
+    shortName: "North",
+    states: ["AK"],
+    description: "Alaska breeding and staging areas feeding the Pacific coastal and interior migration corridors.",
+    latitude: 61.22,
+    longitude: -149.9,
+    displayOrder: 1,
+  },
+  {
+    id: "pacific-mid",
+    flyway: "Pacific",
+    name: "Pacific Northwest",
+    shortName: "Mid",
+    states: ["WA", "OR", "ID", "MT*", "WY*"],
+    description: "Pacific Northwest wetlands, Columbia Basin, and northern Intermountain staging habitat.",
+    latitude: 43.62,
+    longitude: -116.2,
+    displayOrder: 2,
+  },
+  {
+    id: "pacific-south",
+    flyway: "Pacific",
+    name: "Pacific Southwest",
+    shortName: "South",
+    states: ["CA", "NV", "UT", "AZ", "CO*", "NM*"],
+    description: "California valleys, Great Basin, desert wetlands, and southwestern wintering habitat.",
+    latitude: 36.74,
+    longitude: -119.78,
+    displayOrder: 3,
+  },
 ];
 
 const ATLANTIC_STATE_CODES = new Set(["ME", "NH", "VT", "MA", "RI", "CT", "NY", "PA", "NJ", "DE", "MD", "VA", "WV", "NC", "SC", "GA", "FL"]);
 const MISSISSIPPI_STATE_CODES = new Set(["MN", "WI", "MI", "IA", "IL", "IN", "OH", "MO", "KY", "TN", "AR", "MS", "LA", "AL"]);
+const CENTRAL_STATE_CODES = new Set(["MT", "WY", "CO", "NM", "TX", "OK", "KS", "NE", "SD", "ND"]);
+const PACIFIC_STATE_CODES = new Set(["AK", "AZ", "CA", "ID", "NV", "OR", "UT", "WA"]);
 
 export function migrationStatus(index: number) {
   if (index >= 82) return "Peak movement";
@@ -181,6 +249,8 @@ export function formatMigrationTime(value: string) {
 }
 
 export function flywayForState(stateCode: string): FlywayName | null {
+  if (PACIFIC_STATE_CODES.has(stateCode)) return "Pacific";
+  if (CENTRAL_STATE_CODES.has(stateCode)) return "Central";
   if (MISSISSIPPI_STATE_CODES.has(stateCode)) return "Mississippi";
   if (ATLANTIC_STATE_CODES.has(stateCode)) return "Atlantic";
   return null;

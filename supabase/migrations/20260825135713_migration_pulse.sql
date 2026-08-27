@@ -1,6 +1,6 @@
 create table if not exists public.migration_regions (
   id text primary key,
-  flyway text not null check (flyway in ('Atlantic', 'Mississippi')),
+  flyway text not null check (flyway in ('Atlantic', 'Mississippi', 'Central', 'Pacific')),
   name text not null,
   short_name text not null,
   state_codes text[] not null default '{}',
@@ -103,7 +103,13 @@ values
   ('atlantic-south', 'Atlantic', 'Southern Atlantic', 'South', array['NC','SC','GA','FL'], 'Carolina sounds, coastal marshes, and southern wintering areas.', 33.84, -78.72, 3),
   ('mississippi-north', 'Mississippi', 'Northern Mississippi', 'North', array['MN','WI','MI'], 'Prairie transition, Great Lakes, and upper Mississippi staging areas.', 44.95, -92.95, 1),
   ('mississippi-mid', 'Mississippi', 'Central Mississippi', 'Mid', array['IA','IL','IN','OH','MO','KY','TN'], 'Major river confluences and central agricultural stopover habitat.', 39.45, -90.55, 2),
-  ('mississippi-south', 'Mississippi', 'Southern Mississippi', 'South', array['AR','MS','LA','AL'], 'Lower Mississippi alluvial valley and Gulf Coast wintering habitat.', 32.62, -91.45, 3)
+  ('mississippi-south', 'Mississippi', 'Southern Mississippi', 'South', array['AR','MS','LA','AL'], 'Lower Mississippi alluvial valley and Gulf Coast wintering habitat.', 32.62, -91.45, 3),
+  ('central-north', 'Central', 'Northern Central', 'North', array['MT*','ND','SD'], 'Northern Great Plains, prairie potholes, and upper Central Flyway staging areas.', 45.45, -101.20, 1),
+  ('central-mid', 'Central', 'Central Plains', 'Mid', array['WY*','CO*','NE','KS'], 'High Plains reservoirs, Platte corridor, and central agricultural stopover habitat.', 40.45, -99.45, 2),
+  ('central-south', 'Central', 'Southern Central', 'South', array['NM*','OK','TX'], 'Southern High Plains, Red River corridor, and Gulf Coast wintering habitat.', 34.75, -99.25, 3),
+  ('pacific-north', 'Pacific', 'Alaska & North Pacific', 'North', array['AK'], 'Alaska breeding and staging areas feeding the Pacific coastal and interior migration corridors.', 61.22, -149.90, 1),
+  ('pacific-mid', 'Pacific', 'Pacific Northwest', 'Mid', array['WA','OR','ID','MT*','WY*'], 'Pacific Northwest wetlands, Columbia Basin, and northern Intermountain staging habitat.', 43.62, -116.20, 2),
+  ('pacific-south', 'Pacific', 'Pacific Southwest', 'South', array['CA','NV','UT','AZ','CO*','NM*'], 'California valleys, Great Basin, desert wetlands, and southwestern wintering habitat.', 36.74, -119.78, 3)
 on conflict (id) do update set
   flyway = excluded.flyway,
   name = excluded.name,

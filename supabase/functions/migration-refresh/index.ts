@@ -92,6 +92,12 @@ const regions: Region[] = [
   { id: "mississippi-north", name: "Northern Mississippi", displayOrder: 1, latitude: 44.95, longitude: -92.95 },
   { id: "mississippi-mid", name: "Central Mississippi", displayOrder: 2, latitude: 39.45, longitude: -90.55 },
   { id: "mississippi-south", name: "Southern Mississippi", displayOrder: 3, latitude: 32.62, longitude: -91.45 },
+  { id: "central-north", name: "Northern Central", displayOrder: 1, latitude: 45.45, longitude: -101.2 },
+  { id: "central-mid", name: "Central Plains", displayOrder: 2, latitude: 40.45, longitude: -99.45 },
+  { id: "central-south", name: "Southern Central", displayOrder: 3, latitude: 34.75, longitude: -99.25 },
+  { id: "pacific-north", name: "Alaska & North Pacific", displayOrder: 1, latitude: 61.22, longitude: -149.9 },
+  { id: "pacific-mid", name: "Pacific Northwest", displayOrder: 2, latitude: 43.62, longitude: -116.2 },
+  { id: "pacific-south", name: "Pacific Southwest", displayOrder: 3, latitude: 36.74, longitude: -119.78 },
 ];
 
 const nwsHeaders = {

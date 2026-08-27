@@ -11,8 +11,10 @@ const OFFLINE_SUBSCRIPTION_KEY = "blindiq-offline-subscription-v1";
 const OFFLINE_DEFAULT_STATE_KEY = "blindiq-offline-default-state-v1";
 const OFFLINE_HUNTS_KEY = "blindiq-offline-hunts-v1";
 const PENDING_HUNTS_KEY = "blindiq-pending-hunts-v1";
-const MIGRATION_CACHE_KEY = "blindiq-migration-pulse-v1";
+const MIGRATION_CACHE_KEY = "blindiq-migration-pulse-v3";
 const HUNT_PHOTOS_BUCKET = "hunt-photos";
+const DEVICE_ID_KEY = "blindiq-device-id-v1";
+const ACTIVE_HUNT_ID_KEY = "blindiq-active-hunt-id-v1";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 type RememberedDevice = {
@@ -43,6 +45,7 @@ export const appConfig = {
   supabasePublishableKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
   stripePriceId: import.meta.env.VITE_STRIPE_PRICE_ID ?? "",
   stripeCheckoutUrl: import.meta.env.VITE_STRIPE_CHECKOUT_URL ?? "",
+  webPushPublicKey: import.meta.env.VITE_WEB_PUSH_PUBLIC_KEY ?? "",
 };
 
 export const supabase =
@@ -74,6 +77,14 @@ function writeJson(key: string, value: unknown) {
   } catch {
     // Offline mode remains best effort if the browser blocks local storage.
   }
+}
+
+function deviceId() {
+  const existing = localStorage.getItem(DEVICE_ID_KEY);
+  if (existing) return existing;
+  const created = crypto.randomUUID();
+  localStorage.setItem(DEVICE_ID_KEY, created);
+  return created;
 }
 
 function cacheOfflineUser(user: OfflineUser) {
@@ -443,7 +454,7 @@ export async function getMigrationData(): Promise<MigrationData> {
 
   const regions: MigrationRegion[] = (regionResult.data ?? []).map((row) => ({
     id: row.id,
-    flyway: row.flyway === "Mississippi" ? "Mississippi" : "Atlantic",
+    flyway: row.flyway === "Mississippi" || row.flyway === "Central" || row.flyway === "Pacific" ? row.flyway : "Atlantic",
     name: row.name,
     shortName: row.short_name,
     states: stringArray(row.state_codes),
@@ -643,7 +654,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       entries: input.entries,
       bird_count: birdCount,
       photo_path: photoPath,
-      app_version: "1.43",
+      app_version: "1.52",
     })
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,photo_path")
     .single();
@@ -681,7 +692,7 @@ export async function syncPendingHunts() {
       season_year: item.input.seasonYear ?? null,
       entries: item.input.entries,
       bird_count: birdCount,
-      app_version: "1.43-offline-sync",
+      app_version: "1.52-offline-sync",
     });
     if (error) {
       remainingQueue.push(...queue.slice(index));
@@ -696,6 +707,52 @@ export async function syncPendingHunts() {
     cacheHunts(records.filter((hunt) => !hunt.id.startsWith("offline-")));
   }
   return synced;
+}
+
+export async function beginActiveHunt(input: { stateCode: string; stateName: string; zone: string }) {
+  if (!supabase || !navigator.onLine) return null;
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) return null;
+  const now = new Date().toISOString();
+  // A device can only have one current live hunt. Closing a stale local hunt
+  // prevents duplicate unfinished-hunt reminders if a hunter starts over.
+  await supabase
+    .from("active_hunts")
+    .update({ status: "discarded", completed_at: now, last_activity_at: now })
+    .eq("user_id", userData.user.id)
+    .eq("device_id", deviceId())
+    .eq("status", "active");
+  const { data, error } = await supabase
+    .from("active_hunts")
+    .insert({
+      user_id: userData.user.id,
+      device_id: deviceId(),
+      state_code: input.stateCode,
+      state_name: input.stateName,
+      zone: input.zone,
+      status: "active",
+    })
+    .select("id")
+    .single();
+  if (error) return null;
+  localStorage.setItem(ACTIVE_HUNT_ID_KEY, data.id);
+  return data.id as string;
+}
+
+export async function touchActiveHunt(zone?: string) {
+  if (!supabase || !navigator.onLine) return;
+  const huntId = localStorage.getItem(ACTIVE_HUNT_ID_KEY);
+  if (!huntId) return;
+  const update: Record<string, string> = { last_activity_at: new Date().toISOString() };
+  if (zone) update.zone = zone;
+  await supabase.from("active_hunts").update(update).eq("id", huntId);
+}
+
+export async function finishActiveHunt(status: "saved" | "discarded") {
+  const huntId = localStorage.getItem(ACTIVE_HUNT_ID_KEY);
+  localStorage.removeItem(ACTIVE_HUNT_ID_KEY);
+  if (!huntId || !supabase || !navigator.onLine) return;
+  await supabase.from("active_hunts").update({ status, completed_at: new Date().toISOString(), last_activity_at: new Date().toISOString() }).eq("id", huntId);
 }
 
 export function beginCheckout(userId: string, email: string) {

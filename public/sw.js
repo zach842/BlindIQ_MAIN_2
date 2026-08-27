@@ -1,4 +1,4 @@
-const CACHE_NAME = "blindiq-offline-v1.44";
+const CACHE_NAME = "blindiq-offline-v1.52";
 
 const CORE_ASSETS = [
   "/",
@@ -118,4 +118,47 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
 
   event.respondWith(request.mode === "navigate" ? serveNavigation(request) : serveAsset(request, event));
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : "Open BlindIQ for the latest field update." };
+  }
+
+  const title = payload.title || "BlindIQ field alert";
+  const url = payload.url || "/?view=notifications";
+  event.waitUntil((async () => {
+    await self.registration.showNotification(title, {
+      body: payload.body || "Open BlindIQ for the latest field update.",
+      icon: payload.icon || "/icon-192.png",
+      badge: payload.badge || "/icon-192.png",
+      tag: payload.tag || "blindiq-update",
+      renotify: payload.priority === "urgent",
+      data: { ...(payload.data || {}), url, eventType: payload.eventType || "update" },
+    });
+    if (self.navigator.setAppBadge) {
+      try { await self.navigator.setAppBadge(); } catch { /* Badge support is optional. */ }
+    }
+    const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    clients.forEach((client) => client.postMessage({ type: "BLINDIQ_NOTIFICATION_RECEIVED" }));
+  })());
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const destination = new URL(event.notification.data?.url || "/?view=notifications", self.location.origin).href;
+  event.waitUntil((async () => {
+    if (self.navigator.clearAppBadge) {
+      try { await self.navigator.clearAppBadge(); } catch { /* Badge support is optional. */ }
+    }
+    const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of clients) {
+      if ("navigate" in client) await client.navigate(destination);
+      if ("focus" in client) return client.focus();
+    }
+    return self.clients.openWindow(destination);
+  })());
 });
