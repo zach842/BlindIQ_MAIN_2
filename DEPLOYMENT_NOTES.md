@@ -1,5 +1,9 @@
 # BlindIQ Deployment Notes
 
+## v1.53 — Expanded Digital Field Log
+
+This release adds optional **Blind Location / Name**, **Firearm Used**, and **Notes** fields to the Save Hunt screen. These private field-log details are preserved in demo mode, cached for offline hunts, synchronized with Supabase after reconnection, and displayed with each record in My Hunts. Run `supabase/migrations/202608290001_hunt_field_details.sql` once before deploying the v1.53 frontend.
+
 ## v1.52 — Pacific Flyway + Nationwide Flyway Coverage
 
 This release completes the four-flyway Migration Pulse interface by adding Alaska & North Pacific, Pacific Northwest, and Pacific Southwest planning regions. It identifies divided western states with an asterisk, adds automatic Pacific selection for the eight complete Pacific member states, expands member alert preferences, advances offline caching, and updates the scheduled function from nine to twelve regions. The cumulative `202608270003_add_pacific_flyway.sql` update can take an existing two-flyway or three-flyway database directly to all four.

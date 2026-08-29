@@ -57,6 +57,9 @@ export type HuntRecord = {
   zone: string;
   entries: HarvestEntry[];
   isSimulation: boolean;
+  blindName?: string | null;
+  firearmUsed?: string | null;
+  notes?: string | null;
   photoPath?: string | null;
   photoUrl?: string | null;
 };
@@ -68,6 +71,9 @@ export type NewHuntRecord = {
   entries: HarvestEntry[];
   isSimulation: boolean;
   seasonYear?: string;
+  blindName?: string;
+  firearmUsed?: string;
+  notes?: string;
 };
 
 export type DevicePosition = {

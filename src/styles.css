@@ -312,6 +312,18 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .summary-total strong { grid-row: span 2; font: 800 54px "Barlow Condensed"; }
 .summary-total p { margin: 3px 0 0; font-size: 12px; }
 .summary-row { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding: 14px 0; font-size: 13px; }
+.hunt-details-card { margin: 18px 0; padding: 22px; border: 1px solid #c7a657; border-radius: 10px; background: linear-gradient(145deg, #fffdf7, #f0ebde); box-shadow: 0 12px 28px rgba(23,48,39,.07); }
+.hunt-details-card__heading { display: flex; justify-content: space-between; gap: 18px; align-items: start; margin-bottom: 18px; }
+.hunt-details-card__heading h2 { margin: 4px 0 0; color: var(--forest); font-size: 32px; }
+.hunt-details-card__heading > span { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid #bd9a48; border-radius: 50%; color: var(--gold); background: var(--forest); font-size: 20px; }
+.hunt-details-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 15px; }
+.hunt-details-grid label { display: grid; gap: 8px; color: #75643d; font-size: 9px; font-weight: 900; letter-spacing: 1.2px; }
+.hunt-details-grid input, .hunt-details-grid textarea { width: 100%; border: 1px solid #cec6b3; border-radius: 7px; padding: 13px 14px; color: var(--deep); background: rgba(255,255,255,.86); font: 500 13px/1.45 Inter, sans-serif; outline: none; }
+.hunt-details-grid input:focus, .hunt-details-grid textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(218,171,53,.18); }
+.hunt-details-grid input:disabled, .hunt-details-grid textarea:disabled { opacity: .8; color: #47534c; background: #ece9df; }
+.hunt-details-grid textarea { resize: vertical; min-height: 112px; }
+.hunt-details-notes { grid-column: 1 / -1; }
+.hunt-details-card > small { display: block; margin-top: 10px; color: #7b837c; font-size: 8px; line-height: 1.5; }
 .empty { color: var(--muted); }
 .text-button { width: 100%; background: none; border: 0; padding: 18px; color: var(--muted); }
 .share-hunt-card { display: grid; grid-template-columns: 50px minmax(0,1fr); gap: 16px; margin: 18px 0; padding: 22px; border: 1px solid #9d8449; border-radius: 10px; color: white; background: linear-gradient(135deg, var(--deep), var(--forest-2)); }
@@ -380,6 +392,10 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .history-list article > div:nth-child(2) strong, .history-list article > div:nth-child(2) span { display: block; }
 .history-list article > div:nth-child(2) span { font-size: 11px; color: var(--muted); margin-top: 3px; }
 .history-list article p { font-size: 10px; color: var(--muted); margin: 7px 0 0; }
+.history-field-details { display: grid; gap: 5px; margin-top: 9px; padding-top: 8px; border-top: 1px solid #e0ddd3; }
+.history-field-details > span, .history-field-details > p { display: block; margin: 0 !important; color: #4f5b54 !important; font-size: 9px !important; line-height: 1.45; }
+.history-field-details b { margin-right: 6px; color: #9f771a; font-size: 8px; letter-spacing: .7px; text-transform: uppercase; }
+.history-field-details > p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; white-space: pre-line; }
 .history-list article > b { font: 800 28px "Barlow Condensed"; color: var(--forest); }
 .history-photo { width: 64px; height: 64px; display: block; overflow: hidden; border: 2px solid #d4b05a; border-radius: 7px; background: #dfe4de; }
 .history-photo img { width: 100%; height: 100%; display: block; object-fit: cover; }
@@ -641,6 +657,9 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
   .share-hunt-card__icon { width: 42px; height: 42px; }
   .share-hunt-actions { grid-template-columns: 1fr; }
   .hunt-photo-card { grid-template-columns: 1fr; gap: 16px; padding: 16px; }
+  .hunt-details-card { padding: 17px; }
+  .hunt-details-grid { grid-template-columns: 1fr; }
+  .hunt-details-notes { grid-column: auto; }
   .hunt-photo-card > img, .hunt-photo-card__camera { height: 190px; min-height: 190px; }
   .hunt-photo-card__actions { align-items: stretch; flex-direction: column; }
   .hunt-photo-card__actions .button, .hunt-photo-card__actions > button { width: 100%; }

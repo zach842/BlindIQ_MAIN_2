@@ -508,6 +508,9 @@ function rowToHuntRecord(row: {
   zone: string;
   is_simulation: boolean;
   entries: unknown;
+  blind_name: string | null;
+  firearm_used: string | null;
+  notes: string | null;
   photo_path: string | null;
 }): HuntRecord {
   return {
@@ -519,6 +522,9 @@ function rowToHuntRecord(row: {
     zone: row.zone,
     isSimulation: row.is_simulation,
     entries: Array.isArray(row.entries) ? row.entries as HarvestEntry[] : [],
+    blindName: row.blind_name,
+    firearmUsed: row.firearm_used,
+    notes: row.notes,
     photoPath: row.photo_path,
   };
 }
@@ -561,7 +567,7 @@ export async function listHunts(): Promise<HuntRecord[]> {
   if (!navigator.onLine) return cachedHunts();
   const { data, error } = await supabase
     .from("hunts")
-    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,photo_path")
+    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
     .order("hunted_at", { ascending: false });
   if (error) {
     if (isConnectivityError(error)) return cachedHunts();
@@ -582,6 +588,9 @@ function offlineRecord(input: NewHuntRecord, huntedAt: string, id = `offline-${c
     zone: input.zone,
     entries: input.entries,
     isSimulation: input.isSimulation,
+    blindName: input.blindName || null,
+    firearmUsed: input.firearmUsed || null,
+    notes: input.notes || null,
   };
 }
 
@@ -607,6 +616,9 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       zone: input.zone,
       entries: input.entries,
       isSimulation: input.isSimulation,
+      blindName: input.blindName || null,
+      firearmUsed: input.firearmUsed || null,
+      notes: input.notes || null,
       photoPath: null,
       photoUrl,
     };
@@ -653,10 +665,13 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       season_year: input.seasonYear ?? null,
       entries: input.entries,
       bird_count: birdCount,
+      blind_name: input.blindName?.trim() || null,
+      firearm_used: input.firearmUsed?.trim() || null,
+      notes: input.notes?.trim() || null,
       photo_path: photoPath,
-      app_version: "1.52",
+      app_version: "1.53",
     })
-    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,photo_path")
+    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
     .single();
   if (error) {
     if (photoPath) await supabase.storage.from(HUNT_PHOTOS_BUCKET).remove([photoPath]);
@@ -692,7 +707,10 @@ export async function syncPendingHunts() {
       season_year: item.input.seasonYear ?? null,
       entries: item.input.entries,
       bird_count: birdCount,
-      app_version: "1.52-offline-sync",
+      blind_name: item.input.blindName?.trim() || null,
+      firearm_used: item.input.firearmUsed?.trim() || null,
+      notes: item.input.notes?.trim() || null,
+      app_version: "1.53-offline-sync",
     });
     if (error) {
       remainingQueue.push(...queue.slice(index));

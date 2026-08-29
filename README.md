@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 29 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.52**. Migration Pulse now covers all four U.S. administrative flyways: Atlantic, Mississippi, Central, and Pacific. The Pacific report adds Alaska & North Pacific, Pacific Northwest, and Pacific Southwest planning regions, divided-state labeling, live weather-driven scores, offline preview/cache behavior, state-aware flyway selection, and Pacific Flyway alert preferences. Existing Hunt. Log. Share, Field Alerts, offline, account, membership, field-guide, harvest-photo, and hunt-history functionality remains intact.
+This package is **BlindIQ v1.53**. Hunters can now save an optional blind location/name, firearm used, and private notes with every live or test hunt. These field-log details persist in Supabase, work with offline hunt saving and later synchronization, and appear with the saved record in My Hunts. Migration Pulse continues to cover all four U.S. administrative flyways: Atlantic, Mississippi, Central, and Pacific.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -59,6 +59,8 @@ This package is **BlindIQ v1.52**. Migration Pulse now covers all four U.S. admi
 - Species, sex, parent-species, and zone-specific bag-limit logic
 - Live list of birds that remain available under loaded demo rules
 - Hunt summary and permanent account-scoped Supabase history
+- Optional blind location/name, firearm used, and 2,000-character notes on the Save Hunt screen
+- Field details retained in demo mode, offline hunt queues, Supabase synchronization, and My Hunts
 - Optional harvest-photo capture or camera-roll selection on the Save Hunt screen
 - In-browser photo resizing and compression before upload
 - Private, account-owned Supabase Storage photos with short-lived signed viewing links in My Hunts
@@ -82,7 +84,7 @@ This package is **BlindIQ v1.52**. Migration Pulse now covers all four U.S. admi
 - Web Push support for installed iPhone/iPad website apps, Android, and compatible desktop browsers
 - Automated season, regulation, Migration Pulse, unfinished-hunt, trial, and saved-hunt milestone events
 - State, flyway, alert-category, and migration-threshold preferences
-- Visible v1.52 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.53 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design

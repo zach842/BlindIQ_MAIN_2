@@ -100,7 +100,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.52",
+      "Submitted from BlindIQ v1.53",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -325,6 +325,9 @@ export default function App() {
   const [huntPhotoPreview, setHuntPhotoPreview] = useState("");
   const [photoProcessing, setPhotoProcessing] = useState(false);
   const [photoError, setPhotoError] = useState("");
+  const [blindName, setBlindName] = useState("");
+  const [firearmUsed, setFirearmUsed] = useState("");
+  const [huntNotes, setHuntNotes] = useState("");
   const [managingMembership, setManagingMembership] = useState(false);
   const [isSimulation, setIsSimulation] = useState(false);
   const [toast, setToast] = useState("");
@@ -367,6 +370,7 @@ export default function App() {
     setIsSimulation(false);
     setHuntSaved(false);
     clearHuntPhoto();
+    clearHuntDetails();
   }
 
   function startHunt(simulation: boolean) {
@@ -379,6 +383,7 @@ export default function App() {
     setIsSimulation(simulation);
     setHuntSaved(false);
     clearHuntPhoto();
+    clearHuntDetails();
     setView("hunt");
     if (!simulation) void beginActiveHunt({ stateCode: selected.code, stateName: selected.name, zone });
   }
@@ -387,6 +392,12 @@ export default function App() {
     setHuntPhoto(null);
     setHuntPhotoPreview("");
     setPhotoError("");
+  }
+
+  function clearHuntDetails() {
+    setBlindName("");
+    setFirearmUsed("");
+    setHuntNotes("");
   }
 
   async function chooseHuntPhoto(event: ChangeEvent<HTMLInputElement>) {
@@ -675,6 +686,9 @@ export default function App() {
         entries,
         isSimulation,
         seasonYear: selected.seasonYear,
+        blindName: blindName.trim(),
+        firearmUsed: firearmUsed.trim(),
+        notes: huntNotes.trim(),
       }, isSimulation ? null : huntPhoto);
       setHistory((current) => [record, ...current.filter((hunt) => hunt.id !== record.id)]);
       setHuntSaved(true);
@@ -691,6 +705,7 @@ export default function App() {
     setHarvest({});
     setHuntSaved(false);
     clearHuntPhoto();
+    clearHuntDetails();
     setToast("");
     setView("history");
   }
@@ -842,7 +857,7 @@ export default function App() {
             <aside className="disclaimer"><Icon>!</Icon><p><strong>Digital field guide and field log—not legal advice.</strong> BlindIQ simplifies regulations and records harvests. Hunters remain responsible for following all federal, state, and local laws. Always verify current rules with the official wildlife agency before hunting.</p></aside>
 
             <section className="community-card community-card--dashboard"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>See something we can improve?</h2><p>Send regulation corrections, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("dashboard")}>Send feedback</button></section>
-            <small className="version-stamp">BlindIQ v1.52</small>
+            <small className="version-stamp">BlindIQ v1.53</small>
           </footer>
         </div>
       )}
@@ -903,6 +918,15 @@ export default function App() {
           <div className={`summary-hero ${isSimulation ? "summary-hero--simulation" : ""}`}><span>{isSimulation ? "TEST FIELD LOG COMPLETE" : "FIELD LOG COMPLETE"}</span><h1>{isSimulation ? "Test complete." : "Hunt logged."}</h1><p>{selected.name} • {zone}</p></div>
           <section className="summary-total"><span>TOTAL HARVEST</span><strong>{duckCount + gooseCount}</strong><p>{duckCount} ducks • {gooseCount} geese</p></section>
           <section className="section"><h2>Today’s harvest</h2>{entries.length ? entries.map((entry) => <div className="summary-row" key={entry.id}><span>{entry.label}</span><strong>× {entry.count}</strong></div>) : <p className="empty">No birds logged. You can still save a zero-harvest hunt.</p>}</section>
+          <section className="hunt-details-card">
+            <div className="hunt-details-card__heading"><div><p className="eyebrow">FIELD LOG DETAILS • OPTIONAL</p><h2>Remember the hunt.</h2></div><span>▤</span></div>
+            <div className="hunt-details-grid">
+              <label htmlFor="hunt-blind-name">BLIND LOCATION / NAME<input id="hunt-blind-name" type="text" maxLength={120} value={blindName} disabled={huntSaved} onChange={(event) => setBlindName(event.target.value)} placeholder="Blackwater blind 12 or Dad’s marsh" /></label>
+              <label htmlFor="hunt-firearm-used">FIREARM USED<input id="hunt-firearm-used" type="text" maxLength={120} value={firearmUsed} disabled={huntSaved} onChange={(event) => setFirearmUsed(event.target.value)} placeholder="12-gauge Beretta A400" /></label>
+              <label className="hunt-details-notes" htmlFor="hunt-notes">NOTES<textarea id="hunt-notes" maxLength={2000} rows={5} value={huntNotes} disabled={huntSaved} onChange={(event) => setHuntNotes(event.target.value)} placeholder="Weather, hunting partners, dog work, memorable moments, or anything you want to remember…" /></label>
+            </div>
+            <small>{huntNotes.length}/2,000 characters • Exact GPS coordinates are not recorded.</small>
+          </section>
           {!isSimulation && (!huntSaved || huntPhotoPreview) && (
             <section className={`hunt-photo-card ${huntPhotoPreview ? "hunt-photo-card--selected" : ""}`}>
               {huntPhotoPreview ? <img src={huntPhotoPreview} alt="Selected harvest" /> : <div className="hunt-photo-card__camera" aria-hidden="true">◎</div>}
@@ -927,7 +951,7 @@ export default function App() {
             <div><p className="eyebrow">SHARE YOUR HUNT</p><h2>Make a BlindIQ hunt card.</h2><p>Share through your phone to Facebook, Instagram, Messages, and more. Exact GPS coordinates are never included.</p></div>
             <div className="share-hunt-actions"><button className="button button--gold" disabled={sharingHunt} type="button" onClick={() => void prepareShare("share")}>{sharingHunt ? "Preparing…" : "Share hunt"}</button><button className="button share-download" disabled={sharingHunt} type="button" onClick={() => void prepareShare("download")}>Save image</button></div>
           </section>
-          {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>View My Hunts</button> : <button className="text-button" onClick={() => { if (!isSimulation) void finishActiveHunt("discarded"); setHarvest({}); setHuntSaved(false); clearHuntPhoto(); setView("dashboard"); }}>Discard hunt</button>}
+          {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>View My Hunts</button> : <button className="text-button" onClick={() => { if (!isSimulation) void finishActiveHunt("discarded"); setHarvest({}); setHuntSaved(false); clearHuntPhoto(); clearHuntDetails(); setView("dashboard"); }}>Discard hunt</button>}
         </div>
       )}
 
@@ -945,7 +969,7 @@ export default function App() {
             {history.map((hunt) => (
               <article className={hunt.isSimulation ? "history-row--simulation" : ""} key={hunt.id}>
                 {hunt.photoUrl ? <a className="history-photo" href={hunt.photoUrl} target="_blank" rel="noreferrer" aria-label={`Open harvest photo from ${hunt.date}`}><img src={hunt.photoUrl} alt="Saved harvest" /></a> : <div className="date-tile"><strong>{hunt.date.split(" ")[1]?.replace(",", "")}</strong><span>{hunt.date.split(" ")[0]?.slice(0, 3)}</span></div>}
-                <div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}{hunt.id.startsWith("offline-") && <em>OFFLINE</em>}{hunt.photoUrl && <em>PHOTO</em>}</strong><span>{hunt.zone} • {hunt.date}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.count} ${entry.label}`).join(" • ") : "Zero-bird hunt"}</p></div>
+                <div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}{hunt.id.startsWith("offline-") && <em>OFFLINE</em>}{hunt.photoUrl && <em>PHOTO</em>}</strong><span>{hunt.zone} • {hunt.date}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.count} ${entry.label}`).join(" • ") : "Zero-bird hunt"}</p>{(hunt.blindName || hunt.firearmUsed || hunt.notes) && <div className="history-field-details">{hunt.blindName && <span><b>Blind</b>{hunt.blindName}</span>}{hunt.firearmUsed && <span><b>Firearm</b>{hunt.firearmUsed}</span>}{hunt.notes && <p><b>Notes</b>{hunt.notes}</p>}</div>}</div>
                 <b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b>
               </article>
             ))}
@@ -979,7 +1003,7 @@ export default function App() {
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setSubscriptionPeriodEnd(membership.currentPeriodEnd); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button type="button" onClick={() => setView("notifications")}>Field alerts <span>{unreadNotifications ? `${unreadNotifications} NEW` : "›"}</span></button><button type="button" onClick={() => setInstallGuideOpen(true)}>Add BlindIQ to Home Screen <span>›</span></button><button>Offline field mode <span>{isOnline ? "READY" : "ACTIVE"}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await detachCurrentPushDevice(); await signOut(); sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setHistory([]); setUnreadNotifications(0); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.52</small>
+          <small className="version-stamp">BlindIQ v1.53</small>
         </div>
       )}
     </Shell>
