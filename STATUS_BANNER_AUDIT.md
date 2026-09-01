@@ -1,4 +1,4 @@
-# BlindIQ v1.55 Status Banner Audit
+# BlindIQ v1.56 Status Banner Audit
 
 Audit date: September 1, 2026
 
@@ -29,4 +29,3 @@ Official reference: https://www.eregulations.com/maryland/hunting/migratory-game
 ## Safe handling of incomplete data
 
 Delaware and New York do not have enough complete final zone periods in the current BlindIQ package to safely declare every waterfowl season closed on dates with no active loaded period. They show **Status Check Required** instead. West Virginia remains an archived reference package and shows **Current Data Pending**.
-

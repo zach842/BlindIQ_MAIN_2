@@ -1,5 +1,9 @@
 # BlindIQ Deployment Notes
 
+## v1.56 — Installed-App Cache Repair
+
+Upload the **entire extracted project**, including both `public/sw.js` and `public/blindiq-sw-v1.56.js`. The version-specific worker URL forces installed iPhone, Android, and desktop home-screen copies to replace the older v1.52 offline cache. After Vercel finishes, open BlindIQ once while connected to the internet. It reloads automatically when the new worker takes control.
+
 ## v1.53 — Expanded Digital Field Log
 
 This release adds optional **Blind Location / Name**, **Firearm Used**, and **Notes** fields to the Save Hunt screen. These private field-log details are preserved in demo mode, cached for offline hunts, synchronized with Supabase after reconnection, and displayed with each record in My Hunts. Run `supabase/migrations/202608290001_hunt_field_details.sql` once before deploying the v1.53 frontend.
