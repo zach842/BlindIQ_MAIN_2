@@ -1,4 +1,5 @@
 import type { StateData, WaterfowlStatusPeriod } from "./types";
+import { partialStatusCoverage, statusPeriodsByState } from "./seasonCalendars";
 
 export type DashboardSeasonStatus = {
   kind: "open" | "partial" | "closed" | "reference";
@@ -31,9 +32,19 @@ export function getDashboardSeasonStatus(state: StateData, date = new Date()): D
   }
 
   const today = localDateKey(date);
-  const activePeriods = (state.statusPeriods ?? []).filter((period) => today >= period.startDate && today <= period.endDate);
+  const calendar = state.statusPeriods ?? statusPeriodsByState[state.code] ?? [];
+  const activePeriods = calendar.filter((period) => today >= period.startDate && today <= period.endDate);
 
   if (activePeriods.length === 0) {
+    if (partialStatusCoverage.has(state.code) || calendar.length === 0) {
+      return {
+        kind: "reference",
+        headline: "STATUS CHECK REQUIRED",
+        message: `${state.name} does not yet have enough final, zone-specific dates loaded to safely declare every waterfowl season closed today. Check the detailed dates and official agency source.`,
+        icon: "!",
+        activePeriods,
+      };
+    }
     return {
       kind: "closed",
       headline: "CLOSED TODAY",

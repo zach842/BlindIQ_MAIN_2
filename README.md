@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 29 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.53**. Hunters can now save an optional blind location/name, firearm used, and private notes with every live or test hunt. These field-log details persist in Supabase, work with offline hunt saving and later synchronization, and appear with the saved record in My Hunts. Migration Pulse continues to cover all four U.S. administrative flyways: Atlantic, Mississippi, Central, and Pacific.
+This package is **BlindIQ v1.55**. Dashboard season banners now use machine-readable calendars across every loaded state with usable final dates. The banner distinguishes **Open Today**, **Partially Open**, and **Closed Today** from the waterfowl categories active on the selected date. States without enough complete, final zone dates show **Status Check Required** instead of incorrectly declaring every waterfowl season closed. Hunters can also save an optional blind location/name, firearm used, and private notes with every live or test hunt. Migration Pulse continues to cover all four U.S. administrative flyways: Atlantic, Mississippi, Central, and Pacific.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -37,11 +37,13 @@ This package is **BlindIQ v1.53**. Hunters can now save an optional blind locati
 - Cached app shell, loaded regulations, and complete in-app bird-reference library for offline field access after the first connected load
 - Offline hunt-saving queue with automatic Supabase synchronization when the device reconnects
 - Visible offline banner and unsynced-hunt labels so field status is never ambiguous
-- Date-aware dashboard status with separate **Open Today**, **Partially Open**, and **Closed Today** banners
+- Date-aware dashboard status with separate **Open Today**, **Partially Open**, **Closed Today**, and **Status Check Required** banners
+- Machine-readable banner calendars for all 27 loaded states with usable active-season dates, tested across every date boundary in the loaded 2026–2027 season
+- Safe incomplete-data treatment for Delaware and New York, plus archived-data treatment for West Virginia, so missing dates are never presented as a confirmed statewide closure
 - North Dakota’s complete structured 2026–2027 waterfowl calendar, including its August early Canada goose zones
 - South Dakota’s final 2026–2027 duck, goose, youth, swan, snipe and light-goose calendar, four duck zones, two regular goose units, August resident management take, nonresident unit guidance, and Traditional-versus-Three-Duck warnings
 - Weather and forecast controls removed from the current interface for a more focused dashboard
-- Closed-today banner and loaded season dates
+- Banner status and detailed loaded season dates remain separate so hunters can see both today’s summary and the underlying zone-specific periods
 - Duck and goose seasons, zones, shooting hours, bag rules, and official links
 - Reviewed agency and eRegulations links for the newly audited state packages
 - Full 2026–27 Virginia, North Carolina, and South Carolina waterfowl packages
@@ -84,7 +86,7 @@ This package is **BlindIQ v1.53**. Hunters can now save an optional blind locati
 - Web Push support for installed iPhone/iPad website apps, Android, and compatible desktop browsers
 - Automated season, regulation, Migration Pulse, unfinished-hunt, trial, and saved-hunt milestone events
 - State, flyway, alert-category, and migration-threshold preferences
-- Visible v1.53 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.55 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
