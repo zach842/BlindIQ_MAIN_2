@@ -4,7 +4,7 @@
 
 BlindIQ is a mobile-first digital field guide and field log for waterfowl hunters. Its core promise is simple: **Know the regulations. Log the birds. Save the hunts.** This React + Vite foundation includes authentication, 29 state field-guide dashboards, duck and goose regulation cards, a live hunt logger, remaining-harvest guidance, hunt summaries and history, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.55**. Dashboard season banners now use machine-readable calendars across every loaded state with usable final dates. The banner distinguishes **Open Today**, **Partially Open**, and **Closed Today** from the waterfowl categories active on the selected date. States without enough complete, final zone dates show **Status Check Required** instead of incorrectly declaring every waterfowl season closed. Hunters can also save an optional blind location/name, firearm used, and private notes with every live or test hunt. Migration Pulse continues to cover all four U.S. administrative flyways: Atlantic, Mississippi, Central, and Pacific.
+This package is **BlindIQ v1.56**. Dashboard season banners use machine-readable calendars across every loaded state with usable final dates. The banner distinguishes **Open Today**, **Partially Open**, and **Closed Today** from the waterfowl categories active on the selected date. States without enough complete, final zone dates show **Status Check Required** instead of incorrectly declaring every waterfowl season closed. This release also uses a uniquely named service worker so installed home-screen copies reliably replace the older v1.52 offline cache. Hunters can save an optional blind location/name, firearm used, and private notes with every live or test hunt. Migration Pulse continues to cover all four U.S. administrative flyways: Atlantic, Mississippi, Central, and Pacific.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -86,7 +86,7 @@ This package is **BlindIQ v1.55**. Dashboard season banners now use machine-read
 - Web Push support for installed iPhone/iPad website apps, Android, and compatible desktop browsers
 - Automated season, regulation, Migration Pulse, unfinished-hunt, trial, and saved-hunt milestone events
 - State, flyway, alert-category, and migration-threshold preferences
-- Visible v1.55 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.56 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
