@@ -669,7 +669,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       firearm_used: input.firearmUsed?.trim() || null,
       notes: input.notes?.trim() || null,
       photo_path: photoPath,
-      app_version: "1.56",
+      app_version: "1.57",
     })
     .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
     .single();
@@ -710,7 +710,7 @@ export async function syncPendingHunts() {
       blind_name: item.input.blindName?.trim() || null,
       firearm_used: item.input.firearmUsed?.trim() || null,
       notes: item.input.notes?.trim() || null,
-      app_version: "1.56-offline-sync",
+      app_version: "1.57-offline-sync",
     });
     if (error) {
       remainingQueue.push(...queue.slice(index));
