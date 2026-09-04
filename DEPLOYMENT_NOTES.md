@@ -1,5 +1,13 @@
 # BlindIQ Deployment Notes
 
+## v1.58 — All-Game Hunting Logbook
+
+This release expands **Start a Hunt** beyond waterfowl with dedicated field-log choices for Deer, Wild Turkey, Dove & Migratory Birds, Upland Game Birds, Other Big Game, Small Game, Predators & Furbearers, and Other Legal Game. Each category supports harvest counting, an optional location/name, weapon or firearm, notes, a private photo, offline saving, hunting history, and a branded native share card. Existing waterfowl hunts and the verified live waterfowl bag engine remain intact.
+
+Before deployment, run `supabase/migrations/20260904140437_add_hunt_category.sql` once in the Supabase SQL Editor. It marks existing hunts as waterfowl and stores the selected category on every future hunt. The front end includes a temporary legacy fallback, but the migration is the permanent production setup. Upload the entire extracted project so `public/blindiq-sw-v1.58.js`, `public/sw.js`, and the new all-game source files deploy together.
+
+Nonwaterfowl categories are clearly labeled **field-log mode**. They record hunts but do not claim to calculate deer, turkey, dove, upland, big-game, small-game, predator, or furbearer seasons, permits, methods, sex restrictions, or bag/tag limits. Those regulation engines must be verified state by state before being enabled.
+
 ## v1.56 — Installed-App Cache Repair
 
 Upload the **entire extracted project**, including both `public/sw.js` and `public/blindiq-sw-v1.56.js`. The version-specific worker URL forces installed iPhone, Android, and desktop home-screen copies to replace the older v1.52 offline cache. After Vercel finishes, open BlindIQ once while connected to the internet. It reloads automatically when the new worker takes control.

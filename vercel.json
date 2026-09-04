@@ -11,7 +11,7 @@
       ]
     },
     {
-      "source": "/blindiq-sw-v1.57.js",
+      "source": "/blindiq-sw-v1.58.js",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]
