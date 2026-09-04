@@ -1,8 +1,14 @@
+export type HuntCategoryId = "waterfowl" | "deer" | "turkey" | "dove-migratory" | "upland-birds" | "big-game" | "small-game" | "predator-furbearer" | "other-game";
+
+export type GameGroup = "Ducks" | "Geese" | "Other" | "Deer" | "Turkey" | "Migratory Birds" | "Upland Birds" | "Big Game" | "Small Game" | "Predators & Furbearers" | "Other Game";
+
 export type BirdRule = {
   id: string;
   label: string;
-  group: "Ducks" | "Geese" | "Other";
+  group: GameGroup;
   limit: number;
+  icon?: string;
+  huntCategory?: HuntCategoryId;
   note?: string;
   sex?: "Drake" | "Hen";
   parent?: string;
@@ -57,6 +63,7 @@ export type HuntRecord = {
   zone: string;
   entries: HarvestEntry[];
   isSimulation: boolean;
+  huntCategory?: HuntCategoryId;
   blindName?: string | null;
   firearmUsed?: string | null;
   notes?: string | null;
@@ -70,6 +77,7 @@ export type NewHuntRecord = {
   zone: string;
   entries: HarvestEntry[];
   isSimulation: boolean;
+  huntCategory: HuntCategoryId;
   seasonYear?: string;
   blindName?: string;
   firearmUsed?: string;

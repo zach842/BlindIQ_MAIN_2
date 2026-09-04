@@ -19,7 +19,7 @@ if ("serviceWorker" in navigator) {
     });
 
     void navigator.serviceWorker
-      .register("/blindiq-sw-v1.57.js", { scope: "/", updateViaCache: "none" })
+      .register("/blindiq-sw-v1.58.js", { scope: "/", updateViaCache: "none" })
       .then((registration) => registration.update())
       .catch(() => {
         // The app remains fully usable if a browser blocks service workers.

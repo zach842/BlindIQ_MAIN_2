@@ -1,5 +1,5 @@
-export const TERMS_VERSION = "2026-08-04-v1";
-export const TERMS_EFFECTIVE_DATE = "August 4, 2026";
+export const TERMS_VERSION = "2026-09-04-v2";
+export const TERMS_EFFECTIVE_DATE = "September 4, 2026";
 
 export const termsSections = [
   {
@@ -12,15 +12,15 @@ export const termsSections = [
   {
     title: "2. Hunting companion only — not legal advice",
     paragraphs: [
-      "BlindIQ is a digital field guide and field log for waterfowl hunters. It is not a law firm, government agency, wildlife agency, law-enforcement authority, professional hunting guide, outfitter, safety service, or substitute for official regulations. Nothing in the Service is legal advice, a legal opinion, permission to hunt, proof of compliance, or a guarantee that a shot, location, species, season, method, or activity is lawful.",
+      "BlindIQ is a digital field guide and field log for hunters. It is not a law firm, government agency, wildlife agency, law-enforcement authority, professional hunting guide, outfitter, safety service, or substitute for official regulations. Nothing in the Service is legal advice, a legal opinion, permission to hunt, proof of compliance, or a guarantee that a shot, location, species, season, method, or activity is lawful.",
       "HUNTING LAWS, EMERGENCY ORDERS, SEASON DATES, ZONE BOUNDARIES, BAG AND POSSESSION LIMITS, SPECIES AND SEX RESTRICTIONS, SHOOTING HOURS, LICENSES, STAMPS, PERMITS, PROPERTY ACCESS RULES, AND AREA-SPECIFIC RESTRICTIONS MAY CHANGE OR MAY NOT BE FULLY REFLECTED IN THE SERVICE. YOU MUST CONSULT THE CURRENT OFFICIAL FEDERAL, STATE, TRIBAL, COUNTY, MUNICIPAL, REFUGE, WILDLIFE-MANAGEMENT-AREA, AND LANDOWNER SOURCES THAT APPLY TO YOUR HUNT.",
     ],
   },
   {
     title: "3. Your responsibility for lawful hunting",
     paragraphs: [
-      "You alone are responsible for identifying each bird, determining your location and applicable zone, confirming lawful shooting hours and season status, maintaining accurate harvest entries, calculating all daily and possession limits, obtaining required licenses and permissions, and complying with every applicable law and rule. BlindIQ’s open/closed indicators, remaining-harvest guidance, maps, links, alerts, summaries, and calculations must be independently verified before you act.",
-      "An error, omission, delay, outage, stale source, incorrect selection, inaccurate entry, GPS drift, connectivity problem, or software calculation does not excuse a violation of law. Do not harvest a bird or enter an area if you are uncertain. Contact the appropriate wildlife agency or law-enforcement authority for an authoritative answer.",
+      "You alone are responsible for identifying each animal or bird, determining your location and applicable zone or unit, confirming lawful hours and season status, maintaining accurate harvest entries, calculating all daily, seasonal, and possession limits, validating tags and reporting duties, obtaining required licenses and permissions, and complying with every applicable law and rule. BlindIQ’s open/closed indicators, remaining-harvest guidance, maps, links, alerts, summaries, and calculations must be independently verified before you act.",
+      "An error, omission, delay, outage, stale source, incorrect selection, inaccurate entry, GPS drift, connectivity problem, or software calculation does not excuse a violation of law. Do not harvest game or enter an area if you are uncertain. Contact the appropriate wildlife agency or law-enforcement authority for an authoritative answer.",
     ],
   },
   {

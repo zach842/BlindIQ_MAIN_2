@@ -1,7 +1,7 @@
 import { createClient, type User } from "@supabase/supabase-js";
 import { TERMS_VERSION } from "./legal";
 import { migrationStatus, previewMigrationData, type MigrationData, type MigrationRegion, type MigrationSnapshot } from "./migration";
-import type { HarvestEntry, HuntRecord, NewHuntRecord } from "./types";
+import type { HarvestEntry, HuntCategoryId, HuntRecord, NewHuntRecord } from "./types";
 
 const REMEMBERED_DEVICE_KEY = "blindiq-remembered-device";
 const ACTIVE_TAB_KEY = "blindiq-active-tab";
@@ -507,12 +507,15 @@ function rowToHuntRecord(row: {
   state_name: string;
   zone: string;
   is_simulation: boolean;
+  hunt_category?: HuntCategoryId | null;
   entries: unknown;
   blind_name: string | null;
   firearm_used: string | null;
   notes: string | null;
   photo_path: string | null;
 }): HuntRecord {
+  const entries = Array.isArray(row.entries) ? row.entries as HarvestEntry[] : [];
+  const categoryFromEntries = entries.find((entry) => entry.huntCategory)?.huntCategory;
   return {
     id: row.id,
     date: formatHuntDate(row.hunted_at),
@@ -521,12 +524,20 @@ function rowToHuntRecord(row: {
     state: row.state_name,
     zone: row.zone,
     isSimulation: row.is_simulation,
-    entries: Array.isArray(row.entries) ? row.entries as HarvestEntry[] : [],
+    huntCategory: row.hunt_category ?? categoryFromEntries ?? "waterfowl",
+    entries,
     blindName: row.blind_name,
     firearmUsed: row.firearm_used,
     notes: row.notes,
     photoPath: row.photo_path,
   };
+}
+
+function isMissingHuntCategoryColumn(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const message = error.message ?? "";
+  return error.code === "42703"
+    || (message.includes("hunt_category") && /does not exist|column|schema cache/i.test(message));
 }
 
 async function addPrivatePhotoUrls(records: HuntRecord[]) {
@@ -565,10 +576,18 @@ function readDemoHunts(): HuntRecord[] {
 export async function listHunts(): Promise<HuntRecord[]> {
   if (!supabase) return readDemoHunts();
   if (!navigator.onLine) return cachedHunts();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("hunts")
-    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
+    .select("id,hunted_at,state_code,state_name,zone,is_simulation,hunt_category,entries,blind_name,firearm_used,notes,photo_path")
     .order("hunted_at", { ascending: false });
+  if (isMissingHuntCategoryColumn(error)) {
+    const legacyResult = await supabase
+      .from("hunts")
+      .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
+      .order("hunted_at", { ascending: false });
+    data = legacyResult.data?.map((row) => ({ ...row, hunt_category: null })) ?? null;
+    error = legacyResult.error;
+  }
   if (error) {
     if (isConnectivityError(error)) return cachedHunts();
     throw error;
@@ -588,6 +607,7 @@ function offlineRecord(input: NewHuntRecord, huntedAt: string, id = `offline-${c
     zone: input.zone,
     entries: input.entries,
     isSimulation: input.isSimulation,
+    huntCategory: input.huntCategory ?? "waterfowl",
     blindName: input.blindName || null,
     firearmUsed: input.firearmUsed || null,
     notes: input.notes || null,
@@ -616,6 +636,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       zone: input.zone,
       entries: input.entries,
       isSimulation: input.isSimulation,
+      huntCategory: input.huntCategory ?? "waterfowl",
       blindName: input.blindName || null,
       firearmUsed: input.firearmUsed || null,
       notes: input.notes || null,
@@ -652,9 +673,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
     if (photoError) throw new Error(`Photo upload failed: ${photoError.message}`);
   }
 
-  const { data, error } = await supabase
-    .from("hunts")
-    .insert({
+  const insertPayload = {
       id: huntId,
       user_id: userData.user.id,
       hunted_at: huntedAt,
@@ -662,6 +681,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       state_name: input.state,
       zone: input.zone,
       is_simulation: input.isSimulation,
+      hunt_category: input.huntCategory ?? "waterfowl",
       season_year: input.seasonYear ?? null,
       entries: input.entries,
       bird_count: birdCount,
@@ -669,16 +689,30 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       firearm_used: input.firearmUsed?.trim() || null,
       notes: input.notes?.trim() || null,
       photo_path: photoPath,
-      app_version: "1.57",
-    })
-    .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
+      app_version: "1.58",
+    };
+  let { data, error } = await supabase
+    .from("hunts")
+    .insert(insertPayload)
+    .select("id,hunted_at,state_code,state_name,zone,is_simulation,hunt_category,entries,blind_name,firearm_used,notes,photo_path")
     .single();
+  if (isMissingHuntCategoryColumn(error)) {
+    const { hunt_category: _huntCategory, ...legacyPayload } = insertPayload;
+    const legacyResult = await supabase
+      .from("hunts")
+      .insert(legacyPayload)
+      .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
+      .single();
+    data = legacyResult.data ? { ...legacyResult.data, hunt_category: null } : null;
+    error = legacyResult.error;
+  }
   if (error) {
     if (photoPath) await supabase.storage.from(HUNT_PHOTOS_BUCKET).remove([photoPath]);
     if (isConnectivityError(error) && !photo) return queueOfflineHunt(input, huntedAt);
     if (isConnectivityError(error)) throw new Error("Connect to the internet to save this photo, or remove it and save the hunt offline.");
     throw error;
   }
+  if (!data) throw new Error("The hunt was saved, but the saved record could not be loaded.");
   const [record] = await addPrivatePhotoUrls([rowToHuntRecord(data)]);
   cacheHunts([record, ...cachedHunts().filter((hunt) => hunt.id !== record.id)]);
   return record;
@@ -697,21 +731,28 @@ export async function syncPendingHunts() {
   for (let index = 0; index < queue.length; index += 1) {
     const item = queue[index];
     const birdCount = item.input.entries.reduce((sum, entry) => sum + entry.count, 0);
-    const { error } = await supabase.from("hunts").insert({
+    const insertPayload = {
       user_id: userData.user.id,
       hunted_at: item.huntedAt,
       state_code: item.input.stateCode,
       state_name: item.input.state,
       zone: item.input.zone,
       is_simulation: item.input.isSimulation,
+      hunt_category: item.input.huntCategory ?? "waterfowl",
       season_year: item.input.seasonYear ?? null,
       entries: item.input.entries,
       bird_count: birdCount,
       blind_name: item.input.blindName?.trim() || null,
       firearm_used: item.input.firearmUsed?.trim() || null,
       notes: item.input.notes?.trim() || null,
-      app_version: "1.57-offline-sync",
-    });
+      app_version: "1.58-offline-sync",
+    };
+    let { error } = await supabase.from("hunts").insert(insertPayload);
+    if (isMissingHuntCategoryColumn(error)) {
+      const { hunt_category: _huntCategory, ...legacyPayload } = insertPayload;
+      const legacyResult = await supabase.from("hunts").insert(legacyPayload);
+      error = legacyResult.error;
+    }
     if (error) {
       remainingQueue.push(...queue.slice(index));
       break;

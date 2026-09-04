@@ -6,6 +6,8 @@ export type HuntShareInput = {
   entries: HarvestEntry[];
   duckCount: number;
   gooseCount: number;
+  totalCount: number;
+  huntCategoryLabel: string;
   isSimulation: boolean;
   date?: string;
   blindName?: string | null;
@@ -89,7 +91,7 @@ export async function createHuntShareFile(input: HuntShareInput) {
     context.fillStyle = "#d3a63f";
     context.font = "800 27px Inter, sans-serif";
     context.letterSpacing = "5px";
-    context.fillText(input.isSimulation ? "TEST WATERFOWL HUNT" : "MY WATERFOWL HUNT", 1016, 105);
+    context.fillText(input.isSimulation ? `TEST ${input.huntCategoryLabel.toUpperCase()} HUNT` : `MY ${input.huntCategoryLabel.toUpperCase()} HUNT`, 1016, 105);
     context.fillStyle = "#ffffff";
     context.font = "800 28px Inter, sans-serif";
     context.letterSpacing = "1px";
@@ -123,10 +125,10 @@ export async function createHuntShareFile(input: HuntShareInput) {
     context.font = "800 101px 'Barlow Condensed', Impact, sans-serif";
     context.letterSpacing = "0px";
     context.textAlign = "right";
-    context.fillText(String(input.duckCount + input.gooseCount), 1008, 837);
+    context.fillText(String(input.totalCount), 1008, 837);
     context.textAlign = "left";
     context.font = "700 31px Inter, sans-serif";
-    context.fillText(`${input.duckCount} ducks  •  ${input.gooseCount} geese`, 72, 830);
+    context.fillText(input.huntCategoryLabel === "Waterfowl" ? `${input.duckCount} ducks  •  ${input.gooseCount} geese` : `${input.totalCount} ${input.huntCategoryLabel.toLowerCase()} ${input.totalCount === 1 ? "harvest" : "harvests"}`, 72, 830);
 
     context.fillStyle = "#fbfaf6";
     context.fillRect(0, 890, canvas.width, 350);
@@ -138,7 +140,7 @@ export async function createHuntShareFile(input: HuntShareInput) {
     if (!displayed.length) {
       context.fillStyle = "#6e7772";
       context.font = "600 29px Inter, sans-serif";
-      context.fillText("Zero-bird hunt logged.", 72, 1044);
+      context.fillText("Zero-harvest hunt logged.", 72, 1044);
     } else {
       displayed.forEach((entry, index) => {
         const y = 1032 + index * 53;
@@ -163,7 +165,7 @@ export async function createHuntShareFile(input: HuntShareInput) {
     context.fillRect(0, 1240, canvas.width, 110);
     context.fillStyle = "#d8c6a2";
     context.font = "700 24px Inter, sans-serif";
-    context.fillText(input.firearmUsed ? clipped(input.firearmUsed, 38) : "DIGITAL WATERFOWL FIELD LOG", 64, 1307);
+    context.fillText(input.firearmUsed ? clipped(input.firearmUsed, 38) : `DIGITAL ${input.huntCategoryLabel.toUpperCase()} FIELD LOG`, 64, 1307);
     context.fillStyle = "#d3a63f";
     context.font = "800 25px Inter, sans-serif";
     context.textAlign = "right";
@@ -191,8 +193,8 @@ export function downloadHuntShareFile(file: File) {
 
 export async function shareHuntFile(file: File, input: HuntShareInput) {
   const data: ShareData = {
-    title: `My ${input.state} waterfowl hunt — BlindIQ`,
-    text: `${input.duckCount + input.gooseCount} birds logged with BlindIQ. Hunt. Log. Share.`,
+    title: `My ${input.state} ${input.huntCategoryLabel.toLowerCase()} hunt — BlindIQ`,
+    text: `${input.totalCount} ${input.totalCount === 1 ? "harvest" : "harvests"} logged with BlindIQ. Hunt. Log. Share.`,
     files: [file],
   };
   if (navigator.share && navigator.canShare?.({ files: [file] })) {

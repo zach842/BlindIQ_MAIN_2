@@ -1,7 +1,7 @@
 {
-  "name": "BlindIQ — Waterfowl Hunt & Field Log",
+  "name": "BlindIQ — All-Game Hunt & Field Log",
   "short_name": "BlindIQ",
-  "description": "Start waterfowl hunts, log every bird, save photos and notes, share hunt cards, and keep regulations close at hand.",
+  "description": "Start hunts, log every harvest, save photos and notes, share hunt cards, and keep waterfowl regulations close at hand.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
