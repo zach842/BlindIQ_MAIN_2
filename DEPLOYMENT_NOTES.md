@@ -1,12 +1,12 @@
 # BlindIQ Deployment Notes
 
-## v1.58 — All-Game Hunting Logbook
+## v1.60 — Waterfowl-Only Rollback + Photo-Save Verification
 
-This release expands **Start a Hunt** beyond waterfowl with dedicated field-log choices for Deer, Wild Turkey, Dove & Migratory Birds, Upland Game Birds, Other Big Game, Small Game, Predators & Furbearers, and Other Legal Game. Each category supports harvest counting, an optional location/name, weapon or firearm, notes, a private photo, offline saving, hunting history, and a branded native share card. Existing waterfowl hunts and the verified live waterfowl bag engine remain intact.
+This release removes the all-game category interface and restores BlindIQ’s focused waterfowl dashboard, hunt logger, field guide, remaining-harvest guidance, and Waterfowl Logbook. It keeps the v1.59 backward-compatible hunt reader and consolidated Supabase repair script, filters older nonwaterfowl test records out of the visible Waterfowl Logbook, and advances every visible version/cache marker to v1.60.
 
-Before deployment, run `supabase/migrations/20260904140437_add_hunt_category.sql` once in the Supabase SQL Editor. It marks existing hunts as waterfowl and stores the selected category on every future hunt. The front end includes a temporary legacy fallback, but the migration is the permanent production setup. Upload the entire extracted project so `public/blindiq-sw-v1.58.js`, `public/sw.js`, and the new all-game source files deploy together.
+The Save Hunt flow retains camera capture and photo-library selection, in-browser JPEG preparation, private per-user Supabase Storage paths, one-hour signed viewing links, and saved-logbook photo thumbnails. Run `supabase/HUNT_LOGBOOK_SETUP.sql` once in Supabase’s SQL Editor before deployment. The script is idempotent and preserves existing hunts. The release also prevents an unresponsive account or notification check from leaving the app on an endless startup spinner.
 
-Nonwaterfowl categories are clearly labeled **field-log mode**. They record hunts but do not claim to calculate deer, turkey, dove, upland, big-game, small-game, predator, or furbearer seasons, permits, methods, sex restrictions, or bag/tag limits. Those regulation engines must be verified state by state before being enabled.
+Upload the entire extracted v1.60 folder to GitHub. Vercel can deploy it normally. Open the deployed site once while connected so the v1.60 service worker replaces the installed all-game cache.
 
 ## v1.56 — Installed-App Cache Repair
 
