@@ -293,6 +293,9 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .hunt-setup-heading h1 { margin: 5px 0 8px; color: var(--forest); font-size: clamp(45px, 7vw, 68px); line-height: .92; }
 .hunt-setup-heading > p:last-child { max-width: 620px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
 .hunt-category-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.hunt-category-grid--home { grid-column: 1 / -1; margin: 0 0 16px; }
+.hunt-category-grid--home .hunt-category-card { cursor: pointer; }
+.hunt-category-grid--home .hunt-category-card:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: 0 12px 28px rgba(13,38,31,.09); }
 .hunt-category-card { min-height: 104px; display: grid; grid-template-columns: 43px minmax(0,1fr) 18px; gap: 11px; align-items: center; padding: 15px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: var(--paper); text-align: left; box-shadow: 0 8px 20px rgba(13,38,31,.045); }
 .hunt-category-card > span { width: 43px; height: 43px; display: grid; place-items: center; border-radius: 50%; background: #eee8d7; font-size: 23px; }
 .hunt-category-card strong, .hunt-category-card small { display: block; }
@@ -430,7 +433,10 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
 .bird-guide-source p { margin: 0; color: #d3ddd7; font-size: 11px; line-height: 1.55; }
 .bird-guide-source strong { color: white; }
 .bird-guide-source a { flex: 0 0 auto; min-height: 40px; display: inline-flex; align-items: center; padding: 0 13px; border: 1px solid rgba(255,255,255,.26); border-radius: 6px; color: var(--tan); font-size: 10px; font-weight: 800; text-decoration: none; }
-.page-title p:last-child { color: var(--muted); margin-top: -18px; }
+.page-title { margin-bottom: 22px; }
+.page-title h1 { margin-bottom: 10px; }
+.page-title p:last-child { max-width: 760px; margin: 0; color: var(--muted); line-height: 1.55; }
+.history-page { padding-top: 34px; }
 .stats-strip { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--forest); color: white; border-radius: 9px; margin-bottom: 20px; }
 .stats-strip div { padding: 18px; text-align: center; border-right: 1px solid rgba(255,255,255,.12); }
 .stats-strip div:last-child { border: 0; }
@@ -678,7 +684,7 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
   .info-grid { grid-template-columns: repeat(4, 1fr); }
   .legal-grid { grid-template-columns: repeat(4, 1fr); }
   .dashboard { display: grid; grid-template-columns: 1.3fr .7fr; gap: 0 18px; }
-  .greeting, .state-picker, .status-banner, .data-notice, .logbook-snapshot, .info-grid, .species-section, .hunt-actions { grid-column: 1 / -1; }
+  .greeting, .state-picker, .status-banner, .data-notice, .logbook-snapshot, .hunt-category-grid--home, .info-grid, .species-section, .hunt-actions { grid-column: 1 / -1; }
   .dashboard-end { grid-column: 1 / -1; }
   .dashboard > .section:first-of-type { grid-column: 1 / 2; }
 }
@@ -703,6 +709,10 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(211,166,63,.
   .hunt-category-grid { grid-template-columns: 1fr; gap: 8px; }
   .hunt-category-card { min-height: 84px; padding: 12px; }
   .hunt-category-card strong { font-size: 21px; }
+  .hunt-home-heading h1 { font-size: clamp(45px, 14vw, 58px); }
+  .history-page .page-title { margin-bottom: 20px; }
+  .history-page .page-title h1 { margin-bottom: 12px; font-size: clamp(42px, 12vw, 52px); line-height: .94; }
+  .history-page .page-title p:last-child { font-size: 11px; line-height: 1.55; }
   .hunt-setup-location { grid-template-columns: 1fr; gap: 13px; padding: 18px; }
   .hunt-mode-notice { align-items: start; padding: 14px; }
   .harvest-heading { gap: 14px; }

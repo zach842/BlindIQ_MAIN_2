@@ -500,20 +500,22 @@ function formatHuntDate(value: string) {
   });
 }
 
-function rowToHuntRecord(row: {
+type HuntRow = {
   id: string;
   hunted_at: string;
   state_code: string;
   state_name: string;
   zone: string;
-  is_simulation: boolean;
+  is_simulation?: boolean | null;
   hunt_category?: HuntCategoryId | null;
-  entries: unknown;
-  blind_name: string | null;
-  firearm_used: string | null;
-  notes: string | null;
-  photo_path: string | null;
-}): HuntRecord {
+  entries?: unknown;
+  blind_name?: string | null;
+  firearm_used?: string | null;
+  notes?: string | null;
+  photo_path?: string | null;
+};
+
+function rowToHuntRecord(row: HuntRow): HuntRecord {
   const entries = Array.isArray(row.entries) ? row.entries as HarvestEntry[] : [];
   const categoryFromEntries = entries.find((entry) => entry.huntCategory)?.huntCategory;
   return {
@@ -523,13 +525,13 @@ function rowToHuntRecord(row: {
     stateCode: row.state_code,
     state: row.state_name,
     zone: row.zone,
-    isSimulation: row.is_simulation,
+    isSimulation: row.is_simulation ?? false,
     huntCategory: row.hunt_category ?? categoryFromEntries ?? "waterfowl",
     entries,
-    blindName: row.blind_name,
-    firearmUsed: row.firearm_used,
-    notes: row.notes,
-    photoPath: row.photo_path,
+    blindName: row.blind_name ?? null,
+    firearmUsed: row.firearm_used ?? null,
+    notes: row.notes ?? null,
+    photoPath: row.photo_path ?? null,
   };
 }
 
@@ -538,6 +540,19 @@ function isMissingHuntCategoryColumn(error: { code?: string; message?: string } 
   const message = error.message ?? "";
   return error.code === "42703"
     || (message.includes("hunt_category") && /does not exist|column|schema cache/i.test(message));
+}
+
+function isHuntDatabaseSetupError(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const message = error.message ?? "";
+  return error.code === "42P01"
+    || error.code === "42501"
+    || /relation .*hunts.* does not exist|schema cache|could not find .* column|column .* does not exist|permission denied|row-level security/i.test(message);
+}
+
+function huntDatabaseSetupMessage(action: "load" | "save") {
+  const verb = action === "load" ? "loaded" : "saved";
+  return `Saved hunts could not be ${verb} because BlindIQ’s hunt-log database needs the included one-time Logbook Setup update. Existing hunts have not been deleted.`;
 }
 
 async function addPrivatePhotoUrls(records: HuntRecord[]) {
@@ -576,23 +591,18 @@ function readDemoHunts(): HuntRecord[] {
 export async function listHunts(): Promise<HuntRecord[]> {
   if (!supabase) return readDemoHunts();
   if (!navigator.onLine) return cachedHunts();
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from("hunts")
-    .select("id,hunted_at,state_code,state_name,zone,is_simulation,hunt_category,entries,blind_name,firearm_used,notes,photo_path")
+    .select("*")
     .order("hunted_at", { ascending: false });
-  if (isMissingHuntCategoryColumn(error)) {
-    const legacyResult = await supabase
-      .from("hunts")
-      .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
-      .order("hunted_at", { ascending: false });
-    data = legacyResult.data?.map((row) => ({ ...row, hunt_category: null })) ?? null;
-    error = legacyResult.error;
-  }
   if (error) {
     if (isConnectivityError(error)) return cachedHunts();
-    throw error;
+    const cached = cachedHunts();
+    if (cached.length) return cached;
+    if (isHuntDatabaseSetupError(error)) throw new Error(huntDatabaseSetupMessage("load"));
+    throw new Error(error.message || "Unable to load saved hunts.");
   }
-  const records = await addPrivatePhotoUrls((data ?? []).map(rowToHuntRecord));
+  const records = await addPrivatePhotoUrls((data ?? []).map((row) => rowToHuntRecord(row as HuntRow)));
   cacheHunts(records);
   return records;
 }
@@ -689,7 +699,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       firearm_used: input.firearmUsed?.trim() || null,
       notes: input.notes?.trim() || null,
       photo_path: photoPath,
-      app_version: "1.58",
+      app_version: "1.60",
     };
   let { data, error } = await supabase
     .from("hunts")
@@ -710,6 +720,7 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
     if (photoPath) await supabase.storage.from(HUNT_PHOTOS_BUCKET).remove([photoPath]);
     if (isConnectivityError(error) && !photo) return queueOfflineHunt(input, huntedAt);
     if (isConnectivityError(error)) throw new Error("Connect to the internet to save this photo, or remove it and save the hunt offline.");
+    if (isHuntDatabaseSetupError(error)) throw new Error(huntDatabaseSetupMessage("save"));
     throw error;
   }
   if (!data) throw new Error("The hunt was saved, but the saved record could not be loaded.");
@@ -745,7 +756,7 @@ export async function syncPendingHunts() {
       blind_name: item.input.blindName?.trim() || null,
       firearm_used: item.input.firearmUsed?.trim() || null,
       notes: item.input.notes?.trim() || null,
-      app_version: "1.58-offline-sync",
+      app_version: "1.60-offline-sync",
     };
     let { error } = await supabase.from("hunts").insert(insertPayload);
     if (isMissingHuntCategoryColumn(error)) {
