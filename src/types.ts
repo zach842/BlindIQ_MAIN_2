@@ -15,6 +15,7 @@ export type BirdRule = {
   parentLimit?: number;
   parentLimits?: Record<string, number>;
   zoneLimits?: Record<string, number>;
+  limitPeriods?: { startDate: string; endDate: string; limit: number; zone?: string }[];
 };
 
 export type Season = {

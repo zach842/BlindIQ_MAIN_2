@@ -21,6 +21,32 @@ const waterfowlDay = (name: string, date: string, zone: string) => [ducks(name, 
  * restrictions.
  */
 export const statusPeriodsByState: Record<string, WaterfowlStatusPeriod[]> = {
+  DE: [
+    ducks("September Teal", "2026-09-05", "2026-09-13", "Special September Teal Zone"),
+    ducks("Regular Duck", "2026-10-31", "2026-11-07", "Statewide"),
+    ducks("Regular Duck", "2026-11-25", "2026-11-29", "Statewide"),
+    ducks("Regular Duck", "2026-12-16", "2027-01-31", "Statewide"),
+    ...waterfowlDay("Youth / Veteran / Military", "2026-10-24", "Statewide — eligibility restricted"),
+    ...waterfowlDay("Youth / Veteran / Military", "2027-02-07", "Statewide — eligibility restricted"),
+    geese("Early Resident Canada Goose", "2026-09-01", "2026-09-25", "Statewide"),
+    geese("Migratory Canada / White-fronted Goose", "2026-11-25", "2026-11-29", "Statewide"),
+    geese("Migratory Canada / White-fronted Goose", "2026-12-23", "2027-01-31", "Statewide"),
+    geese("Brant", "2026-12-19", "2027-01-02", "Statewide"),
+    geese("Brant", "2027-01-16", "2027-01-30", "Statewide"),
+    geese("Snow / Ross’s Goose", "2026-11-25", "2027-03-10", "Statewide — special methods vary"),
+  ],
+  WV: [
+    ducks("Regular Duck", "2026-10-03", "2026-10-11", "Statewide"),
+    ducks("Regular Duck", "2026-11-07", "2026-11-15", "Statewide"),
+    ducks("Regular Duck", "2026-12-21", "2027-01-31", "Statewide"),
+    ...waterfowlDay("Youth Waterfowl", "2026-09-19", "Statewide — eligibility restricted"),
+    ...waterfowlDay("Youth Waterfowl", "2026-10-31", "Statewide — eligibility restricted"),
+    geese("Early Canada Goose", "2026-09-01", "2026-09-13", "Statewide"),
+    geese("Regular Geese", "2026-10-03", "2026-10-18", "Statewide"),
+    geese("Regular Geese", "2026-11-07", "2026-11-15", "Statewide"),
+    geese("Regular Geese", "2026-12-08", "2027-01-31", "Statewide"),
+    geese("Brant", "2027-01-02", "2027-01-31", "Statewide"),
+  ],
   VA: [
     ducks("September Teal", "2026-09-19", "2026-09-27", "East of I-95"),
     ducks("September Teal", "2026-09-22", "2026-09-27", "West of I-95"),
@@ -193,7 +219,7 @@ export const statusPeriodsByState: Record<string, WaterfowlStatusPeriod[]> = {
     ducks("Early Teal", "2026-09-05", "2026-09-09", "Statewide"),
     ...waterfowlDay("Youth Waterfowl", "2026-09-12", "statewide — eligibility restricted"),
     ...waterfowlDay("Youth Waterfowl", "2026-09-13", "statewide — eligibility restricted"),
-    geese("Early Goose", "2026-09-12", "2026-09-27", "Statewide"),
+    geese("Early Goose", "2026-09-05", "2026-09-20", "Statewide"),
     ducks("North Zone Duck Season", "2026-09-26", "2026-11-24", "North Waterfowl Zone"),
     ducks("Central Zone Duck Season", "2026-09-26", "2026-10-04", "Central Waterfowl Zone"),
     ducks("Central Zone Duck Season", "2026-10-10", "2026-11-29", "Central Waterfowl Zone"),
@@ -221,6 +247,7 @@ export const statusPeriodsByState: Record<string, WaterfowlStatusPeriod[]> = {
     geese("Light Goose Conservation Order", "2027-02-15", "2027-04-30", "Statewide"),
   ],
   CA: [
+    ducks("Northeastern Veteran / Active Military Ducks", "2027-01-16", "2027-01-17", "Northeastern Zone — eligibility restricted"),
     ducks("Northeastern Zone Duck Season", "2026-10-03", "2027-01-13", "Northeastern Zone"),
     ducks("Southern San Joaquin Valley Duck Season", "2026-10-24", "2027-01-31", "Southern San Joaquin Valley Zone"),
     ducks("Southern California Duck Season", "2026-10-24", "2027-01-31", "Southern California Zone"),
@@ -232,7 +259,9 @@ export const statusPeriodsByState: Record<string, WaterfowlStatusPeriod[]> = {
     ...waterfowlDay("Youth Waterfowl", "2027-02-14", "most other zones — eligibility restricted"),
     ...waterfowlDay("Veteran / Active Military Waterfowl", "2027-02-06", "selected zones — eligibility restricted"),
     ...waterfowlDay("Veteran / Active Military Waterfowl", "2027-02-07", "selected zones — eligibility restricted"),
-    geese("Northeastern Zone Goose Season", "2026-10-03", "2027-01-13", "Northeastern Zone"),
+    geese("Northeastern Canada Geese", "2026-10-03", "2027-01-10", "Northeastern Zone"),
+    geese("Northeastern White / White-fronted Geese", "2026-10-03", "2026-11-29", "Northeastern Zone"),
+    geese("Northeastern White / White-fronted Geese", "2027-01-01", "2027-01-13", "Northeastern Zone"),
     geese("Southern San Joaquin Valley Goose Season", "2026-10-24", "2027-01-31", "Southern San Joaquin Valley Zone"),
     geese("Southern California Goose Season", "2026-10-24", "2027-01-31", "Southern California Zone"),
     geese("Colorado River Goose Season", "2026-10-23", "2027-01-31", "Colorado River Zone"),
@@ -311,7 +340,7 @@ export const statusPeriodsByState: Record<string, WaterfowlStatusPeriod[]> = {
     ducks("Middle Zone Duck Season", "2026-12-19", "2027-01-10", "Middle Zone"),
     ducks("South Zone Duck Season", "2026-11-26", "2026-11-29", "South Zone"),
     ducks("South Zone Duck Season", "2026-12-07", "2027-01-31", "South Zone"),
-    geese("Canada Geese & Brant", "2026-10-03", "2026-10-10", "Statewide"),
+    geese("Canada Geese & Brant", "2026-10-03", "2026-10-11", "Statewide"),
     geese("Regular Goose Season", "2026-11-11", "2027-02-06", "Statewide"),
     geese("Light Goose Conservation Order", "2027-02-07", "2027-04-30", "Statewide"),
     ...waterfowlDay("North Zone Youth Waterfowl", "2026-10-24", "North Zone — eligibility restricted"),
@@ -432,5 +461,5 @@ export const statusPeriodsByState: Record<string, WaterfowlStatusPeriod[]> = {
 };
 
 /** These states have useful active periods but their loaded packages omit some final zone dates. */
-export const partialStatusCoverage = new Set(["DE", "NY"]);
+export const partialStatusCoverage = new Set(["NY", "CA", "WA"]);
 

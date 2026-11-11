@@ -32,6 +32,9 @@ export function getDashboardSeasonStatus(state: StateData, date = new Date()): D
   }
 
   const today = localDateKey(date);
+  if (["PA", "NC", "NJ"].includes(state.code) && date.getDay() === 0) {
+    return { kind: "closed", headline: "CLOSED SUNDAY", message: `${state.name} prohibits Sunday migratory-bird hunting.`, icon: "×", activePeriods: [] };
+  }
   const calendar = state.statusPeriods ?? statusPeriodsByState[state.code] ?? [];
   const activePeriods = calendar.filter((period) => today >= period.startDate && today <= period.endDate);
 
@@ -40,7 +43,7 @@ export function getDashboardSeasonStatus(state: StateData, date = new Date()): D
       return {
         kind: "reference",
         headline: "STATUS CHECK REQUIRED",
-        message: `${state.name} does not yet have enough final, zone-specific dates loaded to safely declare every waterfowl season closed today. Check the detailed dates and official agency source.`,
+        message: `${state.name} has additional zone, special-area or eligibility rules beyond this calendar. Check the detailed dates and official agency source.`,
         icon: "!",
         activePeriods,
       };
@@ -65,7 +68,7 @@ export function getDashboardSeasonStatus(state: StateData, date = new Date()): D
   return {
     kind,
     headline: kind === "open" ? "OPEN TODAY" : "PARTIALLY OPEN",
-    message: `${seasonLabel} ${verb} open today${zoneLabel}. ${kind === "partial" ? "Other loaded waterfowl seasons remain closed. " : ""}Verify residency, zone, license, and eligibility requirements.`,
+    message: `${seasonLabel} ${verb} open today${zoneLabel}. Verify species dates, residency, zone, license, and eligibility requirements.`,
     icon: kind === "open" ? "✓" : "◐",
     activePeriods,
   };

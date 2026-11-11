@@ -16,7 +16,9 @@ const rule = (categoryId: HuntCategoryId, id: string, label: string, group: Bird
   group,
   icon,
   huntCategory: categoryId,
-  limit: 999,
+  // Field-log sentinel, never a legal allowance; UI bypasses bag calculations.
+  limit: 0,
+  note: "Field log only — regulation limits not loaded.",
 });
 
 export const huntCategories: HuntCategory[] = [
@@ -47,6 +49,8 @@ export const huntCategories: HuntCategory[] = [
       rule("deer", "coues-doe", "Coues Whitetail — Doe", "Deer", "🦌"),
       rule("deer", "sitka-buck", "Sitka Black-tailed Deer — Buck", "Deer", "🦌"),
       rule("deer", "sitka-doe", "Sitka Black-tailed Deer — Doe", "Deer", "🦌"),
+      rule("deer", "sika-stag", "Sika Deer — Stag", "Deer", "🦌"),
+      rule("deer", "sika-hind", "Sika Deer — Hind", "Deer", "🦌"),
       rule("deer", "other", "Other Legal Deer", "Deer", "🦌"),
     ],
   },

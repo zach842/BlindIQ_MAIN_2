@@ -1,0 +1,167 @@
+/* v1.61.1: presentation only. Existing routes, controls and regulation logic retained. */
+:root {
+  --forest: #183c2f;
+  --forest-2: #285540;
+  --deep: #102b22;
+  --moss: #526b56;
+  --gold: #dfb34f;
+  --cream: #f3f5f0;
+  --paper: #ffffff;
+  --ink: #1c3026;
+  --muted: #58695e;
+  --line: #dce4da;
+}
+body { -webkit-font-smoothing: antialiased; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, a { touch-action: manipulation; }
+button:focus-visible, a:focus-visible { outline: 3px solid #b78622; outline-offset: 4px; }
+.button { border-radius: 11px; transition: background-color .16s, box-shadow .16s, transform .16s; }
+.button:hover:not(:disabled) { box-shadow: 0 5px 16px #102b221c; }
+.button:active:not(:disabled) { transform: translateY(1px); }
+input, select, textarea { border-radius: 10px; }
+.topbar { background: var(--deep); border-bottom: 1px solid #d5b66c33; box-shadow: 0 2px 12px #102b2210; }
+.home-install-button { border-color: #d8c6a24d; background: #ffffff08; }
+.avatar { color: #f8f3e6; background: #325542; border: 1px solid #ffffff30; }
+.page, .hunt-content { width: min(1040px, calc(100% - 36px)); }
+.dashboard { padding-top: 24px; }
+.greeting {
+  padding: 30px; margin-bottom: 20px; border-radius: 18px; overflow: hidden;
+  background: linear-gradient(90deg, #102b22f5, #102b22bb 64%, #102b2260), url('/duck-home-page.png') center 45% / cover;
+  box-shadow: 0 8px 28px #102b2214;
+}
+.greeting p { color: #e8ca83; font-size: 10px; letter-spacing: .15em; }
+.greeting h1 { color: white; font: 750 clamp(30px, 4vw, 43px)/1.12 Inter, system-ui, sans-serif; letter-spacing: -.045em; margin: 12px 0; }
+.greeting > small { color: #e1e9df; margin: 0; font-size: 12px; line-height: 1.6; }
+.state-picker { border-radius: 13px; padding: 17px 20px; box-shadow: 0 2px 7px #102b2204; }
+.state-picker label { display: block; font-size: 9px; letter-spacing: .13em; }
+.state-picker select { min-height: 36px; font: 700 23px/1.4 Inter, system-ui, sans-serif; letter-spacing: -.035em; margin-top: 3px; }
+.hunt-actions { gap: 12px; margin-bottom: 20px; }
+.button--start { min-height: 96px; padding: 22px; flex-direction: column; justify-content: center; align-items: flex-start; gap: 8px; background: var(--gold); color: var(--deep); border: 1px solid #b78b2b; box-shadow: 0 4px 13px #aa7d2020; }
+.button--start > span { font: 800 23px/1.1 'Barlow Condensed', Impact, sans-serif; letter-spacing: .025em; }
+.button--start small { font-size: 11px; color: #3c3b24; }
+.button--test { min-height: 58px; border-color: var(--line); background: white; padding: 13px 17px; font-size: 19px; }
+.button--test > span { white-space: nowrap; }
+.group-hunt-preview { min-height: 38px; padding: 9px 14px; border-color: #bdcaba; border-radius: 10px; background: #eaf0e6; }
+.group-hunt-preview span { font-size: 14px; }
+.group-hunt-preview small { padding: 4px 7px; font-size: 7px; background: #dce6d4; color: #40543c; }
+.logbook-snapshot { color: var(--ink); background: white; border-color: var(--line); border-radius: 16px; box-shadow: 0 3px 14px #102b2206; }
+.logbook-snapshot__heading { padding: 22px 24px 18px; }
+.logbook-snapshot .eyebrow { color: var(--moss); font-size: 9px; letter-spacing: .12em; }
+.logbook-snapshot__heading h2 { color: var(--forest); font: 750 25px/1.2 Inter, system-ui, sans-serif; letter-spacing: -.04em; }
+.logbook-snapshot__heading button { min-height: 42px; border-color: var(--line); background: #f3f6ef; color: var(--forest); font-size: 10px; }
+.logbook-snapshot__stats { border-color: var(--line); background: #f7f9f4; }
+.logbook-snapshot__stats div { border-color: var(--line); padding: 18px 24px; }
+.logbook-snapshot__stats strong { color: var(--forest); font: 750 34px/1.1 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.logbook-snapshot__stats span { color: var(--muted); margin-top: 6px; font-size: 9px; }
+.logbook-snapshot > p { color: var(--muted); padding: 15px 24px; font-size: 11px; }
+.logbook-snapshot > p strong { color: var(--forest); }
+.status-banner { padding: 20px; border-radius: 13px; border: 1px solid currentColor; gap: 14px; }
+.status-banner--closed { color: #8b392f; background: #f8ece7; border-color: #e8c9bf; }
+.status-banner--reference, .status-banner--partial { color: #755119; background: #faf1db; border-color: #e8d5a6; }
+.status-banner--open { color: #255c3b; background: #e8f2e7; border-color: #bdd6ba; }
+.status-icon { width: 31px; height: 31px; border-width: 1px; border-color: currentColor; }
+.status-banner span { font-size: 8px; letter-spacing: .12em; opacity: 1; }
+.status-banner strong { font: 800 20px/1.35 Inter, system-ui, sans-serif; letter-spacing: -.02em; margin-top: 5px; }
+.status-banner p, .status-banner--partial p, .status-banner--open p, .status-banner--reference p { color: inherit; font-size: 12px; line-height: 1.65; }
+.section, .harvest-panel, .hunt-location, .notification-settings-card, .notification-inbox-card { border-radius: 16px; box-shadow: 0 3px 14px #102b2205; }
+.section { padding: 25px; }
+.section-heading h2, .section h2, .page-title h1 { font-family: Inter, system-ui, sans-serif; font-weight: 750; letter-spacing: -.04em; line-height: 1.2; }
+.section-heading h2, .section h2 { font-size: 25px; }
+.eyebrow { line-height: 1.5; }
+.section .eyebrow, .harvest-panel .eyebrow { color: #82601f; }
+.muted { font-size: 13px; line-height: 1.7; }
+.verified { padding: 7px 10px; font-size: 9px; color: #3c6245; background: #eaf1e5; }
+.season-row { gap: 14px; padding: 17px 0; }
+.season-row strong { font-size: 13px; line-height: 1.5; }
+.season-row span { font-size: 11px; line-height: 1.5; }
+.season-row p { font-size: 12px; line-height: 1.6; }
+.special-rules { border-color: #e4d5b1; background: #fffcf4; }
+.info-card { background: white; color: var(--ink); border: 1px solid var(--line); border-radius: 13px; min-height: 182px; padding: 20px; }
+.info-card .icon { color: #8c681c; margin-bottom: 17px; }
+.info-card > span:not(.icon) { color: var(--muted); font-size: 9px; }
+.info-card strong { color: var(--forest); font-size: 15px; line-height: 1.5; }
+.info-card p, .info-card a { color: var(--muted); font-size: 11px; line-height: 1.65; }
+.info-card a { padding: 5px 0; text-underline-offset: 3px; }
+.migration-teaser { border-radius: 14px; background: var(--deep); box-shadow: 0 3px 14px #102b2210; }
+.migration-teaser strong { font-size: 27px; }
+.chip-list span { border-radius: 8px; background: #f7f9f4; font-size: 11px; }
+.bottom-nav { height: calc(72px + env(safe-area-inset-bottom)); padding: 7px 12px calc(7px + env(safe-area-inset-bottom)); gap: clamp(5px, 4vw, 50px); background: #fffffffa; box-shadow: 0 -4px 20px #102b2208; }
+.bottom-nav button { position: relative; min-width: 64px; border-radius: 12px; padding: 6px 12px; font-size: 10px; }
+.bottom-nav button.active { background: #eaf1e6; color: var(--forest); }
+.bottom-nav button.active::before { content: ''; position: absolute; height: 3px; width: 17px; border-radius: 3px; top: 3px; left: calc(50% - 8.5px); background: var(--forest); }
+.bottom-nav .icon { font-size: 21px; margin-bottom: 4px; }
+.app-shell { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+.hunt-page { background: var(--cream); padding-bottom: calc(94px + env(safe-area-inset-bottom)); }
+.hunt-header { background: var(--deep); min-height: 74px; }
+.hunt-location { padding: 20px; }
+.hunt-location select { font: 700 20px/1.4 Inter, system-ui, sans-serif; letter-spacing: -.035em; min-height: 40px; }
+.bag-meter { border-radius: 15px; padding: 24px; background: var(--deep); }
+.bag-meter strong { font-variant-numeric: tabular-nums; }
+.harvest-panel { padding: 24px; }
+.bird-row { min-height: 84px; grid-template-columns: 48px minmax(0, 1fr) 40px 25px 40px; gap: 10px; }
+.bird-name strong { font-size: 13px; line-height: 1.4; }
+.bird-name span { font-size: 11px; line-height: 1.5; }
+.plus, .minus { width: 40px; height: 44px; border-radius: 10px; }
+.plus { background: var(--gold); border: 1px solid #bf9437; }
+.minus { background: #edf1e9; }
+.count { font-size: 16px; font-variant-numeric: tabular-nums; }
+.bird-row--full { opacity: .68; }
+.disclaimer { border-radius: 0 10px 10px 0; background: #eaeadd; color: #515c45; font-size: 11px; line-height: 1.7; }
+.legal-next, .summary-hero, .hunt-details-card, .hunt-photo-card, .share-hunt-card, .history-card, .profile-card { border-radius: 15px; }
+.finish-bar { min-height: calc(62px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--gold); box-shadow: 0 -3px 18px #102b2215; }
+.summary-hero { border-radius: 16px 16px 0 0; background: var(--deep); }
+.summary-total { background: #f0dfad; }
+.page-title h1 { font-size: clamp(32px, 6vw, 44px); }
+@media (min-width: 760px) {
+  .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 20px; }
+  .dashboard > .greeting { grid-column: 1 / -1; }
+  .migration-teaser { grid-column: 1 / -1; }
+  .dashboard > .section { min-width: 0; align-self: start; }
+}
+@media (max-width: 520px) {
+  .page, .hunt-content { width: calc(100% - 28px); }
+  .dashboard { padding-top: 16px; }
+  .greeting { padding: 25px 22px; margin-bottom: 16px; background-position: 60% 45%; }
+  .greeting h1 { max-width: 280px; font-size: 32px; }
+  .greeting > small { max-width: 250px; font-size: 11px; }
+  .hunt-actions { gap: 10px; }
+  .button--start { min-height: 79px; padding: 19px 20px; }
+  .button--test { min-height: 53px; }
+  .logbook-snapshot__heading { padding: 20px 18px 17px; gap: 12px; }
+  .logbook-snapshot__heading h2 { font-size: 22px; }
+  .logbook-snapshot__heading button { padding: 0 10px; font-size: 9px; }
+  .logbook-snapshot__stats div { padding: 17px 18px; }
+  .logbook-snapshot__stats strong { font-size: 30px; }
+  .logbook-snapshot > p { padding: 14px 18px; }
+  .section, .harvest-panel { padding: 20px 18px; }
+  .section-heading h2, .section h2 { font-size: 23px; }
+  .section-heading { gap: 10px; }
+  .verified { font-size: 8px; padding: 6px 8px; }
+  .bird-row { grid-template-columns: 36px minmax(0,1fr) 36px 20px 44px; gap: 5px; min-height: 80px; }
+  .plus, .minus { height: 44px; }
+  .plus { width: 44px; }
+  .minus { width: 36px; }
+  .bird-name strong { font-size: 12px; }
+  .bird-name span { font-size: 10px; }
+  .harvest-heading__actions { max-width: 105px; }
+  .harvest-heading__actions button { min-height: 44px; padding: 6px 10px; line-height: 1.5; }
+  .harvest-heading h2 { font-size: 25px; }
+  .bottom-nav { gap: 3px; padding-left: 8px; padding-right: 8px; }
+  .bottom-nav button { min-width: 0; flex: 1; padding: 6px 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+}
+
+/* Multi-species sessions reuse the established field logger. */
+.session-picker, .field-log-notice { grid-column: 1 / -1; background: white; border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+.session-picker label, .history-filter, .species-search { display: block; font-size: 12px; font-weight: 800; color: var(--forest); letter-spacing: .04em; }
+.session-picker select, .history-filter select, .species-search input, .hunt-location input { display: block; width: 100%; box-sizing: border-box; min-height: 48px; margin-top: 8px; border: 1px solid #bdc8bd; border-radius: 10px; padding: 10px 12px; background: #fff; color: #20382d; font: inherit; font-size: 16px; }
+.session-picker p, .field-log-notice p { font-size: 13px; line-height: 1.6; margin: 10px 0 0; color: #526259; }
+.field-log-notice { margin-bottom: 16px; background: #f3f6ee; }
+.field-log-notice a { display: block; margin-top: 10px; color: #23563c; font-size: 14px; font-weight: 700; }
+.species-search { margin: 14px 0; }
+.game-icon { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; border-radius: 12px; background: #eef2e8; font-size: 25px; }
+.history-filter { margin: 16px 0; }
+.bird-name { min-width: 0; }
+.bird-name strong { overflow-wrap: anywhere; }

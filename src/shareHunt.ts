@@ -128,7 +128,7 @@ export async function createHuntShareFile(input: HuntShareInput) {
     context.fillText(String(input.totalCount), 1008, 837);
     context.textAlign = "left";
     context.font = "700 31px Inter, sans-serif";
-    context.fillText(input.huntCategoryLabel === "Waterfowl" ? `${input.duckCount} ducks  •  ${input.gooseCount} geese` : `${input.totalCount} ${input.huntCategoryLabel.toLowerCase()} ${input.totalCount === 1 ? "harvest" : "harvests"}`, 72, 830);
+    context.fillText(input.huntCategoryLabel === "Waterfowl" ? `${input.duckCount} ducks  •  ${input.gooseCount} geese  •  ${input.totalCount - input.duckCount - input.gooseCount} other` : `${input.totalCount} ${input.huntCategoryLabel.toLowerCase()} ${input.totalCount === 1 ? "harvest" : "harvests"}`, 72, 830);
 
     context.fillStyle = "#fbfaf6";
     context.fillRect(0, 890, canvas.width, 350);

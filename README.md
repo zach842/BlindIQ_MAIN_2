@@ -1,10 +1,15 @@
-# BlindIQ
+# BlindIQ v1.62.0
+
+Multi-species hunt sessions are restored: choose a hunt type and state, tap to log, then save notes/photos and share. Verified waterfowl guidance remains in place; other species are explicitly field-log only. See [release notes and validation](docs/RELEASE_v1.62.0.md).
+
 
 **HUNT. LOG. SHARE**
 
-BlindIQ is a mobile-first waterfowl hunt and field-log website app. Its core promise is simple: **Hunt. Log. Share.** This React + Vite foundation includes authentication, fast hunt startup, duck and goose logging, photos and field notes, a season-by-season logbook, one-tap native social sharing, 29 state field-guide dashboards, remaining-harvest guidance, and a seven-day free trial followed by a $10.99/year membership.
+BlindIQ is a mobile-first multi-species hunt and field-log website app. Its core promise is simple: **Hunt. Log. Share.** This React + Vite foundation includes authentication, fast hunt startup, duck and goose logging, photos and field notes, a season-by-season logbook, one-tap native social sharing, 29 state field-guide dashboards, remaining-harvest guidance, and a seven-day free trial followed by a $10.99/year membership.
 
-This package is **BlindIQ v1.60**. It restores the focused waterfowl-only experience while retaining the latest account, database, offline, Migration Pulse, notification, and saved-hunt compatibility work. The dashboard leads with Start Waterfowl Hunt and a compact logbook snapshot. The Save Hunt screen accepts a camera photo or photo-library image, prepares it in the browser, stores it privately with the hunt, and shows it again in the Waterfowl Logbook. A 12-second device-check timeout prevents the startup screen from spinning indefinitely. The query-versioned v1.60 service worker replaces older installed caches after the app is opened once while connected.
+This package is **BlindIQ v1.62.0**, restoring multi-species field logs on top of the v1.61.1 visual refresh and audited v1.61 release. See [visual refresh notes](docs/VISUAL_REFRESH_v1.61.1.md). The regulation foundation is an incremental regulation and harvest-calculation update to v1.60. See [the 29-state audit](docs/REGULATION_VERIFICATION_2026-2027.md) and [release validation](docs/VALIDATION_v1.61.md), including how final Illinois and South Dakota sources resolve stale web tables.
+
+The v1.60 foundation retained the latest account, database, offline, Migration Pulse, notification, and saved-hunt compatibility work. The dashboard now leads with hunt type, state, and a compact logbook snapshot. The Save Hunt screen accepts a camera photo or photo-library image, prepares it in the browser, stores it privately with the hunt, and shows it again in the Hunt Logbook. A 12-second device-check timeout prevents the startup screen from spinning indefinitely. The query-versioned v1.62.0 service worker replaces older installed caches after the app is opened once while connected.
 
 > Important: BlindIQ is a hunting companion, not legal advice. State packages are versioned as current, tentative, or archived. Hunters must always verify current federal, state, local, WMA, refuge, permit, and emergency rules with the responsible wildlife agency before hunting.
 
@@ -38,7 +43,7 @@ This package is **BlindIQ v1.60**. It restores the focused waterfowl-only experi
 - Offline hunt-saving queue with automatic Supabase synchronization when the device reconnects
 - Visible offline banner and unsynced-hunt labels so field status is never ambiguous
 - Date-aware dashboard status with separate **Open Today**, **Partially Open**, **Closed Today**, and **Status Check Required** banners
-- Machine-readable banner calendars for all 27 loaded states with usable active-season dates, tested across every date boundary in the loaded 2026–2027 season
+- Machine-readable banner calendars for all 29 loaded states with usable active-season dates, tested across every date boundary in the loaded 2026–2027 season
 - Safe incomplete-data treatment for Delaware and New York, plus archived-data treatment for West Virginia, so missing dates are never presented as a confirmed statewide closure
 - North Dakota’s complete structured 2026–2027 waterfowl calendar, including its August early Canada goose zones
 - South Dakota’s final 2026–2027 duck, goose, youth, swan, snipe and light-goose calendar, four duck zones, two regular goose units, August resident management take, nonresident unit guidance, and Traditional-versus-Three-Duck warnings
@@ -62,10 +67,10 @@ This package is **BlindIQ v1.60**. It restores the focused waterfowl-only experi
 - Live list of birds that remain available under loaded demo rules
 - Hunt summary and permanent account-scoped Supabase history
 - Optional blind location/name, firearm used, and 2,000-character notes on the Save Hunt screen
-- Field details retained in demo mode, offline hunt queues, Supabase synchronization, and the Waterfowl Logbook
+- Field details retained in demo mode, offline hunt queues, Supabase synchronization, and the Hunt Logbook
 - Optional harvest-photo capture or camera-roll selection on the Save Hunt screen
 - In-browser photo resizing and compression before upload
-- Private, account-owned Supabase Storage photos with short-lived signed viewing links in the Waterfowl Logbook
+- Private, account-owned Supabase Storage photos with short-lived signed viewing links in the Hunt Logbook
 - Branded 1080 × 1350 hunt-share card generated privately in the browser
 - Native phone sharing to compatible installed apps such as Facebook, Instagram, Messages, and Mail
 - Separate image-download fallback for browsers that do not support file sharing
@@ -86,7 +91,7 @@ This package is **BlindIQ v1.60**. It restores the focused waterfowl-only experi
 - Web Push support for installed iPhone/iPad website apps, Android, and compatible desktop browsers
 - Automated season, regulation, Migration Pulse, unfinished-hunt, trial, and saved-hunt milestone events
 - State, flyway, alert-category, and migration-threshold preferences
-- Visible v1.60 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
+- Visible v1.61 markers beneath the dashboard feedback card and at the bottom of Account for deployment confirmation
 - Account and seven-days-free, then $10.99/year annual membership presentation
 - Supabase and Stripe environment placeholders
 - Responsive phone, tablet, and desktop design
@@ -200,7 +205,7 @@ After installation, BlindIQ opens in its own app-style window. The **ADD TO HOME
 3. Browse the selected state's dashboard and open the bird field guide once.
 4. Turn on Airplane Mode or disable Wi-Fi and mobile data.
 5. Reopen BlindIQ from the Home Screen. The app, loaded regulation data, and bird references should remain available.
-6. Save a hunt without a photo while offline. It will appear in the Waterfowl Logbook with an **OFFLINE** label.
+6. Save a hunt without a photo while offline. It will appear in the Hunt Logbook with an **OFFLINE** label.
 7. Restore service and leave BlindIQ open. The queued hunt will upload automatically and the label will clear after history refreshes.
 
 The first login, membership checkout, account verification, regulation updates, first app load, and harvest-photo upload require internet access. Hunts without photos can still be queued offline. If a photo is selected while offline, BlindIQ asks the hunter to reconnect or remove the photo before saving. Offline mode uses the last app and regulation package successfully loaded on that device, so hunters must reconnect before a hunt to receive the newest published release.
@@ -392,7 +397,7 @@ supabase/HUNT_LOGBOOK_SETUP.sql
 
 Paste it into the query editor and click **Run** once. The script is safe to run more than once and does not delete existing hunts. It creates or repairs the Hunt Logbook table, fields, indexes, permissions, account-owned security policies, and the private `hunt-photos` Storage bucket with a 5 MB JPEG limit. Run it before deploying this front end so both saved hunts and harvest photos have the expected production structure.
 
-No new Vercel environment variable is required. The existing signed-in Supabase account controls access. Harvest photos are compressed in the browser and stored in a folder belonging to that user; the app creates a short-lived private viewing link when the Waterfowl Logbook loads.
+No new Vercel environment variable is required. The existing signed-in Supabase account controls access. Harvest photos are compressed in the browser and stored in a folder belonging to that user; the app creates a short-lived private viewing link when the Hunt Logbook loads.
 
 ## Project structure
 
@@ -423,3 +428,8 @@ npm run dev      # Start local development
 npm run build    # Create and verify a production build
 npm run preview  # Preview the production build
 ```
+
+
+## v1.61 validation
+
+Use the existing Node 22 / pnpm setup. Run `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm lint`, and `pnpm build`. The ZIP preserves repository layout. Configure the existing deployment variables as before; no new database migration is needed. The active entry is the repository root, not the legacy v1.23 subfolder.

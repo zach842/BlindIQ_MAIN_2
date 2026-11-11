@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./styles.css";
+import "./refresh.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -19,7 +20,7 @@ if ("serviceWorker" in navigator) {
     });
 
     void navigator.serviceWorker
-      .register("/sw.js?v=1.60", { scope: "/", updateViaCache: "none" })
+      .register("/sw.js?v=1.62.0", { scope: "/", updateViaCache: "none" })
       .then((registration) => registration.update())
       .catch(() => {
         // The app remains fully usable if a browser blocks service workers.
