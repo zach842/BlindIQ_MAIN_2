@@ -1,0 +1,481 @@
+{
+  "version": "1.61.0",
+  "baselineCommit": "d8876d82c2b2a3411dd8340b7cb292e297a73b03",
+  "reviewDate": "2026-11-11",
+  "scope": "Core published dates and bag guidance; see Markdown report for exclusions and resolved source conflicts.",
+  "states": [
+    {
+      "code": "MD",
+      "state": "Maryland",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "DNR finalization notice",
+          "url": "https://dnr.maryland.gov/wildlife/Pages/hunt_trap/Home.aspx"
+        },
+        {
+          "label": "official guide table",
+          "url": "https://www.eregulations.com/maryland/hunting/migratory-game-bird-seasons-limits"
+        },
+        {
+          "label": "October 1 DNR correction",
+          "url": "https://news.maryland.gov/dnr/2026/10/01/waterfowl-hunting-schedule-confirmed-after-federal-light-goose-conservation-order-paused-for-2026-27-season/"
+        }
+      ],
+      "findings": "Remove provisional status. Retain duck-zone dates. Apply January 8–30 scaup increase and Southern Resident goose increases. Add separate merganser bag. No 2027 conservation order; regular light-goose shooting ends at sunset, including the late Eastern segment. The guide's contrary extended-hours text is superseded by the DNR correction."
+    },
+    {
+      "code": "DE",
+      "state": "Delaware",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "DNREC-linked final guide",
+          "url": "https://www.eregulations.com/delaware/hunting/migratory-bird-seasons-bag-limits"
+        },
+        {
+          "label": "DNREC order decision",
+          "url": "https://dnrec.delaware.gov/fish-wildlife/hunting/snow-goose-conservation-order/"
+        },
+        {
+          "label": "agency hub",
+          "url": "https://dnrec.delaware.gov/fish-wildlife/hunting/migratory-birds/"
+        }
+      ],
+      "findings": "Replace all four proposal options with final dates; correct teal, youth, brant and swan dates. Add structured calendar and January 12 scaup increase. No 2027 conservation order. The final table explicitly permits regular-method snow-goose hunting February 7; no unlimited bag is inferred."
+    },
+    {
+      "code": "VA",
+      "state": "Virginia",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "DWR migratory-bird regulations",
+          "url": "https://dwr.virginia.gov/hunting/regulations/migratory-gamebirds/"
+        }
+      ],
+      "findings": "Retain duck and population-zone dates/bags. Enforce October black-duck closure and January 12 scaup increase in bag guidance. Replace pending conservation-order text with the final decision not to offer it."
+    },
+    {
+      "code": "NC",
+      "state": "North Carolina",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "NCWRC digest hub",
+          "url": "https://www.ncwildlife.gov/hunt/fishing-hunting-trapping-regulations"
+        },
+        {
+          "label": "official guide table",
+          "url": "https://www.eregulations.com/northcarolina/hunting/migratory-game-bird-seasons"
+        },
+        {
+          "label": "order suspension",
+          "url": "https://www.ncwildlife.gov/index.php/hunt/regulations/light-goose-conservation-order-status"
+        }
+      ],
+      "findings": "Retain Inland/Coastal dates and Northeast goose bag. Apply January 8 scaup increase. Update order suspension. Prevent Sunday-open dashboard messages."
+    },
+    {
+      "code": "PA",
+      "state": "Pennsylvania",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "PGC 2026–27 season selections",
+          "url": "https://www.pa.gov/agencies/pgc/newsroom/2026-27-migratory-game-bird-season-set"
+        },
+        {
+          "label": "current order decision",
+          "url": "https://www.pa.gov/agencies/pgc/huntingandtrapping/get-started-hunting/waterfowl-hunting-and-conservation"
+        }
+      ],
+      "findings": "Retain four duck-zone dates and three-bird AP Canada-goose bag. Move mergansers into their separate five-bird bag; apply zone-specific scaup increases. Add order suspension and Sunday closure."
+    },
+    {
+      "code": "NY",
+      "state": "New York",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "DEC indexed 2026–27 season table",
+          "url": "https://dec.ny.gov/things-to-do/hunting/migratory-game-bird/seasons"
+        },
+        {
+          "label": "season-setting explanation",
+          "url": "https://dec.ny.gov/things-to-do/hunting/migratory-game-bird/waterfowl-season-setting-places-to-hunt"
+        }
+      ],
+      "findings": "Retain six ducks including mergansers and the nine goose-area regular caps. Apply five duck-zone scaup windows. Direct season URL currently redirects; indexed agency table was retrievable. Existing detailed goose rows remain summarized rather than a complete species/zone calendar. Dashboard retains partial-coverage status."
+    },
+    {
+      "code": "WV",
+      "state": "West Virginia",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "WVDNR current brochure, waterfowl table on PDF page 3",
+          "url": "https://wvdnr.gov/wp-content/uploads/2026/08/Pub_Regs_MigBird2026_DNR_WILD_Rdr_Sprds_ADA.pdf"
+        }
+      ],
+      "findings": "Replace archived 2025–26 dates with current dates; restore live logging. Add structured calendar, youth/scaup changes, closed-species and WMA notes. Mergansers have a separate five-bird bag. Eiders, mottled/whistling ducks and harlequins are closed."
+    },
+    {
+      "code": "SC",
+      "state": "South Carolina",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "SCDNR official guide table",
+          "url": "https://www.eregulations.com/southcarolina/hunting/general-migratory-bird-seasons-shooting-hours-bag-limits"
+        }
+      ],
+      "findings": "Retain published dates and species caps. Apply date-dependent scaup. Fix independent merganser and dark-goose parent arithmetic. Enforce conservative black/mottled aggregate when an I-95 side is not selected."
+    },
+    {
+      "code": "LA",
+      "state": "Louisiana",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "Current LDWF licensing schedule and limits",
+          "url": "https://support.louisianaoutdoors.com/hc/en-us/articles/40888506743700-Migratory-Birds-Hunting-Schedule-Limit"
+        }
+      ],
+      "findings": "Main brochure endpoint denied retrieval; current LDWF licensing publication supplies the table. Add missing East/West youth/veteran dates, separate merganser bag and hooded sublimit. Apply scaup changes and early mottled closure. Correct teal hours to half-hour before sunrise; black-bellied whistling duck begins at sunrise. Retain pintail hen sublimit. Add Canada-goose closure warning."
+    },
+    {
+      "code": "TX",
+      "state": "Texas",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "TPWD ducks",
+          "url": "https://tpwd.texas.gov/regulations/outdoor-annual/regs/animals/duck"
+        },
+        {
+          "label": "TPWD geese",
+          "url": "https://tpwd.texas.gov/regulations/outdoor-annual/regs/animals/goose"
+        }
+      ],
+      "findings": "Retain three duck-zone dates, six ducks including mergansers, five mallards and one scaup, and five-bird light/dark goose bags. Apply first-five-regular-days dusky closure. County and Eastern white-fronted sublimits still require species identification and the official table."
+    },
+    {
+      "code": "AR",
+      "state": "Arkansas",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "AGFC final dates and limits",
+          "url": "https://www.agfc.com/hunting/waterfowl/waterfowl-dates-rules-regulations/"
+        },
+        {
+          "label": "conservation order",
+          "url": "https://www.agfc.com/hunting/more-game/light-goose-conservation-order/"
+        }
+      ],
+      "findings": "Retain final regular/youth/goose/order dates and one-scaup cap. Separate five mergansers from the six-duck bag and add two-hooded sublimit. Retain WMA noon/access warnings; agency page contains some stale WMA departure dates, so site-specific access must be checked."
+    },
+    {
+      "code": "ND",
+      "state": "North Dakota",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "2026 governor's proclamation",
+          "url": "https://gf.nd.gov/regulations/small-game"
+        },
+        {
+          "label": "duck page",
+          "url": "https://gf.nd.gov/hunting/ducks"
+        }
+      ],
+      "findings": "Retain resident/nonresident starts and High/Low Plains dates/bags. Restrict bonus teal to September 26–October 4. Add missing merganser choice inside the six-duck aggregate. Regular versus early goose caps remain separate contexts."
+    },
+    {
+      "code": "SD",
+      "state": "South Dakota",
+      "reviewedOn": "2026-11-11",
+      "status": "resolved-source-conflict",
+      "sources": [
+        {
+          "label": "current duck limits",
+          "url": "https://gfp.sd.gov/ducks/"
+        },
+        {
+          "label": "2026 nonresident dates/units",
+          "url": "https://gfp.sd.gov/UserDocs/nav/NonresidentWaterfowl_.pdf"
+        },
+        {
+          "label": "current codified rules 41:06:16:09 and 41:06:50:03",
+          "url": "https://sdlegislature.gov/api/Rules/Rule/41.html?all=true"
+        },
+        {
+          "label": "May 11 Register",
+          "url": "https://mylrc.sdlegislature.gov/api/Documents/306866.pdf"
+        }
+      ],
+      "findings": "Retain four duck zones and Traditional six-duck bag. Current codified rules confirm eight Canada geese for August Management Take and Early Fall, resolving the stale landing page's 15. Restrict bonus teal to each zone's first nine days. Three-Duck election remains a separate license option, not calculated by this logger."
+    },
+    {
+      "code": "WI",
+      "state": "Wisconsin",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "DNR 2026 dates",
+          "url": "https://dnr.wisconsin.gov/topic/hunt/waterfowl"
+        },
+        {
+          "label": "DNR season/bag announcement",
+          "url": "https://dnr.wisconsin.gov/newsroom/release/130376"
+        }
+      ],
+      "findings": "Retain three duck/goose zones, three pintails and separate mergansers. Apply zone-specific one/two-scaup periods; early and Southern holiday Canada-goose caps become date-aware."
+    },
+    {
+      "code": "IL",
+      "state": "Illinois",
+      "reviewedOn": "2026-11-11",
+      "status": "resolved-source-conflict",
+      "sources": [
+        {
+          "label": "final IDNR 2026–27 digest card",
+          "url": "https://v3-wp.huntillinois.org/wp-content/uploads/2026/08/InsertCard.pdf"
+        },
+        {
+          "label": "IDNR digest announcement",
+          "url": "https://outdoor.wildlifeillinois.org/articles/2026-2027-illinois-hunting-and-trapping-digest"
+        },
+        {
+          "label": "conflicting web table",
+          "url": "https://huntillinois.org/waterfowl/"
+        }
+      ],
+      "findings": "Resolve stale web rows with final card. Scaup is one for first 15 open days, then two: November 13 North, November 15 Central, November 29 South. Retain three-zone dates and separate mergansers. Apply September Canada goose caps of five North/Central and two South. Replace preseason status with current final source."
+    },
+    {
+      "code": "MT",
+      "state": "Montana",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "FWP final 2026 booklet, PDF pages 9 and 11",
+          "url": "https://fwp.mt.gov/binaries/content/assets/fwp/hunt/regulations/2026/2026-mig-bird--webless-final-for-web.pdf"
+        },
+        {
+          "label": "FWP hub",
+          "url": "https://fwp.mt.gov/hunt/regulations/migratory-bird"
+        }
+      ],
+      "findings": "Retain seven Pacific/six Central ducks including mergansers. Enforce Pacific scaup closure after December 27 and Central-only bonus teal. Final booklet says October 3 for Central Zone 2; use it over the landing page's October 4 typo. Pacific coot possession is 25, not a universal three-times rule."
+    },
+    {
+      "code": "MN",
+      "state": "Minnesota",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "DNR waterfowl dates and bags",
+          "url": "https://www.dnr.state.mn.us/hunting/waterfowl/index.html"
+        }
+      ],
+      "findings": "Correct early goose to September 5–20 in both display and calendar; correct pintail from two to three. Apply zone-dependent scaup increases. Retain separate five-merganser/two-hooded aggregate."
+    },
+    {
+      "code": "KS",
+      "state": "Kansas",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "KDWP ducks",
+          "url": "https://www.ksoutdoors.gov/outdoor-activities/hunting-in-kansas/what-to-hunt/migratory-birds/ducks"
+        }
+      ],
+      "findings": "Retain four duck-zone splits, six ducks/mergansers, five mallards, three pintails and two scaup. Restrict the early-teal entry to its actual unit dates. Goose and order rows retained; all goose sub-seasons still require the species-specific official regulations."
+    },
+    {
+      "code": "CA",
+      "state": "California",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "CDFW 2026–27 waterfowl table",
+          "url": "https://wildlife.ca.gov/Hunting/Waterfowl"
+        }
+      ],
+      "findings": "Correct Northeastern veteran ducks to January 16–17; add banner period. Apply zone-specific scaup windows and Southern/Colorado dark-goose sublimits. Split Northeastern general goose banner to avoid a false December opening. Special-management-area exceptions remain linked; calendar is explicitly partial."
+    },
+    {
+      "code": "FL",
+      "state": "Florida",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "FWC 2026–27 bird regulations",
+          "url": "https://myfwc.com/hunting/regulations/birds/"
+        }
+      ],
+      "findings": "Prefer agency-hosted URL. Retain regular/youth/veteran dates and separate mergansers. Apply scaup changes and two-wood-duck September cap. County limited-day and WMA conditions remain in detailed notes."
+    },
+    {
+      "code": "IA",
+      "state": "Iowa",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "DNR season table",
+          "url": "https://www.iowadnr.gov/things-do/hunting-trapping/types-hunting-trapping/migratory-game-bird-hunting"
+        },
+        {
+          "label": "2026–27 migratory limits card",
+          "url": "https://www.iowadnr.gov/media/1702/download?inline="
+        }
+      ],
+      "findings": "Retain three zone splits, separate mergansers and five dark geese. Correct scaup increases to October 25 North, November 1 Central and November 8 South by counting open days across the split; apply two-Canada first goose segment. Metropolitan five-Canada exception requires mapped-area confirmation."
+    },
+    {
+      "code": "MI",
+      "state": "Michigan",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "DNR 2026 waterfowl summary",
+          "url": "https://www.michigan.gov/dnr/managing-resources/laws/regulations/waterfowl"
+        }
+      ],
+      "findings": "Retain regular and GMU dates, six-duck bag, separate five-merganser/two-hooded bag and five dark geese including one brant. Apply zone-specific scaup changes; fix shared-goose arithmetic."
+    },
+    {
+      "code": "MO",
+      "state": "Missouri",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "MDC current waterfowl species table",
+          "url": "https://mdc.mo.gov/hunting-trapping/species/waterfowl"
+        },
+        {
+          "label": "MDC May 2026 season summary",
+          "url": "https://mdc.mo.gov/magazines/missouri-conservationist/2026-05/brief"
+        }
+      ],
+      "findings": "Remove pending-final-approval notice. Correct early Canada/brant end from October 10 to 11 in display and calendar. Apply first-45/last-15 scaup caps and retain shared Canada/brant bag. Add the missing two-hooded choice within the duck bag."
+    },
+    {
+      "code": "NE",
+      "state": "Nebraska",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "Game and Parks 2026–27 dates/limits",
+          "url": "https://outdoornebraska.gov/hunt/hunting-seasons/"
+        },
+        {
+          "label": "two-tier program",
+          "url": "https://outdoornebraska.gov/hunt/game/waterfowl/two-tier-program/"
+        }
+      ],
+      "findings": "Retain three revised duck zones and separate goose units. Tier I six-duck arithmetic is retained; explicitly label that the app does not calculate Tier II. Early-teal entry now has its September window. High Plains extensions require the corresponding unit/location."
+    },
+    {
+      "code": "NJ",
+      "state": "New Jersey",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "official 2026–27 guide",
+          "url": "https://www.eregulations.com/newjersey/hunting/migratory-bird-regulations"
+        },
+        {
+          "label": "October 1 NJDEP decision",
+          "url": "https://dep.nj.gov/njfw/news-2026-10-01-light-goose-conservation-season-update/"
+        }
+      ],
+      "findings": "Retain North/South/Coastal regular dates and three/three/two Canada-goose caps. Apply zone-specific and special-day scaup values. Replace pending order with suspension. Prevent Sunday-open banners."
+    },
+    {
+      "code": "OH",
+      "state": "Ohio",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "OAC 1501:31-7-06, effective June 30, 2026",
+          "url": "https://codes.ohio.gov/ohio-administrative-code/rule-1501%3A31-7-06"
+        }
+      ],
+      "findings": "Retain A/B/C dates and regular dark/light goose caps. Add missing separate five-merganser/two-hooded bag. Apply scaup increases after the first 15 **open** days, accounting for splits. Fix dark-goose parent arithmetic."
+    },
+    {
+      "code": "ID",
+      "state": "Idaho",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "IDFG 2026–27 brochure, pages 8–12",
+          "url": "https://idfg.idaho.gov/sites/default/files/migratorygame2026-2027_web.pdf"
+        },
+        {
+          "label": "agency index",
+          "url": "https://idfg.idaho.gov/rules/migratory"
+        }
+      ],
+      "findings": "PDF downloaded and read after web-reader timeouts. Retain three duck/four Canada/four white-front/five light-goose areas and seven ducks including mergansers. Apply scaup windows. Clarify special light-goose methods are February 16–March 10, not all late days. Brochure light-goose Area 3 closure prints 2026 within its 2027 schedule: do not infer refuge access from that typo."
+    },
+    {
+      "code": "OR",
+      "state": "Oregon",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "ODFW official guide seasons",
+          "url": "https://www.eregulations.com/oregon/hunting/game-bird/migratory-game-bird-seasons"
+        },
+        {
+          "label": "incorporating administrative rule",
+          "url": "https://secure.sos.state.or.us/oard/displayDivisionRules.action?selectedDivision=2946"
+        }
+      ],
+      "findings": "Retain seven ducks including mergansers and the two duck-zone splits. Apply separate scaup windows. Retain Northwest white-fronted six-bird cap and permit/goose-area conditions; species-specific goose boundaries remain essential."
+    },
+    {
+      "code": "WA",
+      "state": "Washington",
+      "reviewedOn": "2026-11-11",
+      "status": "reviewed-listed-scope",
+      "sources": [
+        {
+          "label": "WAC 220-416-060",
+          "url": "https://app.leg.wa.gov/wac/default.aspx?cite=220-416-060"
+        }
+      ],
+      "findings": "Retain seven ducks, November 7 scaup opening and western sea-duck caps. Apply scaup closure. Keep closed dusky Canada and permit-only harlequin entries. Duck youth paragraph prints October 3, 2027, while goose and extended-falconry sections say October 3, 2026: existing 2026 date retained with this conflict documented. Weekday-, county- and survey-dependent goose/brant access is not a complete banner calendar."
+    }
+  ]
+}
