@@ -6,7 +6,7 @@ page.on('pageerror', error => errors.push(error.message));
 await page.goto(process.env.BLINDIQ_TEST_URL || 'http://127.0.0.1:5173/');
 await page.getByRole('button', { name: 'I already have an account' }).click();
 await page.getByRole('button', { name: 'Log in', exact: true }).click();
-await page.getByText('BlindIQ v1.62.0', { exact: true }).waitFor();
+await page.getByText('BlindIQ v1.62.1', { exact: true }).waitFor();
 if (await page.getByRole('button', { name: 'Close installation instructions' }).isVisible()) {
   await page.getByRole('button', { name: 'Close installation instructions' }).click();
 }
@@ -52,7 +52,7 @@ for (const [id,label,species,state] of categories) {
  await page.locator('.history-filter select').selectOption(id);
  if(await page.locator('.history-list article').count()!==1) throw Error('History filter mismatch');
  await page.reload();
- await page.getByText('BlindIQ v1.62.0',{exact:true}).waitFor();
+ await page.getByText('BlindIQ v1.62.1',{exact:true}).waitFor();
  await page.getByRole('button',{name:'Open logbook →'}).click();
  await page.locator('.history-filter select').selectOption(id);
  if(await page.locator('.history-list article').count()!==1) throw Error('Reload lost record');

@@ -30,3 +30,18 @@ test('field logging supports 50 unique states including Alaska independently of 
 test('unknown legacy category lookup retains waterfowl fallback',()=>{
  assert.equal(huntCategoryById(undefined).id,'waterfowl');
 });
+const { buildSessionEntries, changeSightings } = require(path.join(process.env.BLINDIQ_TEST_OUTPUT, 'sessionEntries.js'));
+test('sighting-only species are saved with zero harvest and independent counts',()=>{
+ const species=huntCategoryById('deer').species;
+ const id=species[0].id;
+ const entries=buildSessionEntries(species,{}, {[id]:3});
+ assert.equal(entries.length,1); assert.equal(entries[0].count,0); assert.equal(entries[0].saw,3);
+ assert.equal(entries.reduce((sum,e)=>sum+e.count,0),0);
+ assert.equal(buildSessionEntries(species,{[id]:1},{[id]:3})[0].saw,3);
+});
+test('sighting corrections clamp at zero and do not mutate previous counts',()=>{
+ const before={deer:1}; const after=changeSightings(before,'deer',-1);
+ assert.equal(before.deer,1); assert.equal(after.deer,0);
+ assert.equal(changeSightings(after,'deer',-1).deer,0);
+ assert.equal(changeSightings(after,'deer',1).deer,1);
+});
