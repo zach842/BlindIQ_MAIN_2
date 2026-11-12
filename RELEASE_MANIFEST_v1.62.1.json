@@ -1,0 +1,1254 @@
+{
+  "version": "1.62.1",
+  "baseRelease": "1.62.0",
+  "baseArchiveSHA256": "7681524f8c644d4d4e0c40502ca7bdcda353c255ce44d26436a261fd853e4f32",
+  "releaseDate": "2026-11-12",
+  "feature": "Independent Saw and Harvested counters",
+  "preservedModulesVerified": [
+    "src/data.ts",
+    "src/bagLimitPeriods.ts",
+    "src/harvestLimits.ts",
+    "src/seasonCalendars.ts",
+    "src/seasonStatus.ts",
+    "src/services.ts",
+    "docs/REGULATION_VERIFICATION_2026-2027.md"
+  ],
+  "hashScope": "all packaged files except this manifest",
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 59,
+      "sha256": "e0f164b5ea0e0c150abcea9bb23d0d67d7af8b1d8f68be4cf4a56bb5ddf9c994"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/DEPLOYMENT_NOTES.md",
+      "bytes": 5631,
+      "sha256": "3ab20bf33dfd283f4623e534113afb50c8be2bfbbf615f215439c8235993b70a"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/README.md",
+      "bytes": 14804,
+      "sha256": "5a236b534efda6e5cc8f78b398edcbd50ab1968a9521e56211f2ed5ac845b7ba"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/SECURE_MEMBERSHIP_SETUP.md",
+      "bytes": 4248,
+      "sha256": "68425222ca90ea7524c0d67cdceddeb29bc4dea4beaaea1d147fd5bbd43e011d"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/app/_sites-preview/SkeletonPreview.tsx",
+      "bytes": 5052,
+      "sha256": "5dad23082bbba36e2809b9f64f851471b66f06af42e90e4baa41cdfcf26893ac"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/app/_sites-preview/preview.css",
+      "bytes": 5980,
+      "sha256": "4cd90a1de92b31ca485cf234f3efbe0180d4bfb64c67d3536cf8540d0556478c"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/assets/index-0avPiV56.js",
+      "bytes": 566188,
+      "sha256": "c8fdae9b3ff439d3eb19a7218a07e5a66905b9d7b368ebc5bbe8da6c57a218c7"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/assets/index-7qWQ1k8o.css",
+      "bytes": 35749,
+      "sha256": "c32c570321689824f928d661da6a8118b5a9c7cbdaf629d1dbfafb2ff5b0ba18"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/blindiq-logo.png",
+      "bytes": 717233,
+      "sha256": "42b558140d97a9f18872a774f64ae90df4b2ecbdb878b53c3c1df038c63de492"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/duck-home-page.png",
+      "bytes": 2182228,
+      "sha256": "7d9e9090f24127894041f9fa8676235810f25699e23cce3d485d63b9c7a1f8bc"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/favicon.svg",
+      "bytes": 712,
+      "sha256": "e6d2e59b7b5bbb0342e0fb496dfc262decbfe4426bbb7b047aec8d467d1dc6f7"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/file.svg",
+      "bytes": 391,
+      "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/globe.svg",
+      "bytes": 1035,
+      "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/index.html",
+      "bytes": 949,
+      "sha256": "ed3e293aaf238371afd7efc9a77d981d2e19b0f35419de55beacabd9d4dbb10c"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/manifest.webmanifest",
+      "bytes": 433,
+      "sha256": "5a7ecb639c45df1d694915e31569e4a3951ee277301ae16e99e4a98f959a164b"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/sw.js",
+      "bytes": 887,
+      "sha256": "846daf49ca3d9ec96fc68ae171e9e0ca8e0a2c5ffc7fb35bebd1af3d52c419e2"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/dist/window.svg",
+      "bytes": 385,
+      "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/drizzle/meta/_journal.json",
+      "bytes": 61,
+      "sha256": "90cb374e093894d0efce6f1830d873a42aadd8ba49d2f024495e5cb2e1c8c303"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/eslint.config.mjs",
+      "bytes": 116,
+      "sha256": "6990559937158291765c9eaa45ae3962b47d2e10d20b46310347119a34678d20"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/examples/d1/app/api/notes/route.ts",
+      "bytes": 1700,
+      "sha256": "a3d4a74fd53b7bf53e2df41f169d9d9d44a8b22aeb6d92f4e754956079af8909"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/examples/d1/db/schema.ts",
+      "bytes": 370,
+      "sha256": "d89eabd95716ce404f5f7ca2a254220435be8ddce7c899d7ef461ff22ec80454"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/index.html",
+      "bytes": 851,
+      "sha256": "7f989254590e360951fc2fff4bd972ad09285092b1fab5ea340da703cc240b56"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/package.json",
+      "bytes": 650,
+      "sha256": "628a5645b9e909f93f285f09ba2eace2e2e1b0a14132d3cc1645e7f2048d5762"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/pnpm-lock.yaml",
+      "bytes": 42426,
+      "sha256": "01d0659bc53a569de641b1f6427de3127db1d7da10c8ff8e33927f344acd3949"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/public/blindiq-logo.png",
+      "bytes": 717233,
+      "sha256": "42b558140d97a9f18872a774f64ae90df4b2ecbdb878b53c3c1df038c63de492"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/public/duck-home-page.png",
+      "bytes": 2182228,
+      "sha256": "7d9e9090f24127894041f9fa8676235810f25699e23cce3d485d63b9c7a1f8bc"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/public/favicon.svg",
+      "bytes": 712,
+      "sha256": "e6d2e59b7b5bbb0342e0fb496dfc262decbfe4426bbb7b047aec8d467d1dc6f7"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/public/file.svg",
+      "bytes": 391,
+      "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/public/globe.svg",
+      "bytes": 1035,
+      "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/public/manifest.webmanifest",
+      "bytes": 433,
+      "sha256": "5a7ecb639c45df1d694915e31569e4a3951ee277301ae16e99e4a98f959a164b"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/public/sw.js",
+      "bytes": 887,
+      "sha256": "846daf49ca3d9ec96fc68ae171e9e0ca8e0a2c5ffc7fb35bebd1af3d52c419e2"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/public/window.svg",
+      "bytes": 385,
+      "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/App.tsx",
+      "bytes": 45337,
+      "sha256": "6d6124cabf947931e2cc3f4fd2deaecd8aee039f0ecd9138ea0897625f9a6b4b"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/data.ts",
+      "bytes": 128420,
+      "sha256": "6e937077f4e71a4d3efb03b1b0066ec6e200a9eb5abdbda127a2d67774664e50"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/legal.ts",
+      "bytes": 10840,
+      "sha256": "b2c212cbbeea1a1b42a1b535f289e91fcedaed6d18378f917de3f2a269770022"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/location.ts",
+      "bytes": 6356,
+      "sha256": "e1640d05cc2efff9c5b77485faffef056fe3ab186b5ff3eb59b6ba79027a60a3"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/main.tsx",
+      "bytes": 468,
+      "sha256": "ceed1fc1792dce185cd195473271d1fd9515f6c9d37defa70117bd950d278612"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/services.ts",
+      "bytes": 7681,
+      "sha256": "237271a2623f7cbd85b33e1784fb0a94fba5a66d1abce32258b0946c125d5f0d"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/styles.css",
+      "bytes": 41566,
+      "sha256": "09f5c83062352c85f848e120c91bc695052b4eb1fdf981827f7f99084e9d22c6"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/types.ts",
+      "bytes": 1994,
+      "sha256": "a5df2a99894d34af43ee366ced8920f4e022f5742531e930d478f3b1790b7ae5"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/src/vite-env.d.ts",
+      "bytes": 302,
+      "sha256": "70ed18e36497bbc691dd8dc90f0add818cdd80f9d8125de2d59bbaf7acbe11a0"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/supabase/config.toml",
+      "bytes": 83,
+      "sha256": "84accfa58f9e6b0a473d675c3b04085efc40baa15258423dcf8fce9cc5cc37c0"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/supabase/functions/stripe-webhook/index.ts",
+      "bytes": 3581,
+      "sha256": "8de34e87073f816ab3179b663c6eb091144d9cce5a5ef124c2a0ff085019ba89"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/supabase/migrations/202607290001_memberships.sql",
+      "bytes": 2487,
+      "sha256": "6d4d0528359607b5be8c94c720bb64177c768d4a868a7c13c6c00c832b485cb8"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/supabase/migrations/202608040001_default_state_and_terms.sql",
+      "bytes": 1120,
+      "sha256": "4fa0edd036d4209c875f1ef3cc92f8351881d56cc1f149ce50b981e3ea7326b9"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/tsconfig.json",
+      "bytes": 527,
+      "sha256": "83efc1798334967d5a907f26b8cba31fa213f16b5ac0ed5c02fd38e7cf0ceb66"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/vercel.json",
+      "bytes": 145,
+      "sha256": "211226d4dc040da2fc95e02acef679c0981773f231ad7edd43bea939a3eed234"
+    },
+    {
+      "path": "BlindIQ-ID-OR-WA-v1.23 2/vite.config.ts",
+      "bytes": 169,
+      "sha256": "037e473bcd078b9ace17f5b643495188a78d979a64bed270e7d49f6e94e66079"
+    },
+    {
+      "path": "CENTRAL_FLYWAY_UPDATE.md",
+      "bytes": 1667,
+      "sha256": "0ffc2c716fcc9208d00f4ebcf9f282f303af084cc2cb752c0322159cd7524aae"
+    },
+    {
+      "path": "DEPLOYMENT_NOTES.md",
+      "bytes": 23370,
+      "sha256": "558db0c8dc644e91ce6b7cf98760282fafed8cc2f126f092d0e69ac96b83cfb3"
+    },
+    {
+      "path": "FIELD_LOG_DETAILS_SETUP.md",
+      "bytes": 988,
+      "sha256": "e2194b579c0afa2b63a163640d353a2b2e39806f686db0fee2cc58f5beca6b2d"
+    },
+    {
+      "path": "MIGRATION_PULSE_SETUP.md",
+      "bytes": 5316,
+      "sha256": "da953df2a2c23a987cb8548d00bf6ecdc9c1e2ef1f69ddcf7789931b9ace1812"
+    },
+    {
+      "path": "PACIFIC_FLYWAY_UPDATE.md",
+      "bytes": 1803,
+      "sha256": "6c4873525922257c8874cbfa2cba7e1935d445c31bee3807e509061e81604089"
+    },
+    {
+      "path": "PHOTO_SAVE_VERIFICATION.md",
+      "bytes": 1215,
+      "sha256": "4b62476d40bd6d82193bf44669e1513faff2248a2978acac86b2652d23a4231a"
+    },
+    {
+      "path": "PUSH_NOTIFICATIONS_SETUP.md",
+      "bytes": 6268,
+      "sha256": "2ed406958505924b9202ab7df91c97dd754a9b59dab0474b82974fb164e61209"
+    },
+    {
+      "path": "README.md",
+      "bytes": 28291,
+      "sha256": "7d18c367fd930c1703c31efc5e59d0d06c81d157865bd8bb8faa04eecf01687c"
+    },
+    {
+      "path": "RELEASE_MANIFEST_v1.61.1.json",
+      "bytes": 40024,
+      "sha256": "789144faf977ad9f46cd2412afc1e2a6dcb74a45c64a032d9552179384703ebf"
+    },
+    {
+      "path": "RELEASE_MANIFEST_v1.61.json",
+      "bytes": 40368,
+      "sha256": "ae6cd64958914a5c976bdde0c960c8bcdf134b4d22655e58f6b9b1d01e9cceb4"
+    },
+    {
+      "path": "RELEASE_MANIFEST_v1.62.0.json",
+      "bytes": 41368,
+      "sha256": "0922edb76defce899170bd00b026e8c8b29f7dabb1c4e707489a22189ddf0240"
+    },
+    {
+      "path": "SECURE_MEMBERSHIP_SETUP.md",
+      "bytes": 8154,
+      "sha256": "b0e23f79741b90fd8d2b4a59a9575c60caad87d077ecd132ec199a624f8d79d6"
+    },
+    {
+      "path": "STATUS_BANNER_AUDIT.md",
+      "bytes": 2103,
+      "sha256": "d33476a943031cbe3853536891db351c4a1424f178ec6e7e74e17f5c10bfdfbb"
+    },
+    {
+      "path": "app/_sites-preview/SkeletonPreview.tsx",
+      "bytes": 5052,
+      "sha256": "5dad23082bbba36e2809b9f64f851471b66f06af42e90e4baa41cdfcf26893ac"
+    },
+    {
+      "path": "app/_sites-preview/preview.css",
+      "bytes": 5980,
+      "sha256": "4cd90a1de92b31ca485cf234f3efbe0180d4bfb64c67d3536cf8540d0556478c"
+    },
+    {
+      "path": "dist/app-icon-1024.png",
+      "bytes": 856255,
+      "sha256": "f950d19cd7b1e735d6401137b6773fe353ffc0f24ef23067a0d34c5c33a48efc"
+    },
+    {
+      "path": "dist/apple-touch-icon.png",
+      "bytes": 30651,
+      "sha256": "1366f1b28b7f962caf524d68c94ebb57277757bc60fd4506b054919748884eda"
+    },
+    {
+      "path": "dist/assets/index-CnmzNOvj.js",
+      "bytes": 713040,
+      "sha256": "d4049b3f36cc59bad9a15c43396b71267c1f20e5ee4a0639e75932b638931cb3"
+    },
+    {
+      "path": "dist/assets/index-m37uV-wb.css",
+      "bytes": 83707,
+      "sha256": "5e3ab42011c6f34e4068ba2a9aa6d99868a0fc6d0d079cd344a57de3ff0d5464"
+    },
+    {
+      "path": "dist/birds/README.md",
+      "bytes": 2477,
+      "sha256": "27b80f629ab0ae4cfd56c51ac7fb11678f4d885ba3402a3156d9b0c034314225"
+    },
+    {
+      "path": "dist/birds/american-black-duck.jpg",
+      "bytes": 212918,
+      "sha256": "3cedf9eccbf3c6830e2992436ef6859bca9055eebefe4fe5ef54f37add4e2709"
+    },
+    {
+      "path": "dist/birds/american-coot.jpg",
+      "bytes": 237360,
+      "sha256": "31d843e9667800089e229189109ef7e0b6c275c219755129fcecbb8c4037685e"
+    },
+    {
+      "path": "dist/birds/american-wigeon.jpg",
+      "bytes": 219496,
+      "sha256": "e98b52c3bfa6d9ddbf95ac100a3fd554f8ece95f9c02e000a0add6d62f2126f2"
+    },
+    {
+      "path": "dist/birds/black-bellied-whistling-duck.jpg",
+      "bytes": 234215,
+      "sha256": "722bc49b1cc7b96e204ad391bf2cafa738d7e3544c5a60cc7f42de83866ece91"
+    },
+    {
+      "path": "dist/birds/blue-winged-teal.jpg",
+      "bytes": 244847,
+      "sha256": "6e3374150fa4788210b49ce3d870188b3fba6948a8ef679b18059a2fae37db30"
+    },
+    {
+      "path": "dist/birds/brant.jpg",
+      "bytes": 176478,
+      "sha256": "4d1db399cd76f2afa50455079499364a2374bd9cc603546353e4509ee9375c1a"
+    },
+    {
+      "path": "dist/birds/bufflehead.jpg",
+      "bytes": 162818,
+      "sha256": "6ad44b137cacdff9d127555a07b62dc18bfcc1ff1cd6fdbd8beaf641858773dc"
+    },
+    {
+      "path": "dist/birds/canada-goose.jpg",
+      "bytes": 173452,
+      "sha256": "93975009c0158d0aa7d8862fdc60d2c7ce473b00dc9ce2ce9f0c0e11fd34ce04"
+    },
+    {
+      "path": "dist/birds/canvasback.jpg",
+      "bytes": 237878,
+      "sha256": "c85d74786fe878687dbbc00edad6367519d351fcf69811be0cf556cf1f8f9b4b"
+    },
+    {
+      "path": "dist/birds/gadwall.jpg",
+      "bytes": 228006,
+      "sha256": "b89f752c330f60b6c6abbf6b5c270e2e792b2e9623a475696a8cfffab9fd1655"
+    },
+    {
+      "path": "dist/birds/goldeneye.jpg",
+      "bytes": 195313,
+      "sha256": "6a3355712e691b2354dd5cf70c24c6831334cd7972e9fac304f86be5d304b1f8"
+    },
+    {
+      "path": "dist/birds/harlequin-duck.jpg",
+      "bytes": 206608,
+      "sha256": "a7bfd79e9a353bd58a500dfb758221989c2363432febb25a39d199fc88c081c6"
+    },
+    {
+      "path": "dist/birds/long-tailed-duck.jpg",
+      "bytes": 137366,
+      "sha256": "fd7c9f270d5fca12bfeeeaea17595df8a8b16f31d935d0fd4f66bf8557d2adf6"
+    },
+    {
+      "path": "dist/birds/mallard-drake.jpg",
+      "bytes": 191964,
+      "sha256": "7ea04eff68a92510eb4fb5ac8431bb8f4623e0799d8cedce91d604f16e91df37"
+    },
+    {
+      "path": "dist/birds/mallard-hen.jpg",
+      "bytes": 173250,
+      "sha256": "da2f12e08f1d8fbc6572a8d0b1900f99d54e31c9898f0994a4842efc996a72fd"
+    },
+    {
+      "path": "dist/birds/merganser.jpg",
+      "bytes": 188610,
+      "sha256": "3ec60ed1c94e0ebe257d77da57b4935a9cefb43a128e33da700b35068a871caa"
+    },
+    {
+      "path": "dist/birds/mottled-duck.png",
+      "bytes": 495791,
+      "sha256": "20b726dacd7fdc397758490f3633c807021883511b00c8fc744419d73391d5cc"
+    },
+    {
+      "path": "dist/birds/northern-pintail.jpg",
+      "bytes": 190581,
+      "sha256": "346dc67d95d8139b00f8d8918de0a2d34a8ba6868bc9b1b91686592635ca4519"
+    },
+    {
+      "path": "dist/birds/northern-shoveler.jpg",
+      "bytes": 265932,
+      "sha256": "fea8d6d544e940bc0404b99b918cbf0deebd177e362d155d6610fb08338c1ae8"
+    },
+    {
+      "path": "dist/birds/redhead.jpg",
+      "bytes": 239893,
+      "sha256": "66aa25fd172a6ad872221962404290f59655d44a421b130c674712fa66aa84c6"
+    },
+    {
+      "path": "dist/birds/ring-necked-duck.jpg",
+      "bytes": 170581,
+      "sha256": "78fcb04a88cf30a485d5c20748ccd64bcae5e4ff621b1a9e04036e1142b665a8"
+    },
+    {
+      "path": "dist/birds/scaup.jpg",
+      "bytes": 191095,
+      "sha256": "3bdbffa9bc07d4351bc587b4ecf89c4fe810b22c6e3c4a21c0bd5d400edfc2df"
+    },
+    {
+      "path": "dist/birds/scoter.jpg",
+      "bytes": 322228,
+      "sha256": "50c6cffc08d3a4e15e752620bb611f0fa0f9acb9996623c03e0bf09280f851cf"
+    },
+    {
+      "path": "dist/birds/snow-goose.jpg",
+      "bytes": 219723,
+      "sha256": "05b9d30e4552bfe9b3d2b10d1798f7bc93590e352b117adb6f1de906e44edefb"
+    },
+    {
+      "path": "dist/birds/tundra-swan.jpg",
+      "bytes": 124148,
+      "sha256": "299514f87bb677368d30948dbe7b8a68e6e54e463c329c7210e3a041b277078e"
+    },
+    {
+      "path": "dist/birds/waterfowl-group.jpg",
+      "bytes": 268986,
+      "sha256": "c33a633bb57dfbdb0eec85f87c222217883a7a60222c5dc1880d1b142ff377b3"
+    },
+    {
+      "path": "dist/birds/white-fronted-goose.jpg",
+      "bytes": 127721,
+      "sha256": "af16fbf69805a539136f307d7a1ca429ccbc1cd89fc4a38e074c283366c9e824"
+    },
+    {
+      "path": "dist/birds/wilsons-snipe.jpg",
+      "bytes": 202806,
+      "sha256": "6774d9a756ecf81827b2b86dde76a12829bae1b5f778f25d201ccf7df1731336"
+    },
+    {
+      "path": "dist/birds/wood-duck.jpg",
+      "bytes": 305955,
+      "sha256": "67f7c32198ac4fd0081078fe3912b3abb87688e2ad70dee8ada26e143ccd6d10"
+    },
+    {
+      "path": "dist/blindiq-logo-hunt-log-share-closed-border.png",
+      "bytes": 315086,
+      "sha256": "7d6235f6fdaf2e14dc1bb05e77021e4bc4f31b3faafb74ffb3a9e293ca8bd276"
+    },
+    {
+      "path": "dist/blindiq-logo-hunt-log-share.png",
+      "bytes": 315086,
+      "sha256": "7d6235f6fdaf2e14dc1bb05e77021e4bc4f31b3faafb74ffb3a9e293ca8bd276"
+    },
+    {
+      "path": "dist/blindiq-logo.png",
+      "bytes": 717233,
+      "sha256": "42b558140d97a9f18872a774f64ae90df4b2ecbdb878b53c3c1df038c63de492"
+    },
+    {
+      "path": "dist/blindiq-sw-v1.56.js",
+      "bytes": 188,
+      "sha256": "41ef4abc1c04eaae0b482d4dc7a35becf1ecf3c45ae95e04e37363ec3b4827a7"
+    },
+    {
+      "path": "dist/blindiq-sw-v1.57.js",
+      "bytes": 197,
+      "sha256": "8a02ad36d40ca200ae5dc9aecb51c87d6ab28526e8c4a07013e1a011a91f1f5f"
+    },
+    {
+      "path": "dist/blindiq-sw-v1.58.js",
+      "bytes": 186,
+      "sha256": "4ebf8d9090d7ef792253cc4c5567ad6de15eefa4e5defc7d0f1d013c6a321694"
+    },
+    {
+      "path": "dist/duck-home-page.png",
+      "bytes": 2182228,
+      "sha256": "7d9e9090f24127894041f9fa8676235810f25699e23cce3d485d63b9c7a1f8bc"
+    },
+    {
+      "path": "dist/favicon.svg",
+      "bytes": 712,
+      "sha256": "e6d2e59b7b5bbb0342e0fb496dfc262decbfe4426bbb7b047aec8d467d1dc6f7"
+    },
+    {
+      "path": "dist/file.svg",
+      "bytes": 391,
+      "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4"
+    },
+    {
+      "path": "dist/globe.svg",
+      "bytes": 1035,
+      "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf"
+    },
+    {
+      "path": "dist/icon-192.png",
+      "bytes": 34813,
+      "sha256": "ac9a86d8130e86fcaa83da187836a5e1486afa7b8ec12b207fd499296ec42ba4"
+    },
+    {
+      "path": "dist/icon-512.png",
+      "bytes": 239358,
+      "sha256": "c738c646bcfba1a733aa60f78e621b29ac20349088cd5f093367d8a83ab39413"
+    },
+    {
+      "path": "dist/index.html",
+      "bytes": 1128,
+      "sha256": "ecfc117015f115ee45d2e33f5fa469f695117b0e875e468e50789987c753ac8b"
+    },
+    {
+      "path": "dist/manifest.webmanifest",
+      "bytes": 744,
+      "sha256": "0132a540c318643083325de0b9131fd92ccf62e796e1dea964ddf5f0dc737744"
+    },
+    {
+      "path": "dist/maskable-icon-512.png",
+      "bytes": 239358,
+      "sha256": "c738c646bcfba1a733aa60f78e621b29ac20349088cd5f093367d8a83ab39413"
+    },
+    {
+      "path": "dist/sw.js",
+      "bytes": 5699,
+      "sha256": "ab0989a525d3eb68461d2281dac6efcdb8aa94c05b16e42d09e26c9f877f978e"
+    },
+    {
+      "path": "dist/window.svg",
+      "bytes": 385,
+      "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1"
+    },
+    {
+      "path": "docs/MULTISPECIES_EXPANSION.md",
+      "bytes": 6343,
+      "sha256": "4867caa452467eef32d6dc1f1f2600d68f1b6cdd58f3e41c68c3c49588ded5da"
+    },
+    {
+      "path": "docs/REGULATION_VERIFICATION_2026-2027.md",
+      "bytes": 18157,
+      "sha256": "05d11e42c7497d61fbd7bd5bc24328b028ad813857ebecef18a4274030ad5b62"
+    },
+    {
+      "path": "docs/RELEASE_v1.62.0.md",
+      "bytes": 4795,
+      "sha256": "748b4558c5f413883e72a8ac55b448105a795a273cb9afc051bcce78886e65fb"
+    },
+    {
+      "path": "docs/RELEASE_v1.62.1.md",
+      "bytes": 2351,
+      "sha256": "fa498df32dc055ea5c9fb3ec61dfb85803d634d13c7624ff6e23fcb42b2b93df"
+    },
+    {
+      "path": "docs/VALIDATION_v1.61.md",
+      "bytes": 4172,
+      "sha256": "df93fa4eba8a35dcca3b96ec64421486f6a02fa2485b29768e683fe14cfe30a0"
+    },
+    {
+      "path": "docs/VISUAL_REFRESH_v1.61.1.md",
+      "bytes": 3157,
+      "sha256": "11056f6ba9e6d4b7e55d9e2969efcc336629e4186fdee73d5a4307fb52f90e67"
+    },
+    {
+      "path": "docs/regulation-audit-2026-2027.json",
+      "bytes": 21646,
+      "sha256": "d258b47fb4c726ebf5411016da2e3bb8b9ab39e5e6d57b832ad6abe7387fefba"
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "bytes": 61,
+      "sha256": "90cb374e093894d0efce6f1830d873a42aadd8ba49d2f024495e5cb2e1c8c303"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "bytes": 116,
+      "sha256": "6990559937158291765c9eaa45ae3962b47d2e10d20b46310347119a34678d20"
+    },
+    {
+      "path": "examples/d1/app/api/notes/route.ts",
+      "bytes": 1700,
+      "sha256": "a3d4a74fd53b7bf53e2df41f169d9d9d44a8b22aeb6d92f4e754956079af8909"
+    },
+    {
+      "path": "examples/d1/db/schema.ts",
+      "bytes": 370,
+      "sha256": "d89eabd95716ce404f5f7ca2a254220435be8ddce7c899d7ef461ff22ec80454"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1030,
+      "sha256": "75c3a91239280b1e604b4bd7de3d8cad1160b07d5703ee458ef4d048823c7cea"
+    },
+    {
+      "path": "package.json",
+      "bytes": 692,
+      "sha256": "178027bd7bcb2f75b5e7f86c933205777cf656eda64f41695e917b560b4dbd94"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "bytes": 42426,
+      "sha256": "01d0659bc53a569de641b1f6427de3127db1d7da10c8ff8e33927f344acd3949"
+    },
+    {
+      "path": "public/app-icon-1024.png",
+      "bytes": 856255,
+      "sha256": "f950d19cd7b1e735d6401137b6773fe353ffc0f24ef23067a0d34c5c33a48efc"
+    },
+    {
+      "path": "public/apple-touch-icon.png",
+      "bytes": 30651,
+      "sha256": "1366f1b28b7f962caf524d68c94ebb57277757bc60fd4506b054919748884eda"
+    },
+    {
+      "path": "public/birds/README.md",
+      "bytes": 2477,
+      "sha256": "27b80f629ab0ae4cfd56c51ac7fb11678f4d885ba3402a3156d9b0c034314225"
+    },
+    {
+      "path": "public/birds/american-black-duck.jpg",
+      "bytes": 212918,
+      "sha256": "3cedf9eccbf3c6830e2992436ef6859bca9055eebefe4fe5ef54f37add4e2709"
+    },
+    {
+      "path": "public/birds/american-coot.jpg",
+      "bytes": 237360,
+      "sha256": "31d843e9667800089e229189109ef7e0b6c275c219755129fcecbb8c4037685e"
+    },
+    {
+      "path": "public/birds/american-wigeon.jpg",
+      "bytes": 219496,
+      "sha256": "e98b52c3bfa6d9ddbf95ac100a3fd554f8ece95f9c02e000a0add6d62f2126f2"
+    },
+    {
+      "path": "public/birds/black-bellied-whistling-duck.jpg",
+      "bytes": 234215,
+      "sha256": "722bc49b1cc7b96e204ad391bf2cafa738d7e3544c5a60cc7f42de83866ece91"
+    },
+    {
+      "path": "public/birds/blue-winged-teal.jpg",
+      "bytes": 244847,
+      "sha256": "6e3374150fa4788210b49ce3d870188b3fba6948a8ef679b18059a2fae37db30"
+    },
+    {
+      "path": "public/birds/brant.jpg",
+      "bytes": 176478,
+      "sha256": "4d1db399cd76f2afa50455079499364a2374bd9cc603546353e4509ee9375c1a"
+    },
+    {
+      "path": "public/birds/bufflehead.jpg",
+      "bytes": 162818,
+      "sha256": "6ad44b137cacdff9d127555a07b62dc18bfcc1ff1cd6fdbd8beaf641858773dc"
+    },
+    {
+      "path": "public/birds/canada-goose.jpg",
+      "bytes": 173452,
+      "sha256": "93975009c0158d0aa7d8862fdc60d2c7ce473b00dc9ce2ce9f0c0e11fd34ce04"
+    },
+    {
+      "path": "public/birds/canvasback.jpg",
+      "bytes": 237878,
+      "sha256": "c85d74786fe878687dbbc00edad6367519d351fcf69811be0cf556cf1f8f9b4b"
+    },
+    {
+      "path": "public/birds/gadwall.jpg",
+      "bytes": 228006,
+      "sha256": "b89f752c330f60b6c6abbf6b5c270e2e792b2e9623a475696a8cfffab9fd1655"
+    },
+    {
+      "path": "public/birds/goldeneye.jpg",
+      "bytes": 195313,
+      "sha256": "6a3355712e691b2354dd5cf70c24c6831334cd7972e9fac304f86be5d304b1f8"
+    },
+    {
+      "path": "public/birds/harlequin-duck.jpg",
+      "bytes": 206608,
+      "sha256": "a7bfd79e9a353bd58a500dfb758221989c2363432febb25a39d199fc88c081c6"
+    },
+    {
+      "path": "public/birds/long-tailed-duck.jpg",
+      "bytes": 137366,
+      "sha256": "fd7c9f270d5fca12bfeeeaea17595df8a8b16f31d935d0fd4f66bf8557d2adf6"
+    },
+    {
+      "path": "public/birds/mallard-drake.jpg",
+      "bytes": 191964,
+      "sha256": "7ea04eff68a92510eb4fb5ac8431bb8f4623e0799d8cedce91d604f16e91df37"
+    },
+    {
+      "path": "public/birds/mallard-hen.jpg",
+      "bytes": 173250,
+      "sha256": "da2f12e08f1d8fbc6572a8d0b1900f99d54e31c9898f0994a4842efc996a72fd"
+    },
+    {
+      "path": "public/birds/merganser.jpg",
+      "bytes": 188610,
+      "sha256": "3ec60ed1c94e0ebe257d77da57b4935a9cefb43a128e33da700b35068a871caa"
+    },
+    {
+      "path": "public/birds/mottled-duck.png",
+      "bytes": 495791,
+      "sha256": "20b726dacd7fdc397758490f3633c807021883511b00c8fc744419d73391d5cc"
+    },
+    {
+      "path": "public/birds/northern-pintail.jpg",
+      "bytes": 190581,
+      "sha256": "346dc67d95d8139b00f8d8918de0a2d34a8ba6868bc9b1b91686592635ca4519"
+    },
+    {
+      "path": "public/birds/northern-shoveler.jpg",
+      "bytes": 265932,
+      "sha256": "fea8d6d544e940bc0404b99b918cbf0deebd177e362d155d6610fb08338c1ae8"
+    },
+    {
+      "path": "public/birds/redhead.jpg",
+      "bytes": 239893,
+      "sha256": "66aa25fd172a6ad872221962404290f59655d44a421b130c674712fa66aa84c6"
+    },
+    {
+      "path": "public/birds/ring-necked-duck.jpg",
+      "bytes": 170581,
+      "sha256": "78fcb04a88cf30a485d5c20748ccd64bcae5e4ff621b1a9e04036e1142b665a8"
+    },
+    {
+      "path": "public/birds/scaup.jpg",
+      "bytes": 191095,
+      "sha256": "3bdbffa9bc07d4351bc587b4ecf89c4fe810b22c6e3c4a21c0bd5d400edfc2df"
+    },
+    {
+      "path": "public/birds/scoter.jpg",
+      "bytes": 322228,
+      "sha256": "50c6cffc08d3a4e15e752620bb611f0fa0f9acb9996623c03e0bf09280f851cf"
+    },
+    {
+      "path": "public/birds/snow-goose.jpg",
+      "bytes": 219723,
+      "sha256": "05b9d30e4552bfe9b3d2b10d1798f7bc93590e352b117adb6f1de906e44edefb"
+    },
+    {
+      "path": "public/birds/tundra-swan.jpg",
+      "bytes": 124148,
+      "sha256": "299514f87bb677368d30948dbe7b8a68e6e54e463c329c7210e3a041b277078e"
+    },
+    {
+      "path": "public/birds/waterfowl-group.jpg",
+      "bytes": 268986,
+      "sha256": "c33a633bb57dfbdb0eec85f87c222217883a7a60222c5dc1880d1b142ff377b3"
+    },
+    {
+      "path": "public/birds/white-fronted-goose.jpg",
+      "bytes": 127721,
+      "sha256": "af16fbf69805a539136f307d7a1ca429ccbc1cd89fc4a38e074c283366c9e824"
+    },
+    {
+      "path": "public/birds/wilsons-snipe.jpg",
+      "bytes": 202806,
+      "sha256": "6774d9a756ecf81827b2b86dde76a12829bae1b5f778f25d201ccf7df1731336"
+    },
+    {
+      "path": "public/birds/wood-duck.jpg",
+      "bytes": 305955,
+      "sha256": "67f7c32198ac4fd0081078fe3912b3abb87688e2ad70dee8ada26e143ccd6d10"
+    },
+    {
+      "path": "public/blindiq-logo-hunt-log-share-closed-border.png",
+      "bytes": 315086,
+      "sha256": "7d6235f6fdaf2e14dc1bb05e77021e4bc4f31b3faafb74ffb3a9e293ca8bd276"
+    },
+    {
+      "path": "public/blindiq-logo-hunt-log-share.png",
+      "bytes": 315086,
+      "sha256": "7d6235f6fdaf2e14dc1bb05e77021e4bc4f31b3faafb74ffb3a9e293ca8bd276"
+    },
+    {
+      "path": "public/blindiq-logo.png",
+      "bytes": 717233,
+      "sha256": "42b558140d97a9f18872a774f64ae90df4b2ecbdb878b53c3c1df038c63de492"
+    },
+    {
+      "path": "public/blindiq-sw-v1.56.js",
+      "bytes": 188,
+      "sha256": "41ef4abc1c04eaae0b482d4dc7a35becf1ecf3c45ae95e04e37363ec3b4827a7"
+    },
+    {
+      "path": "public/blindiq-sw-v1.57.js",
+      "bytes": 197,
+      "sha256": "8a02ad36d40ca200ae5dc9aecb51c87d6ab28526e8c4a07013e1a011a91f1f5f"
+    },
+    {
+      "path": "public/blindiq-sw-v1.58.js",
+      "bytes": 186,
+      "sha256": "4ebf8d9090d7ef792253cc4c5567ad6de15eefa4e5defc7d0f1d013c6a321694"
+    },
+    {
+      "path": "public/duck-home-page.png",
+      "bytes": 2182228,
+      "sha256": "7d9e9090f24127894041f9fa8676235810f25699e23cce3d485d63b9c7a1f8bc"
+    },
+    {
+      "path": "public/favicon.svg",
+      "bytes": 712,
+      "sha256": "e6d2e59b7b5bbb0342e0fb496dfc262decbfe4426bbb7b047aec8d467d1dc6f7"
+    },
+    {
+      "path": "public/file.svg",
+      "bytes": 391,
+      "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4"
+    },
+    {
+      "path": "public/globe.svg",
+      "bytes": 1035,
+      "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf"
+    },
+    {
+      "path": "public/icon-192.png",
+      "bytes": 34813,
+      "sha256": "ac9a86d8130e86fcaa83da187836a5e1486afa7b8ec12b207fd499296ec42ba4"
+    },
+    {
+      "path": "public/icon-512.png",
+      "bytes": 239358,
+      "sha256": "c738c646bcfba1a733aa60f78e621b29ac20349088cd5f093367d8a83ab39413"
+    },
+    {
+      "path": "public/manifest.webmanifest",
+      "bytes": 744,
+      "sha256": "0132a540c318643083325de0b9131fd92ccf62e796e1dea964ddf5f0dc737744"
+    },
+    {
+      "path": "public/maskable-icon-512.png",
+      "bytes": 239358,
+      "sha256": "c738c646bcfba1a733aa60f78e621b29ac20349088cd5f093367d8a83ab39413"
+    },
+    {
+      "path": "public/sw.js",
+      "bytes": 5699,
+      "sha256": "ab0989a525d3eb68461d2281dac6efcdb8aa94c05b16e42d09e26c9f877f978e"
+    },
+    {
+      "path": "public/window.svg",
+      "bytes": 385,
+      "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1"
+    },
+    {
+      "path": "scripts/__pycache__/build_canva_facebook_layout_variations_v4.cpython-312.pyc",
+      "bytes": 33794,
+      "sha256": "9cc22074d865679bbf1791192e346ff3b1a244638f9e33ccd211ae98341a167b"
+    },
+    {
+      "path": "scripts/build_blindiq_reel_scenes.py",
+      "bytes": 11298,
+      "sha256": "19dcfa081160f8648a314c9634c8f77b51a35d724db197c7b9931ccbcf03113b"
+    },
+    {
+      "path": "scripts/build_canva_digital_field_log_v6.py",
+      "bytes": 13999,
+      "sha256": "95f1ece42878dccd47a49f9b2d3b9fa8143e64b771da6db367e395dd114d5654"
+    },
+    {
+      "path": "scripts/build_canva_facebook_cinematic_v2.py",
+      "bytes": 10929,
+      "sha256": "817eaec295eff2499583c9a6bb04d98bf1821c6b379c3b87a4158ed5e9dcf626"
+    },
+    {
+      "path": "scripts/build_canva_facebook_landscape.py",
+      "bytes": 13010,
+      "sha256": "db04fd0025bbc55a76dfd7383f2282b129ddaa483910001bbc0ba2448b5fd1dc"
+    },
+    {
+      "path": "scripts/build_canva_facebook_layout_variations_v4.py",
+      "bytes": 16689,
+      "sha256": "653707d2c5a8446a2d37450189b77523374ff271f71d779b0a9af0eeb5ff516b"
+    },
+    {
+      "path": "scripts/build_canva_instagram_portrait_layouts_v5.py",
+      "bytes": 13490,
+      "sha256": "4301419cd31c409a28f40560c76ef98de5776df1b15fcdc7918e26b974d43667"
+    },
+    {
+      "path": "scripts/build_canva_rugged_field_log_v7.py",
+      "bytes": 14220,
+      "sha256": "4f7e8fb30170e81d028a009abab500d8aa5fa6a7a0379b465b6825b662dfa5a3"
+    },
+    {
+      "path": "scripts/build_canva_rugged_launch_sale_v8.py",
+      "bytes": 16201,
+      "sha256": "e70e9925e05271280e2015a495f701319840f45db9130a31d0666ce0b8cb4d05"
+    },
+    {
+      "path": "scripts/build_social_photo_package.py",
+      "bytes": 11873,
+      "sha256": "0b455fa4da3d809680cef4184901396a71df0871a33f30bed9d283f520895720"
+    },
+    {
+      "path": "scripts/encode_reel.m",
+      "bytes": 7792,
+      "sha256": "a56b879c969693d2e3fd600621d4d1bffb2457890c1f91b4a6e81e52c4d1bd07"
+    },
+    {
+      "path": "scripts/encode_reel_h264_sample.m",
+      "bytes": 6981,
+      "sha256": "c4f5838841abd5fb68c25fb6c6609916e63570228916b7f249518302dc292f84"
+    },
+    {
+      "path": "scripts/encode_reel_mjpeg.m",
+      "bytes": 8051,
+      "sha256": "1d660a8da997957061630376c81b60878048d66cd7042510921169013217dbe3"
+    },
+    {
+      "path": "scripts/extract_video_frames.m",
+      "bytes": 2906,
+      "sha256": "fbed305115431c7f02df9052e53b2c89840ca2b1fa757f3dcf103923171951d1"
+    },
+    {
+      "path": "scripts/extract_video_frames.swift",
+      "bytes": 1730,
+      "sha256": "0d12a3fce4e10f2e601b02f06da35981b20637252bb78257c074b8d65fed7a3e"
+    },
+    {
+      "path": "scripts/run-tests.mjs",
+      "bytes": 1104,
+      "sha256": "95eb8e17ee80b15a2574fe6efdab49ae5c02f9060f6adb776a39fe3423b79665"
+    },
+    {
+      "path": "src/App.tsx",
+      "bytes": 77214,
+      "sha256": "c2884e61208649dfc1e18cf366808356ba49ba6aaf4e2ad5f2ef669b6d005050"
+    },
+    {
+      "path": "src/MigrationPage.tsx",
+      "bytes": 9222,
+      "sha256": "254716f2294e56cdcab82c6a2dd7eabba5b3f8d489176c9c4aacbf983cdfd9d8"
+    },
+    {
+      "path": "src/NotificationsPage.tsx",
+      "bytes": 11629,
+      "sha256": "698c221083ed06812265af6c0effdab7ad034c818a92bda9ba451887f05344ca"
+    },
+    {
+      "path": "src/bagLimitPeriods.ts",
+      "bytes": 14241,
+      "sha256": "ad41c5be46fb17d548dcb1988cf32c07131cafc51b1ef03a873e930cf6b3dbe4"
+    },
+    {
+      "path": "src/birdGuide.ts",
+      "bytes": 16561,
+      "sha256": "0d30566df56ef7816a4fa9742e8069adfe8072297fc7964382a54d68a0857c5b"
+    },
+    {
+      "path": "src/data.ts",
+      "bytes": 146259,
+      "sha256": "6e077003847ad416c2c7824934b3712502596f3a45f842811a7834f660cc46bb"
+    },
+    {
+      "path": "src/gameCatalog.ts",
+      "bytes": 10229,
+      "sha256": "62ff8e841ea5a532531bd96f2642c321ba5ec90fc96a3af5aa5db83e666afe0c"
+    },
+    {
+      "path": "src/harvestLimits.ts",
+      "bytes": 2424,
+      "sha256": "cca54c9cb575d5b9ef822aa247884c5c1956dfb86e27eca13ecfc7ac2f56d038"
+    },
+    {
+      "path": "src/huntPhotos.ts",
+      "bytes": 2028,
+      "sha256": "47bb2b11fa0eeaf08e8375ec90b66f12b17f2fdc5479781b187948e960518e1f"
+    },
+    {
+      "path": "src/huntingLocations.ts",
+      "bytes": 2027,
+      "sha256": "8184c93f3e4ebe62f614daf785d4dc8040f2221c8d01c00766b9feae7f1671ea"
+    },
+    {
+      "path": "src/legal.ts",
+      "bytes": 10933,
+      "sha256": "cf0fb769cd07ac5d9b3e9c7d4d94a77fd6ab6b9fa3f016217f459a41c934ba89"
+    },
+    {
+      "path": "src/location.ts",
+      "bytes": 6356,
+      "sha256": "e1640d05cc2efff9c5b77485faffef056fe3ab186b5ff3eb59b6ba79027a60a3"
+    },
+    {
+      "path": "src/main.tsx",
+      "bytes": 809,
+      "sha256": "acf93a32cc9a9e49f193c3b6e5ff5835bcedf3d0029aabf6b0948b741de180f5"
+    },
+    {
+      "path": "src/migration.ts",
+      "bytes": 8243,
+      "sha256": "f7e012bbe4c026452dd302d692d0355fa005c411e1babd779644c2a8de09260d"
+    },
+    {
+      "path": "src/notifications.ts",
+      "bytes": 12719,
+      "sha256": "b8b4ffd4352f5a36cf13258c36997d94f8e033e574e9d7178e12216370bdf9e4"
+    },
+    {
+      "path": "src/refresh.css",
+      "bytes": 13938,
+      "sha256": "cfed9cf9106dc19f85869a275ba0b049956f39f57819d64f688e1eaad6b92292"
+    },
+    {
+      "path": "src/seasonCalendars.ts",
+      "bytes": 35824,
+      "sha256": "ca41d4fc5b6bd6dafd1613602f9b4faaea2e3312b834ed2fde2fcd6f8a9d9d13"
+    },
+    {
+      "path": "src/seasonStatus.ts",
+      "bytes": 2846,
+      "sha256": "16b2af969fa498bfec22ed7dc33619616b909298e82e384cd33e2861c952e118"
+    },
+    {
+      "path": "src/services.ts",
+      "bytes": 30637,
+      "sha256": "82536fa457e0d2d1e557f12bcedc90f542270a04225a8e7a7674a35547267ccc"
+    },
+    {
+      "path": "src/sessionEntries.ts",
+      "bytes": 650,
+      "sha256": "2936a4213a81d32c389ed3b29ba979ed2c6b8952fc3034cb425e1e0bf81d7d8a"
+    },
+    {
+      "path": "src/shareHunt.ts",
+      "bytes": 8253,
+      "sha256": "b1d0082ec22a78ae8e3b62730c9def8f5467a8d52b5e5ba4552a95868243de36"
+    },
+    {
+      "path": "src/styles.css",
+      "bytes": 83160,
+      "sha256": "eaf1c518d8913faa81d5cf6f712e78922023d024141318ebea4965bef6135d81"
+    },
+    {
+      "path": "src/types.ts",
+      "bytes": 3163,
+      "sha256": "7ea1431fb670ff425ca795f4888ebd8f389654ac957114634f67d8a0dadd4bde"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "bytes": 302,
+      "sha256": "70ed18e36497bbc691dd8dc90f0add818cdd80f9d8125de2d59bbaf7acbe11a0"
+    },
+    {
+      "path": "supabase/HUNT_LOGBOOK_SETUP.sql",
+      "bytes": 4588,
+      "sha256": "a30fcf84e17128531464af66d309e93e0025854ff4f9a71cf5114487c9b4ddcd"
+    },
+    {
+      "path": "supabase/config.toml",
+      "bytes": 890,
+      "sha256": "d3fd632bf50d8c5adb5a0f52637db82b0e7204f134e4f6115f203cc56f894ee0"
+    },
+    {
+      "path": "supabase/cron/migration_refresh_schedule.sql",
+      "bytes": 1337,
+      "sha256": "4c4d72cbb5432f595304c619783bf66fb76e3f8de7bcdb2742b94d6c4d1e9b24"
+    },
+    {
+      "path": "supabase/cron/notification_process_schedule.sql",
+      "bytes": 1248,
+      "sha256": "1c5d4cb093c60e3d469012c0e9d535f2db2b1e3e02a41cce675c47a062d19a7d"
+    },
+    {
+      "path": "supabase/functions/_shared/webpush.ts",
+      "bytes": 2164,
+      "sha256": "63434c198de80cb67af5aa9eabede40aff65378410683d1a3355ed52c7890c42"
+    },
+    {
+      "path": "supabase/functions/migration-refresh/deno.json",
+      "bytes": 136,
+      "sha256": "a9a29da36c2576f755dd868b9f553a02afdf7d7bccf52e97e65c7f68cf36bfef"
+    },
+    {
+      "path": "supabase/functions/migration-refresh/deno.lock",
+      "bytes": 10381,
+      "sha256": "6ad3d5ca9111f5eeded125e854520b0a24e09223066891d0116d49edf7ab0a3e"
+    },
+    {
+      "path": "supabase/functions/migration-refresh/index.ts",
+      "bytes": 13339,
+      "sha256": "fcc37f694ef8e112961c8099cda66a72528a92b72470ca42bca32f5c2ae8e88b"
+    },
+    {
+      "path": "supabase/functions/notification-process/index.ts",
+      "bytes": 17298,
+      "sha256": "d92a981bebeb7f2d6997af029309cb4358b8454c4fb5765f060dde7b216ef474"
+    },
+    {
+      "path": "supabase/functions/notification-test/index.ts",
+      "bytes": 4551,
+      "sha256": "80105f3f11e38bd0318832b04da96d928693acf39fb98b13c9a52dce06408423"
+    },
+    {
+      "path": "supabase/functions/stripe-customer-portal/index.ts",
+      "bytes": 2397,
+      "sha256": "7ffd800d4e41b416ccd599accf2ff1fc7b01af2e807a7e06c89d0763f5c9a464"
+    },
+    {
+      "path": "supabase/functions/stripe-webhook/index.ts",
+      "bytes": 3581,
+      "sha256": "8de34e87073f816ab3179b663c6eb091144d9cce5a5ef124c2a0ff085019ba89"
+    },
+    {
+      "path": "supabase/migrations/202607290001_memberships.sql",
+      "bytes": 2487,
+      "sha256": "6d4d0528359607b5be8c94c720bb64177c768d4a868a7c13c6c00c832b485cb8"
+    },
+    {
+      "path": "supabase/migrations/202608040001_default_state_and_terms.sql",
+      "bytes": 1120,
+      "sha256": "4fa0edd036d4209c875f1ef3cc92f8351881d56cc1f149ce50b981e3ea7326b9"
+    },
+    {
+      "path": "supabase/migrations/202608110002_persistent_hunt_history.sql",
+      "bytes": 1749,
+      "sha256": "fea15dd8a0da55c093768c75050c9e5fa05e9fa57ccf31064aa61563d1ea8019"
+    },
+    {
+      "path": "supabase/migrations/202608110003_auth_policy_hardening.sql",
+      "bytes": 1061,
+      "sha256": "732293ca16a26f8ef3d2b20cd70bf0e222756b4bf2b6ab3cd308e936cb5532f0"
+    },
+    {
+      "path": "supabase/migrations/20260823235658_hunt_photos.sql",
+      "bytes": 1945,
+      "sha256": "b7ce70916322588a1417589308092afa128da90d890644f47f80d024fcc0cae1"
+    },
+    {
+      "path": "supabase/migrations/20260825135713_migration_pulse.sql",
+      "bytes": 7596,
+      "sha256": "4702c9a7da057c879b5c575dc181874518e641ad0ffb6a33b0e1cdc941bced04"
+    },
+    {
+      "path": "supabase/migrations/202608270001_web_push_notifications.sql",
+      "bytes": 16987,
+      "sha256": "8a62ce6e1523829a81fc1e8eea0482c58aa7bde6bbfae9ab6072dcf60d4378ab"
+    },
+    {
+      "path": "supabase/migrations/202608270002_add_central_flyway.sql",
+      "bytes": 2248,
+      "sha256": "7b92d9ea3e54b9575762eba3824741dc0e2f9c05f253002b24b542f0c2b9daa0"
+    },
+    {
+      "path": "supabase/migrations/202608270003_add_pacific_flyway.sql",
+      "bytes": 3269,
+      "sha256": "68ad3b7f3ffbdcf997c5eb15a9776fee1547b1e6c1a3f9eacbe3f82c9e88cc2e"
+    },
+    {
+      "path": "supabase/migrations/202608290001_hunt_field_details.sql",
+      "bytes": 1063,
+      "sha256": "65bcbcae3c64e8dabf4f4fdd9c21ba0890dcf956196fa7a082333b0c6fb0b059"
+    },
+    {
+      "path": "supabase/migrations/20260904140437_add_hunt_category.sql",
+      "bytes": 595,
+      "sha256": "4a037780eba4575a80ae9f0ef535098569544422afa6e00575d2eb54ba6c9226"
+    },
+    {
+      "path": "tests/regulations.test.cjs",
+      "bytes": 11475,
+      "sha256": "137ea43d0684d1fc9d9531dd9480aad297458b4b6a7181da0172c9d5be82caa5"
+    },
+    {
+      "path": "tests/sightings-browser.mjs",
+      "bytes": 4304,
+      "sha256": "dbb52cd7b52946f40bb308d096edad9ac7b8d2d675102718fcabaed5a866c028"
+    },
+    {
+      "path": "tests/species-browser.mjs",
+      "bytes": 5661,
+      "sha256": "996098787291984a59b97d3b3a31f98486688f1febba25e9447653ae1eb88ee9"
+    },
+    {
+      "path": "tests/species.test.cjs",
+      "bytes": 2654,
+      "sha256": "99ba9b9d618b18677e676bfdd6bcd797b65a37d7dab830414ce64746e12734d5"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 527,
+      "sha256": "83efc1798334967d5a907f26b8cba31fa213f16b5ac0ed5c02fd38e7cf0ceb66"
+    },
+    {
+      "path": "tsconfig.tsbuildinfo",
+      "bytes": 519,
+      "sha256": "a10d6ec5c9b6c4e130113b345e1c6696d0a9c978205280671405331dfb815b2a"
+    },
+    {
+      "path": "vercel.json",
+      "bytes": 467,
+      "sha256": "1502f41014b65305c1d81cacf88174b47fe80f4e9787134006fd30d3206502bc"
+    },
+    {
+      "path": "vite.config.ts",
+      "bytes": 169,
+      "sha256": "037e473bcd078b9ace17f5b643495188a78d979a64bed270e7d49f6e94e66079"
+    }
+  ]
+}

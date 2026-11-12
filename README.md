@@ -1,6 +1,8 @@
-# BlindIQ v1.62.0
+# BlindIQ v1.62.1
 
-Multi-species hunt sessions are restored: choose a hunt type and state, tap to log, then save notes/photos and share. Verified waterfowl guidance remains in place; other species are explicitly field-log only. See [release notes and validation](docs/RELEASE_v1.62.0.md).
+Independent Saw and Harvested counts are included in the logger, summary, saved logbook and share cards. See [v1.62.1 notes](docs/RELEASE_v1.62.1.md).
+
+Multi-species hunt sessions are restored: choose a hunt type and state, tap to log, then save notes/photos and share. Verified waterfowl guidance remains in place; other species are explicitly field-log only. See [release notes and validation](docs/RELEASE_v1.62.1.md).
 
 
 **HUNT. LOG. SHARE**
