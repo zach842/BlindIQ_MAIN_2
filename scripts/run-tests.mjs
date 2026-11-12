@@ -8,7 +8,7 @@ try {
   const compile = spawnSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'),
     '--module', 'commonjs', '--moduleResolution', 'node', '--target', 'ES2022',
     '--skipLibCheck', '--strict', '--outDir', output,
-    'src/data.ts', 'src/harvestLimits.ts', 'src/seasonStatus.ts', 'src/gameCatalog.ts', 'src/huntingLocations.ts'], { stdio: 'inherit' });
+    'src/data.ts', 'src/harvestLimits.ts', 'src/seasonStatus.ts', 'src/sessionEntries.ts', 'src/gameCatalog.ts', 'src/huntingLocations.ts'], { stdio: 'inherit' });
   if (compile.status !== 0) process.exitCode = compile.status ?? 1;
   else {
     writeFileSync(join(output, 'package.json'), '{"type":"commonjs"}');

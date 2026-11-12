@@ -153,10 +153,10 @@ export async function createHuntShareFile(input: HuntShareInput) {
         }
         context.fillStyle = "#1d2924";
         context.font = "650 27px Inter, sans-serif";
-        context.fillText(clipped(entry.label, 42), 72, y);
-        context.font = "800 28px Inter, sans-serif";
+        context.fillText(clipped(entry.label, entry.saw === undefined ? 42 : 27), 72, y);
+        context.font = entry.saw === undefined ? "800 28px Inter, sans-serif" : "750 23px Inter, sans-serif";
         context.textAlign = "right";
-        context.fillText(`× ${entry.count}`, 1008, y);
+        context.fillText(entry.saw === undefined ? `× ${entry.count}` : `Saw ${entry.saw} • Harvested ${entry.count}`, 1008, y);
         context.textAlign = "left";
       });
     }

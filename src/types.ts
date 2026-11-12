@@ -53,7 +53,7 @@ export type StateData = {
   duckDailyLimits?: Record<string, number>;
 };
 
-export type HarvestEntry = BirdRule & { count: number };
+export type HarvestEntry = BirdRule & { count: number; saw?: number };
 
 export type HuntRecord = {
   id: string;
