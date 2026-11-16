@@ -1,0 +1,22 @@
+[
+  {
+    "id": "md-whitetail-pilot",
+    "name": "Maryland whitetail pilot reference point",
+    "taxon": "white-tailed-deer",
+    "state_code": "MD",
+    "latitude": 38.48,
+    "longitude": -76.2,
+    "timezone": "America/New_York",
+    "scope_note": "Representative pilot weather point, not a statewide or property-specific forecast."
+  },
+  {
+    "id": "sc-coastal-turkey-pilot",
+    "name": "South Carolina lower coastal plain turkey pilot",
+    "taxon": "wild-turkey",
+    "state_code": "SC",
+    "latitude": 33.3,
+    "longitude": -81.6,
+    "timezone": "America/New_York",
+    "scope_note": "Representative research-region weather point. No parcel, statewide or all-subspecies prediction."
+  }
+]
