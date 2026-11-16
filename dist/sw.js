@@ -1,4 +1,4 @@
-const CACHE_NAME = "blindiq-offline-v1.64.0";
+const CACHE_NAME = "blindiq-offline-v1.64.1";
 
 const CORE_ASSETS = [
   "/",
