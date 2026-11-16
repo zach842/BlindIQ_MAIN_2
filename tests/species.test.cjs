@@ -45,3 +45,21 @@ test('sighting corrections clamp at zero and do not mutate previous counts',()=>
  assert.equal(changeSightings(after,'deer',-1).deer,0);
  assert.equal(changeSightings(after,'deer',1).deer,1);
 });
+const { categorySpecies } = require(path.join(process.env.BLINDIQ_TEST_OUTPUT, 'categorySpecies.js'));
+test('Waterfowl category shows the entire state bird list',()=>{
+ const birds=[{id:'mallard',label:'Mallard',group:'Ducks',limit:6},{id:'goose',label:'Goose',group:'Geese',limit:5}];
+ assert.deepEqual(categorySpecies('waterfowl','MD',birds),birds);
+});
+test('Maryland deer groups whitetail and sika, without western deer',()=>{
+ const ids=categorySpecies('deer','MD',[]).map(s=>s.id);
+ assert.deepEqual(ids,['deer-whitetail-buck','deer-whitetail-doe','deer-sika-stag','deer-sika-hind','deer-other']);
+});
+test('Alaska and Hawaii deer catalogs do not inherit mainland whitetail rows',()=>{
+ const ak=categorySpecies('deer','AK',[]).map(s=>s.id);
+ assert.deepEqual(ak,['deer-sitka-buck','deer-sitka-doe','deer-other']);
+ const hi=categorySpecies('deer','HI',[]).map(s=>s.id);
+ assert.ok(hi.includes('deer-axis-buck'));assert.ok(hi.includes('deer-blacktail-buck'));assert.ok(!hi.includes('deer-whitetail-buck'));
+});
+test('Other categories retain their complete existing catalogs',()=>{
+ for(const category of huntCategories.filter(c=>!['waterfowl','deer'].includes(c.id))) assert.deepEqual(categorySpecies(category.id,'MD',[]),category.species);
+});

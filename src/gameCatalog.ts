@@ -51,6 +51,8 @@ export const huntCategories: HuntCategory[] = [
       rule("deer", "sitka-doe", "Sitka Black-tailed Deer — Doe", "Deer", "🦌"),
       rule("deer", "sika-stag", "Sika Deer — Stag", "Deer", "🦌"),
       rule("deer", "sika-hind", "Sika Deer — Hind", "Deer", "🦌"),
+      rule("deer", "axis-buck", "Axis Deer — Buck", "Deer", "🦌"),
+      rule("deer", "axis-doe", "Axis Deer — Doe", "Deer", "🦌"),
       rule("deer", "other", "Other Legal Deer", "Deer", "🦌"),
     ],
   },

@@ -26,7 +26,10 @@ try{
  const context=await browser.newContext();const page=await context.newPage();
  await page.goto(`http://127.0.0.1:${server.address().port}/`);
  await page.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.includes('1.62.1'));
- assert.ok((await page.evaluate(()=>caches.keys())).includes('blindiq-offline-v1.62.1'));
+ await page.waitForFunction(async()=>(await caches.keys()).includes('blindiq-offline-v1.62.1'));
+ await page.getByRole('heading',{name:'Older cached dashboard'}).waitFor();
+ await page.waitForLoadState('load');
+ await page.waitForTimeout(300);
  updated=true;
  await page.reload();
  await page.waitForFunction(v=>navigator.serviceWorker.controller?.scriptURL.includes(v),version);

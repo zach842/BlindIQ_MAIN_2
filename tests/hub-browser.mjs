@@ -8,14 +8,17 @@ await page.getByRole('button',{name:'Log in',exact:true}).click();
 await page.getByRole('heading',{name:'Hunt. Log. Done.'}).waitFor();
 if(await page.getByRole('button',{name:'Close installation instructions'}).isVisible()) await page.getByRole('button',{name:'Close installation instructions'}).click();
 await page.locator('#state').selectOption('MD');
-await page.locator('#log-species').selectOption('deer:deer-whitetail-buck');
+await page.locator('#hunt-category').selectOption('deer');
+if(await page.locator('#hunt-category option').count() !== 9) throw Error('Category menu contains individual species');
+if(await page.locator('.bird-row').count() !== 5) throw Error('Maryland deer should show whitetail, sika and other rows together');
+if(await page.getByRole('button',{name:'Saw Sitka Black-tailed Deer — Buck',exact:true}).count()) throw Error('Maryland inherited Alaska deer');
 await page.getByRole('button',{name:'Saw Whitetail — Buck',exact:true}).click();
 await page.getByRole('button',{name:'Saw Whitetail — Buck',exact:true}).click();
 await page.getByRole('button',{name:'Add Whitetail — Buck',exact:true}).click();
-await page.locator('#log-species').selectOption('deer:deer-whitetail-doe');
+
 await page.getByRole('button',{name:'Saw Whitetail — Doe',exact:true}).click();
 if(!(await page.locator('#state').isDisabled())) throw Error('State not locked');
-if(await page.locator('#log-species').isDisabled()) throw Error('Species cannot change during session');
+if(!(await page.locator('#hunt-category').isDisabled())) throw Error('Active category not protected');
 for(const width of [320,390,768,1440]){
  await page.setViewportSize({width,height:844});
  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)) throw Error('Overflow '+width);
@@ -38,15 +41,15 @@ await page.getByRole('heading',{name:'Movement and gobbling',exact:true}).waitFo
 await page.getByRole('button',{name:'Hunt',exact:true}).click();
 await page.getByRole('button',{name:'New session',exact:true}).click();
 await page.locator('#state').selectOption('AK');
-await page.locator('#log-species').selectOption({label:'Wood Duck'});
+await page.locator('#hunt-category').selectOption('waterfowl');
 if(await page.getByText('Waterfowl bag guidance & field guide',{exact:true}).count()) throw Error('Unverified Alaska rules shown');
 await page.getByRole('button',{name:/^Saw /}).first().click();
 await page.getByRole('button',{name:'Save session',exact:true}).click();
 await page.getByRole('button',{name:'New session',exact:true}).waitFor();
 await page.getByRole('button',{name:'New session',exact:true}).click();
 await page.locator('#state').selectOption('SC');
-await page.locator('#log-species').selectOption({label:'Wood Duck'});
-await page.locator('#log-species').selectOption({label:'Wood Duck'});
+await page.locator('#hunt-category').selectOption('waterfowl');
+await page.locator('#hunt-category').selectOption('waterfowl');
 for(let i=0;i<3;i++) await page.getByRole('button',{name:'Add Wood Duck',exact:true}).click();
 if(await page.getByRole('button',{name:'Add Wood Duck',exact:true}).isEnabled()) throw Error('Bag limit failed');
 await page.getByRole('button',{name:'Saw Wood Duck',exact:true}).click();
@@ -57,7 +60,7 @@ await page.getByRole('heading',{name:'Hunt. Log. Done.'}).waitFor();
 
 const otherSpecies=['turkey:turkey-tom','big-game:big-game-elk-bull','small-game:small-game-gray-squirrel','dove-migratory:dove-migratory-mourning-dove','upland-birds:upland-birds-pheasant-rooster','predator-furbearer:predator-furbearer-coyote','other-game:other-game-other'];
 for(const id of otherSpecies){
- await page.locator('#log-species').selectOption(id);
+ await page.locator('#hunt-category').selectOption(id.split(':')[0]);
  await page.getByRole('button',{name:/^Saw /}).first().click();
  await page.getByRole('button',{name:/^Add /}).filter({hasText:'+'}).first().click();
  await page.getByRole('button',{name:'Save session',exact:true}).click();
@@ -71,6 +74,6 @@ await page.getByRole('button',{name:'New session',exact:true}).waitFor();
 await page.getByRole('button',{name:'New session',exact:true}).click();
 if(!(await page.getByRole('button',{name:'Save session',exact:true}).isVisible())) throw Error('Practice persisted into new session');
 console.log('PASS all categories and zero-harvest practice on the hub');
-console.log('PASS hub direct logging, species switching, save, state protection, Maps/Movement tabs, unverified-state isolation, waterfowl caps, reload, 4 widths');
+console.log('PASS hub direct logging, category lists, save, state protection, Maps/Movement tabs, unverified-state isolation, waterfowl caps, reload, 4 widths');
 if(errors.length)throw Error(errors.join('\n'));
 await browser.close();
