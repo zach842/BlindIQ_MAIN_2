@@ -1,7 +1,12 @@
-const CACHE_NAME = "blindiq-offline-v1.62.1";
+const CACHE_NAME = "blindiq-offline-v1.63.1";
 
 const CORE_ASSETS = [
   "/",
+  "/blindiq-mark-v1631.svg",
+  "/icon-192-v1631.png",
+  "/icon-512-v1631.png",
+  "/maskable-icon-512-v1631.png",
+  "/apple-touch-icon-v1631.png",
   "/index.html",
   "/manifest.webmanifest",
   "/favicon.svg",
@@ -134,8 +139,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil((async () => {
     await self.registration.showNotification(title, {
       body: payload.body || "Open BlindIQ for the latest field update.",
-      icon: payload.icon || "/icon-192.png",
-      badge: payload.badge || "/icon-192.png",
+      icon: payload.icon || "/icon-192-v1631.png",
+      badge: payload.badge || "/icon-192-v1631.png",
       tag: payload.tag || "blindiq-update",
       renotify: payload.priority === "urgent",
       data: { ...(payload.data || {}), url, eventType: payload.eventType || "update" },

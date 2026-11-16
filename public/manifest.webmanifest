@@ -1,7 +1,7 @@
 {
-  "name": "BlindIQ — Waterfowl Field Guide & Hunt Log",
+  "name": "BlindIQ \u2014 Hunting Logger",
   "short_name": "BlindIQ",
-  "description": "Start waterfowl hunts, log every bird, save harvest photos and notes, share hunt cards, and keep regulations close at hand.",
+  "description": "The no frills hunting logger for the hunter. Log sightings and harvest across species, save sessions and open official state rules.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,19 +9,19 @@
   "theme_color": "#15372d",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icon-192-v1631.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-512-v1631.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/maskable-icon-512.png",
+      "src": "/maskable-icon-512-v1631.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
