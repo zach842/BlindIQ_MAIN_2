@@ -1,0 +1,22 @@
+import {readFile,access} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const read=async path=>readFile(new URL('../'+path,import.meta.url),'utf8');
+const pkg=JSON.parse(await read('package.json'));
+const app=await read('src/App.tsx');
+const entry=await read('src/main.tsx');
+const worker=await read('public/sw.js');
+assert.ok(app.includes(`BlindIQ v${pkg.version}`),'Displayed version must match package.json');
+assert.ok(entry.includes(`/sw.js?v=${pkg.version}`),'Service-worker registration must match package.json');
+assert.ok(worker.includes(`blindiq-offline-v${pkg.version}`),'Offline cache must match package.json');
+assert.ok(app.includes('Hunt. Log. Done.') && app.includes('id="log-species"') && app.includes('Movement Forecast') && app.includes('Maps & property lines'),'The built source must contain the redesigned hub and tabs');
+const html=await read('dist/index.html');
+const bundle=html.match(/src="(\/assets\/[^\"]+\.js)"/);
+assert.ok(bundle,'Built index must point to a JavaScript entry');
+const js=await read('dist'+bundle[1]);
+for(const text of ['Hunt. Log. Done.','Maps & property lines','Movement Forecast','Movement and gobbling',`BlindIQ v${pkg.version}`]) assert.ok(js.includes(text),`Production bundle is missing ${text}`);
+const manifest=JSON.parse(await read('dist/manifest.webmanifest'));
+for(const icon of manifest.icons){assert.ok(!icon.src.includes('..'));await access(new URL('../dist'+icon.src,import.meta.url));}
+const logo=app.match(/<img src="([^\"]+)"/)[1];
+assert.ok(logo.includes('blindiq-mark-v1631.svg'),'Selected IQ logo must be used');
+await access(new URL('../dist'+logo,import.meta.url));
+console.log(`Verified v${pkg.version}: root hub, compiled entry, IQ logo, manifest icons and offline versions agree.`);

@@ -1,2 +1,2 @@
-// Current hub regression supersedes the previous screen-specific flow.
+// Verify the current one-page hunting hub.
 import "./hub-browser.mjs";

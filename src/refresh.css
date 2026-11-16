@@ -190,3 +190,53 @@ input, select, textarea { border-radius: 10px; }
  .bird-list--observations .observation-counter--saw, .bird-list--observations .observation-counter--harvest { grid-column: 1 / -1; width: calc((100% - 12px) / 2); }
  .bird-list--observations .observation-counter--saw { justify-self: start; }
 }
+
+/* v1.63: one-page field hub, based on the hunter's sketch. */
+.hunting-hub.page { max-width: 680px; padding: 18px 16px 0; }
+.hub-heading h1 { font-size: 28px; margin: 0; line-height: 1.15; }
+.hub-heading p { font-size: 12px; color: #526259; margin: 5px 0 14px; }
+.hub-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.hub-controls label { display: block; font-size: 12px; font-weight: 800; color: #294738; }
+.hub-controls label:first-child, .hub-controls label:last-child, .hub-regulations, .hub-controls > small { grid-column: 1 / -1; }
+.hub-controls label:nth-of-type(2) { grid-column: 1 / -1; }
+.hub-controls select, .hub-disclosure select, .hub-area input { display: block; width: 100%; height: 44px; border: 1px solid #b7c6b8; background: white; border-radius: 8px; padding: 8px 10px; margin-top: 5px; font-size: 16px; color: #15372d; }
+.hub-regulations { font-size: 13px; color: #24543c; font-weight: 750; }
+.hub-controls > small { font-size: 11px; color: #526259; margin-top: -6px; }
+.hub-counter-panel { margin-top: 14px; padding: 0 12px; border: 1px solid #d5dfd3; border-radius: 12px; background: #fff; }
+.hub-counter-panel .bird-row { border-bottom: 0; }
+.hub-counter-panel .hub-count-note { font-size: 10px; color: #526259; margin: 0 0 10px; }
+.hub-session-totals { display: flex; align-items: center; gap: 18px; font-size: 12px; padding: 12px 0; }
+.hub-session-totals b { font-size: 18px; }
+.hub-session-totals small { margin-left: auto; color: #526259; font-size: 10px; }
+.hub-disclosure { margin: 8px 0; border: 1px solid #d5dfd3; padding: 12px; border-radius: 10px; background: white; }
+.hub-disclosure > summary { cursor: pointer; font-size: 13px; font-weight: 750; color: #244936; }
+.hub-disclosure p { font-size: 12px; line-height: 1.6; }
+.hub-disclosure a { display: block; color: #24543c; font-size: 13px; margin: 12px 0; }
+.hub-disclosure button { min-height: 44px; }
+.hub-coverage { font-size: 11px; color: #526259; line-height: 1.5; margin: 8px 0; }
+.hub-save-panel.page { max-width: 680px; padding: 0 16px 90px; }
+.hub-save-panel .hunt-details-card { border: 0; padding: 14px 0; margin: 0; box-shadow: none; }
+.hub-save-panel .hunt-details-card__heading { display: none; }
+.hub-save-panel .share-hunt-card { margin: 12px 0 0; }
+.hub-save-panel > .button { margin-top: 10px; min-height: 48px; }
+.hub-save-panel .text-button { min-height: 44px; }
+.hub-area { display: block; font-size: 12px; font-weight: 750; margin-top: 14px; }
+.bottom-nav { gap: 0; }
+.bottom-nav button { flex: 1; max-width: 112px; min-width: 0; font-size: 10px; line-height: 1.15; padding: 5px 2px; }
+.roadmap-page { max-width: 800px; }
+.roadmap-page h1 { font-size: 32px; }
+.roadmap-page p, .roadmap-page li { line-height: 1.65; font-size: 14px; }
+.roadmap-status { font-size: 11px; font-weight: 800; color: #715719; }
+.movement-tabs { display: flex; gap: 8px; margin: 18px 0; }
+.movement-tabs button { flex: 1; min-height: 48px; background: #fff; border: 1px solid #bdc8bd; border-radius: 10px; color: #234c37; font-weight: 750; }
+.movement-tabs button.active { background: #15372d; color: #fff; }
+.roadmap-page > .migration-page { padding: 0; }
+.brand--compact img { width: 42px; height: 42px; object-fit: contain; }
+@media (max-width: 600px) {
+ .hunting-hub .bird-row { padding: 12px 0; }
+ .hunting-hub .bird-name strong { font-size: 14px; }
+ .hunting-hub .observation-counter > span { font-size: 12px; }
+}
+.hub-save-panel > .button.button--gold { position: fixed; z-index: 21; bottom: calc(76px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(648px, calc(100% - 32px)); box-shadow: 0 4px 16px #102e2526; }
+.hub-save-panel.page { padding-bottom: 150px; }
+.brand:not(.brand--compact) > img { width: 72px; height: 72px; }

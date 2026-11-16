@@ -33,6 +33,8 @@ await page.getByRole('heading',{name:'Maps & property lines'}).waitFor();
 await page.getByRole('button',{name:/Movement Forecast/}).click();
 await page.getByRole('button',{name:'Deer movement',exact:true}).click();
 await page.getByRole('heading',{name:'Maryland whitetail reference'}).waitFor();
+await page.getByRole('button',{name:'Turkey movement',exact:true}).click();
+await page.getByRole('heading',{name:'Movement and gobbling',exact:true}).waitFor();
 await page.getByRole('button',{name:'Hunt',exact:true}).click();
 await page.getByRole('button',{name:'New session',exact:true}).click();
 await page.locator('#state').selectOption('AK');

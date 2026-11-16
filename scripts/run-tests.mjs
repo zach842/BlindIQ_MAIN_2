@@ -16,6 +16,10 @@ try {
       stdio: 'inherit', env: { ...process.env, BLINDIQ_TEST_OUTPUT: output },
     });
     process.exitCode = run.status ?? 1;
+    if (run.status === 0) {
+      const forecast = spawnSync(process.execPath, ['--test', 'tests/forecasting/pipeline.test.mjs', 'tests/forecasting/database.test.mjs'], { stdio: 'inherit' });
+      process.exitCode = forecast.status ?? 1;
+    }
   }
 } finally {
   rmSync(output, { recursive: true, force: true });

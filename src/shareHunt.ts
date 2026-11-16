@@ -73,7 +73,7 @@ export async function createHuntShareFile(input: HuntShareInput) {
 
   const [background, logo, huntPhoto] = await Promise.all([
     loadImage("/duck-home-page.png"),
-    loadImage("/blindiq-logo-hunt-log-share-closed-border.png"),
+    loadImage("/icon-512-v1631.png"),
     loadOptionalPhoto(input.photo),
   ]);
 
