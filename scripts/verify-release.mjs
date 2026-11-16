@@ -8,7 +8,7 @@ const worker=await read('public/sw.js');
 assert.ok(app.includes(`BlindIQ v${pkg.version}`),'Displayed version must match package.json');
 assert.ok(entry.includes(`/sw.js?v=${pkg.version}`),'Service-worker registration must match package.json');
 assert.ok(worker.includes(`blindiq-offline-v${pkg.version}`),'Offline cache must match package.json');
-assert.ok(app.includes('Hunt. Log. Done.') && app.includes('id="log-species"') && app.includes('Movement Forecast') && app.includes('Maps & property lines'),'The built source must contain the redesigned hub and tabs');
+assert.ok(app.includes('Hunt. Log. Done.') && app.includes('id="hunt-category"') && app.includes('Movement Forecast') && app.includes('Maps & property lines'),'The built source must contain the redesigned hub and tabs');
 const html=await read('dist/index.html');
 const bundle=html.match(/src="(\/assets\/[^\"]+\.js)"/);
 assert.ok(bundle,'Built index must point to a JavaScript entry');
