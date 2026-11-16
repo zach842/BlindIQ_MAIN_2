@@ -1,3 +1,13 @@
+# BlindIQ v1.64.1 — simple category logging
+
+Choose State, then Hunting category (Waterfowl, Deer, Turkey, etc.). All species in that category appear together with Saw and Harvested controls. The long individual-species dropdown is removed. Deer rows adjust to the state; Maryland shows whitetail and sika rather than western deer.
+
+This is the full application package and retains the IQ logo, Maps/Movement tabs and deer/turkey forecasting foundation. Read [START_HERE.md](START_HERE.md) before upload and [the category update](docs/RELEASE_v1.64.1.md) for validation and catalog scope.
+
+---
+
+## Previous release documentation
+
 # BlindIQ v1.64.0 — complete November 16 package
 
 The no frills hunting logger: state, official rules link, a grouped species dropdown, independent Saw/Harvested counts and Save session on one page. Maps, Movement Forecast, Logbook and Account remain in the bottom navigation. The selected cream-and-gold IQ monogram is installed throughout the app.
