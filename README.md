@@ -1,4 +1,10 @@
-# BlindIQ v1.62.1
+# BlindIQ v1.63.1 — the hunting hub
+
+The no frills hunting logger for the hunter: state, official rules link, species, Saw and Harvested, and Save session on one page. Maps and Movement Forecast join the bottom navigation. Existing migration remains available; parcel maps and deer predictions are planned features. The selected cream-and-gold IQ monogram is the app logo and home-screen icon.
+
+See [IQ logo update](docs/RELEASE_v1.63.1.md) and [v1.63 release notes](docs/RELEASE_v1.63.0.md) and [Maps/Movement architecture](docs/HUB_MAPS_MOVEMENT_PLAN.md).
+
+## Previous releases
 
 Independent Saw and Harvested counts are included in the logger, summary, saved logbook and share cards. See [v1.62.1 notes](docs/RELEASE_v1.62.1.md).
 
