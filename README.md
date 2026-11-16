@@ -1,3 +1,25 @@
+# BlindIQ v1.64.0 — complete November 16 package
+
+The no frills hunting logger: state, official rules link, a grouped species dropdown, independent Saw/Harvested counts and Save session on one page. Maps, Movement Forecast, Logbook and Account remain in the bottom navigation. The selected cream-and-gold IQ monogram is installed throughout the app.
+
+This full package combines the corrected root app, compiled production output, 29-state waterfowl audit, multi-species logger, Maps/Movement planning, turkey research panel, and the deer/turkey database and ingestion foundation. **Read [START_HERE.md](START_HERE.md) before uploading.**
+
+- [Complete release and validation](docs/RELEASE_v1.64.0.md)
+- [Deer/turkey source research and database setup](docs/DEER_TURKEY_FORECASTING.md)
+- [Maps and Movement architecture](docs/HUB_MAPS_MOVEMENT_PLAN.md)
+
+Maps and deer/turkey predictions are in development. Database migrations and worker scheduling are separate from a GitHub/Vercel frontend upload. Existing migration forecasts remain available. No hosted database or production site was changed while assembling this package.
+
+---
+
+## Earlier package documentation
+
+# BlindIQ v1.63.2 — one-page hunting hub
+
+State → official rules → species → Saw / Harvested → Save session. The active root application includes Maps and Movement Forecast tabs and the selected IQ monogram. See [the GitHub source/deployment repair and validation](docs/HUB_GITHUB_FIX_v1.63.2.md).
+
+Changes now go through a GitHub branch and pull request; a merge to the production branch triggers the existing Vercel Git deployment. No manual ZIP upload is needed. The build checks source, compiled entry and cache versions for consistency.
+
 # BlindIQ v1.63.1 — the hunting hub
 
 The no frills hunting logger for the hunter: state, official rules link, species, Saw and Harvested, and Save session on one page. Maps and Movement Forecast join the bottom navigation. Existing migration remains available; parcel maps and deer predictions are planned features. The selected cream-and-gold IQ monogram is the app logo and home-screen icon.

@@ -1,3 +1,7 @@
+# Current release: v1.63.2
+
+The root Vite app now contains the one-page hunting hub. Use the GitHub pull-request workflow, then verify Vercel's READY deployment commit and live version. `pnpm run build` verifies the root source and compiled output. See [repair details and tests](docs/HUB_GITHUB_FIX_v1.63.2.md). The historical release notes below describe earlier versions.
+
 # BlindIQ Deployment Notes
 
 ## v1.60 — Waterfowl-Only Rollback + Photo-Save Verification
