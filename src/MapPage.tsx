@@ -1,65 +1,99 @@
-import { useEffect, useRef, useState } from 'react';
-import maplibregl, { type StyleSpecification } from 'maplibre-gl';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import maplibregl, { type GeoJSONSource, type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './fieldMaps.css';
+import './scoutMap.css';
+import { readMapDocument, validShape, pinKinds, parseCoordinates, validCoordinate, distanceMeters, areaSqMeters, formatDistance, formatArea, exportMapData, importMapData, type MapDocument, type MapPin, type MapShape, type Coordinate } from './mapData';
 
-type Pin = { id: string; name: string; kind: string; lng: number; lat: number; createdAt: string };
-const kinds = ['Stand', 'Blind', 'Roost', 'Parking', 'Access', 'Other'];
-const validPin = (p: Pin) => p && typeof p.id === 'string' && typeof p.name === 'string' && kinds.includes(p.kind) && Number.isFinite(p.lng) && Math.abs(p.lng) <= 180 && Number.isFinite(p.lat) && Math.abs(p.lat) <= 85;
-function readPins(key: string): Pin[] { try { const data = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(data) ? data.filter(validPin).slice(0, 200) : []; } catch { return []; } }
-const style: StyleSpecification = { version: 8, sources: { topo: { type: 'raster', tiles: ['https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}'], tileSize: 256, maxzoom: 16, attribution: 'USGS The National Map · USGSTopo' } }, layers: [{ id: 'topo', type: 'raster', source: 'topo' }] };
-export default function MapPage({ userId }: { userId: string }) {
-  const storageKey = `blindiq-waypoints-v1:${userId || 'demo'}`;
-  const [pins, setPins] = useState<Pin[]>(() => readPins(storageKey));
-  const [name, setName] = useState(''); const [kind, setKind] = useState('Stand');
-  const [point, setPoint] = useState<{lng: number; lat: number} | null>(null);
-  const [message, setMessage] = useState('Pan and zoom, then tap the map to place a pin.');
-  const [mapError, setMapError] = useState(''); const [ready, setReady] = useState(false);
-  const container = useRef<HTMLDivElement>(null); const map = useRef<maplibregl.Map | null>(null);
-  const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    let instance: maplibregl.Map;
+type Panel = 'none' | 'spot' | 'saved' | 'layers' | 'draw' | 'transfer';
+type Tool = 'browse' | 'pin' | 'line' | 'area';
+const basemaps = { topo: { name: 'Topo', service: 'USGSTopo', credit: 'USGS The National Map' }, aerial: { name: 'Aerial', service: 'USGSImageryOnly', credit: 'USDA / USGS The National Map' } };
+const emptyDocument: MapDocument = {version:2,pins:[],shapes:[]};
+function mapStyle(): StyleSpecification { return {version:8,sources:Object.fromEntries(Object.entries(basemaps).map(([id,b])=>[id,{type:'raster',tiles:[`https://basemap.nationalmap.gov/arcgis/rest/services/${b.service}/MapServer/tile/{z}/{y}/{x}`],tileSize:256,maxzoom:16,attribution:b.credit}])),layers:[{id:'topo',type:'raster',source:'topo'},{id:'aerial',type:'raster',source:'aerial',layout:{visibility:'none'}}]}; }
+function initialData(userId:string) { try { return {doc:readMapDocument(localStorage,userId),error:''}; } catch { return {doc:emptyDocument,error:'Saved map data could not be read. Existing data will not be overwritten.'}; } }
+function initialSettings(userId:string) { try { const value=JSON.parse(localStorage.getItem(`blindiq-map-settings-v1:${userId || 'demo'}`)||'{}');return {base:value.base==='aerial'?'aerial' as const:'topo' as const,spots:value.spots!==false,drawings:value.drawings!==false}; }catch{return {base:'topo' as const,spots:true,drawings:true};} }
+function PinSymbol({kind}:{kind:string}) { return <span className="scout-kind" aria-hidden="true">{{Stand:'S',Blind:'B',Roost:'R',Parking:'P',Access:'A',Other:'•'}[kind] || '•'}</span>; }
+export default function MapPage({userId}:{userId:string}) {
+  const [{doc:initialDoc,error:loadError}] = useState(()=>initialData(userId));
+  const [doc,setDoc] = useState(initialDoc); const [panel,setPanel] = useState<Panel>('none'); const [tool,setTool] = useState<Tool>('browse');
+  const [settings]=useState(()=>initialSettings(userId));
+  const [base,setBase] = useState<'topo'|'aerial'>(settings.base); const [showSpots,setShowSpots] = useState(settings.spots); const [showDrawings,setShowDrawings] = useState(settings.drawings);
+  const [collapsed,setCollapsed]=useState(false); const [online,setOnline]=useState(navigator.onLine);
+  const [ready,setReady] = useState(false); const [mapError,setMapError] = useState(''); const [message,setMessage] = useState(''); const [query,setQuery] = useState('');
+  const [point,setPoint] = useState<Coordinate|null>(null); const [vertices,setVertices] = useState<Coordinate[]>([]); const [editing,setEditing] = useState('');
+  const [name,setName] = useState('');const [kind,setKind] = useState('Stand'); const [notes,setNotes] = useState('');const [filter,setFilter] = useState('All');
+  const container=useRef<HTMLDivElement>(null), map=useRef<maplibregl.Map|null>(null), mounted=useRef(true), activeTool=useRef(tool), currentDoc=useRef(doc), movingId=useRef('');
+  const storageKey=`blindiq-field-map-v2:${userId || 'demo'}`;
+  useEffect(()=>{activeTool.current=tool;},[tool]); useEffect(()=>{currentDoc.current=doc;},[doc]);
+  useEffect(()=>{const change=()=>setOnline(navigator.onLine);window.addEventListener('online',change);window.addEventListener('offline',change);return()=>{window.removeEventListener('online',change);window.removeEventListener('offline',change);};},[]);
+  useEffect(()=>setCollapsed(false),[panel]);
+  useEffect(()=>{try{localStorage.setItem(`blindiq-map-settings-v1:${userId || 'demo'}`,JSON.stringify({base,spots:showSpots,drawings:showDrawings}));}catch{}},[base,showSpots,showDrawings,userId]);
+  function openSpot(pin:MapPin) { setCollapsed(false); setEditing(pin.id);setPoint([pin.lng,pin.lat]);setName(pin.name);setKind(pin.kind);setNotes(pin.notes || '');setTool('browse');setVertices([]);setPanel('spot');setMessage('');map.current?.flyTo({center:[pin.lng,pin.lat],zoom:Math.max(map.current.getZoom(),14)}); }
+  function openShape(shape:MapShape) { setCollapsed(false); setEditing(shape.id);setName(shape.name);setNotes(shape.notes||'');setVertices(shape.coordinates);setPoint(null);setTool(shape.type);setPanel('draw');setMessage('');map.current?.fitBounds(shape.coordinates.reduce((bounds,p)=>bounds.extend(p),new maplibregl.LngLatBounds()),{padding:80,maxZoom:16}); }
+  function pickPoint(p:Coordinate) {setCollapsed(false);setPoint(p);setVertices([]);setEditing('');setName('');setNotes('');setPanel('spot');setMessage('Location selected. Give this spot a name.');}
+  function clearSelection(){movingId.current='';setTool('browse');setPanel('none');setPoint(null);setVertices([]);setEditing('');setMessage('');}
+  useEffect(()=>{
+    mounted.current=true;let instance:maplibregl.Map;let observer:ResizeObserver|undefined;
     try {
-      instance = new maplibregl.Map({ container: container.current!, style, center: [-76.65, 39.05], zoom: 8, maxZoom: 18 });
-      map.current = instance;
-      instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-      instance.addControl(new maplibregl.ScaleControl({ unit: 'imperial' }));
-      instance.on('load', () => { setReady(true); setMapError(''); });
-      instance.on('error', () => setMapError('Some map data could not load. Check your connection; saved pins are still available below.'));
-      instance.on('click', e => { setPoint({ lng: e.lngLat.lng, lat: e.lngLat.lat }); setMessage('Location selected. Name your pin and save it.'); });
-    } catch { setMapError('Interactive maps are unavailable in this browser. Saved pins are still available below.'); }
-    return () => { mounted.current = false; map.current = null; instance?.remove(); };
-  }, []);
-  useEffect(() => {
-    if (!map.current || !ready) return;
-    const markers = pins.map(pin => new maplibregl.Marker({ color: '#9b7027' }).setLngLat([pin.lng, pin.lat]).setPopup(new maplibregl.Popup().setText(`${pin.kind}: ${pin.name}`)).addTo(map.current!));
-    if (point) markers.push(new maplibregl.Marker({ color: '#244d3e' }).setLngLat([point.lng, point.lat]).addTo(map.current));
-    return () => markers.forEach(marker => marker.remove());
-  }, [pins, point, ready]);
-  function persist(next: Pin[]) { try { localStorage.setItem(storageKey, JSON.stringify(next)); setPins(next); return true; } catch { setMessage('Your device could not save this change. Free storage and try again.'); return false; } }
-  function locate() {
-    if (!navigator.geolocation) { setMessage('Location is unavailable in this browser. Tap the map instead.'); return; }
-    setMessage('Waiting for your location permission…');
-    navigator.geolocation.getCurrentPosition(position => {
-      if (!mounted.current) return;
-      const p = { lng: position.coords.longitude, lat: position.coords.latitude };
-      if (Math.abs(p.lat) > 85) { setMessage('This map cannot display your latitude.'); return; }
-      setPoint(p); map.current?.flyTo({ center: [p.lng, p.lat], zoom: 14 });
-      setMessage(`Device-reported location accuracy: approximately ${Math.ceil(position.coords.accuracy)} m. Name and save a pin if desired.`);
-    }, () => { if (mounted.current) setMessage('Location unavailable or permission declined. Tap the map instead.'); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
-  }
-  return <div className="page field-page"><div className="field-eyebrow">FIELD MAP • PREVIEW</div><h1>Maps & property lines</h1><p>Find your ground. Keep your spots close.</p>
-    <div className="field-map-toolbar"><span className="field-chip">USGS Topo</span><button type="button" onClick={locate}>⌖ Use my location</button></div>
-    <div className="field-map" ref={container} aria-label="Interactive USGS topographic map" />
-    {mapError && <p role="status" className="field-notice">{mapError}</p>}
-    <section className="section"><div className="field-eyebrow">YOUR HUNTING SPOTS</div><h2>Drop a pin</h2><p role="status">{message}</p>{point && <p className="field-coordinates">{point.lat.toFixed(5)}, {point.lng.toFixed(5)}</p>}
-      <form onSubmit={e => { e.preventDefault(); if (!point || !name.trim()) return; if (pins.length >= 200) { setMessage('This preview supports 200 pins. Delete a pin before adding more.'); return; } if (persist([...pins, { ...point, id: crypto.randomUUID(), name: name.trim().slice(0, 80), kind, createdAt: new Date().toISOString() }])) { setName(''); setPoint(null); setMessage('Pin saved on this device.'); } }}>
-        <div className="field-inputs"><label>Pin name<input maxLength={80} required value={name} onChange={e => setName(e.target.value)} placeholder="Creek stand" /></label><label>Type<select value={kind} onChange={e => setKind(e.target.value)}>{kinds.map(k => <option key={k}>{k}</option>)}</select></label></div>
-        <button className="primary" disabled={!point || !name.trim()}>Save pin</button>
-      </form><p className="field-small">Pins stay in this browser for this account. No cloud sync or offline map downloads yet. Clearing browser data removes pins. Opening the map sends tile requests for the viewed area to USGS.</p>
-      {pins.length === 0 ? <p>No saved pins yet.</p> : <ul className="field-pin-list">{pins.map(pin => <li key={pin.id}><button onClick={() => { map.current?.flyTo({ center: [pin.lng, pin.lat], zoom: 15 }); setMessage(`${pin.name}: ${pin.lat.toFixed(5)}, ${pin.lng.toFixed(5)}`); }}><strong>{pin.name}</strong><span>{pin.kind} · {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}</span></button><button aria-label={`Delete ${pin.name}`} onClick={() => { if (window.confirm(`Delete ${pin.name}?`)) persist(pins.filter(p => p.id !== pin.id)); }}>Delete</button></li>)}</ul>}
-    </section>
-    <section className="section field-parcels"><span className="field-chip">NOT CONNECTED</span><h2>Property lines & ownership</h2><p>Regrid parcels require a licensed service connection and local accuracy checks. No parcel boundaries or landowner records are displayed in this preview.</p><p className="field-small">Topo lines are terrain features, not property boundaries. A map does not establish permission to hunt.</p></section>
-  </div>;
+      let center:Coordinate=initialDoc.pins[0]?[initialDoc.pins[0].lng,initialDoc.pins[0].lat]:[-76.65,39.05],zoom=initialDoc.pins.length?13:9;
+      try {const c=JSON.parse(localStorage.getItem(`blindiq-map-camera-v1:${userId || 'demo'}`)||'null');if(c&&validCoordinate(c.center)&&Number.isFinite(c.zoom)){center=c.center;zoom=Math.min(18,Math.max(2,c.zoom));}}catch{}
+      instance=new maplibregl.Map({container:container.current!,style:mapStyle(),center,zoom,maxZoom:18,minZoom:2});map.current=instance;observer=new ResizeObserver(()=>instance.resize());observer.observe(container.current!);
+      instance.addControl(new maplibregl.ScaleControl({unit:'imperial'}),'bottom-left');
+      instance.on('load',()=>{setReady(true);setMapError('');});
+      instance.on('error',()=>setMapError('Some tiles could not load. Check your connection or switch basemaps. Saved content is available in My spots.'));
+      instance.on('moveend',()=>{try{const c=instance.getCenter();localStorage.setItem(`blindiq-map-camera-v1:${userId || 'demo'}`,JSON.stringify({center:[c.lng,c.lat],zoom:instance.getZoom()}));}catch{}});
+      instance.on('click',e=>{
+        const p:Coordinate=[e.lngLat.wrap().lng,e.lngLat.lat];if(!validCoordinate(p))return;
+        if(movingId.current){movingId.current='';setPoint(p);setPanel('spot');setTool('browse');setCollapsed(false);setMessage('New position selected. Save the pin to keep this change.');return;}
+        if(activeTool.current==='line'||activeTool.current==='area'){setVertices(v=>v.length<500?[...v,p]:v);return;}
+        if(activeTool.current==='browse'&&instance.getLayer('saved-lines')){
+          const hits=instance.queryRenderedFeatures(e.point,{layers:['saved-lines','saved-areas']});const found=currentDoc.current.shapes.find(s=>s.id===hits[0]?.properties?.id);
+          if(found){openShape(found);return;}
+        }
+        pickPoint(p);
+      });
+    } catch {setMapError('This browser could not start the map. Saved spots and backups remain available from the tools below.');}
+    return()=>{mounted.current=false;map.current=null;observer?.disconnect();instance?.remove();};
+  },[]);
+  useEffect(()=>{const m=map.current;if(!m||!ready)return;for(const id of Object.keys(basemaps))m.setLayoutProperty(id,'visibility',id===base?'visible':'none');setMapError('');},[base,ready]);
+  useEffect(()=>{
+    const m=map.current;if(!m||!ready)return;
+    const markers=(showSpots?doc.pins:[]).map(pin=>{const el=document.createElement('button');el.className=`scout-marker ${pin.id===editing?'selected':''}`;el.type='button';el.textContent=pin.kind==='Other'?'•':pin.kind[0];el.setAttribute('aria-label',`Open ${pin.name}`);el.title=pin.name;el.onclick=e=>{e.stopPropagation();openSpot(pin);};return new maplibregl.Marker({element:el}).setLngLat(pin.id===editing&&point?point:[pin.lng,pin.lat]).addTo(m);});
+    if(point&&!editing)markers.push(new maplibregl.Marker({color:'#d3a63f'}).setLngLat(point).addTo(m));
+    return()=>markers.forEach(marker=>marker.remove());
+  },[doc.pins,showSpots,editing,point,ready]);
+  useEffect(()=>{
+    const m=map.current;if(!m||!ready)return;
+    const data={type:'FeatureCollection' as const,features:[...vertices.map(p=>({type:'Feature' as const,properties:{id:'vertex'},geometry:{type:'Point' as const,coordinates:p}})),...(showDrawings?doc.shapes:[]).map(s=>({type:'Feature' as const,properties:{id:s.id},geometry:s.type==='area'?{type:'Polygon' as const,coordinates:[[...s.coordinates,s.coordinates[0]]]}:{type:'LineString' as const,coordinates:s.coordinates}})),...(vertices.length>=2?[{type:'Feature' as const,properties:{id:'draft'},geometry:tool==='area'&&vertices.length>=3?{type:'Polygon' as const,coordinates:[[...vertices,vertices[0]]]}:{type:'LineString' as const,coordinates:vertices}}]:[])]};
+    if(m.getSource('drawings'))(m.getSource('drawings') as GeoJSONSource).setData(data);
+    else {m.addSource('drawings',{type:'geojson',data});m.addLayer({id:'saved-areas',type:'fill',source:'drawings',filter:['==',['geometry-type'],'Polygon'],paint:{'fill-color':'#d6aa42','fill-opacity':0.2}});m.addLayer({id:'measurement-points',type:'circle',source:'drawings',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':5,'circle-color':'#e2b44f','circle-stroke-color':'#fff7dc','circle-stroke-width':2}});m.addLayer({id:'saved-lines',type:'line',source:'drawings',paint:{'line-color':'#e2b44f','line-width':3,'line-dasharray':[3,1]}});}
+  },[doc.shapes,vertices,tool,showDrawings,ready]);
+  function persist(next:MapDocument){if(loadError){setMessage(loadError);return false;}try{localStorage.setItem(storageKey,JSON.stringify(next));setDoc(next);return true;}catch{setMessage('Could not save this change. Check your browser storage and try again.');return false;}}
+  function startTool(next:Tool){movingId.current='';setCollapsed(false);setTool(next);setPoint(null);setVertices([]);setEditing('');setName('');setNotes('');setPanel(next==='line'||next==='area'?'draw':'none');setMessage(next==='pin'?'Tap the map to place a spot.':'');}
+  function locate(){if(!navigator.geolocation){setMessage('Location is unavailable. Search coordinates or tap the map instead.');return;}setMessage('Waiting for location permission…');navigator.geolocation.getCurrentPosition(pos=>{if(!mounted.current)return;const p:Coordinate=[pos.coords.longitude,pos.coords.latitude];if(!validCoordinate(p)){setMessage('Location is outside the supported map range.');return;}setTool('browse');pickPoint(p);map.current?.flyTo({center:p,zoom:15});setMessage(`Device-reported GPS accuracy: about ${Math.ceil(pos.coords.accuracy)} m.`);},()=>{if(mounted.current)setMessage('Location unavailable or permission declined. You can still place a spot manually.');},{enableHighAccuracy:true,timeout:15000,maximumAge:0});}
+  function savePin(){if(!point||!name.trim())return;if(!editing&&doc.pins.length>=200){setMessage('Limit: 200 saved spots. Export a backup or remove an old spot.');return;}const pin:MapPin={id:editing||crypto.randomUUID(),name:name.trim().slice(0,80),kind,lng:point[0],lat:point[1],notes:notes.slice(0,1000),createdAt:doc.pins.find(p=>p.id===editing)?.createdAt||new Date().toISOString()};if(persist({...doc,pins:editing?doc.pins.map(p=>p.id===editing?pin:p):[...doc.pins,pin]})){setEditing(pin.id);setTool('browse');setMessage('Spot saved on this device.');}}
+  function saveDrawing(){if(vertices.length<(tool==='area'?3:2)||!name.trim())return;if(!editing&&doc.shapes.length>=100){setMessage('Limit: 100 drawings.');return;}const coordinates=tool==='area'&&vertices.length>3&&JSON.stringify(vertices[0])===JSON.stringify(vertices.at(-1))?vertices.slice(0,-1):vertices;const shape:MapShape={id:editing||crypto.randomUUID(),name:name.trim().slice(0,80),type:tool==='area'?'area':'line',coordinates,notes:notes.slice(0,1000),createdAt:doc.shapes.find(s=>s.id===editing)?.createdAt||new Date().toISOString()};if(!validShape(shape)){setMessage('Use distinct points and a non-crossing area. Dateline-spanning drawings are not supported.');return;}if(persist({...doc,shapes:editing?doc.shapes.map(s=>s.id===editing?shape:s):[...doc.shapes,shape]})){clearSelection();setPanel('saved');setMessage('Drawing saved on this device.');}}
+  function removeSelected(){if(!editing||!window.confirm(`Delete ${name}?`))return;if(persist({...doc,pins:doc.pins.filter(p=>p.id!==editing),shapes:doc.shapes.filter(s=>s.id!==editing)})){clearSelection();setPanel('saved');setMessage('Saved item deleted.');}}
+  function exportData(){const blob=new Blob([JSON.stringify(exportMapData(doc),null,2)],{type:'application/geo+json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='BlindIQ-my-spots.geojson';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);setMessage('Backup exported. It contains precise saved locations; share it only with people you choose.');}
+  async function importData(file:File|undefined){if(!file)return;try{if(file.size>2*1024*1024)throw Error('Choose a GeoJSON file smaller than 2 MB.');const imported=importMapData(JSON.parse(await file.text()));const existing=currentDoc.current;if(existing.pins.length+imported.pins.length>200||existing.shapes.length+imported.shapes.length>100)throw Error('Import would exceed 200 spots or 100 drawings.');if(!window.confirm(`Add ${imported.pins.length} spots and ${imported.shapes.length} drawings? Your existing content will be kept.`))return;if(persist({version:2,pins:[...existing.pins,...imported.pins],shapes:[...existing.shapes,...imported.shapes]})){setMessage('Backup imported on this device.');setPanel('saved');}}catch(error){setMessage(error instanceof Error?error.message:'That file could not be imported.');}}
+  const filtered=useMemo(()=>doc.pins.filter(p=>(filter==='All'||p.kind===filter)&&`${p.name} ${p.notes||''}`.toLowerCase().includes(query.toLowerCase())),[doc.pins,query,filter]);
+  const filteredShapes=useMemo(()=>filter==='All'?doc.shapes.filter(s=>`${s.name} ${s.notes||''}`.toLowerCase().includes(query.toLowerCase())):[],[doc.shapes,query,filter]);
+  function search(){const p=parseCoordinates(query);if(p){setTool('browse');pickPoint(p);map.current?.flyTo({center:p,zoom:15});}else{setPanel('saved');setMessage(filtered.length+filteredShapes.length?`${filtered.length+filteredShapes.length} matching saved items.`:'No matching saved spots. Enter latitude, longitude to find a coordinate.');}}
+  return <section className="scout-map" aria-label="Maps & property lines">
+    <div className="scout-canvas" ref={container} aria-label="Interactive hunting map" />
+    <header className="scout-head"><div className="scout-title"><div><span>BLINDIQ FIELD TOOLS</span><h1>Field map</h1></div><span className="scout-live">{base==='topo'?'TOPO':'AERIAL'} · {online?'ONLINE':'OFFLINE'}</span></div><form className="scout-search" onSubmit={e=>{e.preventDefault();search();}}><label className="sr-only" htmlFor="map-search">Find saved spots or coordinates</label><input id="map-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Your spots or lat, lon" autoCapitalize="none" autoCorrect="off" enterKeyHint="search" /><button aria-label="Search map" type="submit">⌕</button></form></header>
+    <div className="scout-rail" aria-label="Map navigation"><button onClick={locate} aria-label="Use my location" title="Use my location">⌖</button><button onClick={()=>map.current?.zoomIn()} aria-label="Zoom in">+</button><button onClick={()=>map.current?.zoomOut()} aria-label="Zoom out">−</button><button onClick={()=>map.current?.easeTo({bearing:0,pitch:0})} aria-label="Face north">N<span>↑</span></button></div>
+    {(mapError||loadError) && <div className="scout-warning" role="status">{mapError||loadError}</div>}
+    {message&&<div className={`scout-message ${panel!=='none'?'with-panel':''}`} role="status">{message}</div>}
+    {tool==='pin'&&panel==='none'&&<div className="scout-hint">Tap your spot on the map <button onClick={clearSelection}>Cancel</button></div>}
+    {panel!=='none'&&<aside className={`scout-sheet ${collapsed ? "collapsed" : ""}`} aria-label="Map tools panel"><div className="scout-sheet-handle"/><div className="scout-sheet-heading"><div><span>YOUR GROUND. YOUR NOTES.</span><h2>{panel==='spot'?(editing?'Saved spot':'Drop a pin'):panel==='saved'?'My spots':panel==='layers'?'Map layers':panel==='draw'?(tool==='area'?'Measure an area':'Measure a line'):'Backups & availability'}</h2></div><button className="scout-collapse" aria-label={collapsed ? "Expand map panel" : "Collapse map panel"} aria-expanded={!collapsed} onClick={()=>setCollapsed(v=>!v)}>{collapsed ? "↑" : "↓"}</button><button className="scout-close" aria-label="Close map panel" onClick={clearSelection}>×</button></div>
+      <div hidden={collapsed}>
+      {panel==='spot'&&point&&<><p className="scout-coordinate">{point[1].toFixed(5)}, {point[0].toFixed(5)}</p><form onSubmit={e=>{e.preventDefault();savePin();}}><label>Pin name<input value={name} onChange={e=>setName(e.target.value)} required maxLength={80} placeholder="Creek stand" /></label><label>Type<select value={kind} onChange={e=>setKind(e.target.value)}>{pinKinds.map(k=><option key={k}>{k}</option>)}</select></label><label>Field notes<textarea maxLength={1000} rows={2} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Wind, access, cover…" /></label><button className="scout-primary" disabled={!name.trim()}>Save pin</button></form>{editing&&<><button className="scout-move" onClick={()=>{movingId.current=editing;setPanel('none');setTool('pin');setMessage('Tap a new position. Your saved pin stays unchanged until you save.');}}>Move saved spot</button><button className="scout-delete" onClick={removeSelected}>Delete saved spot</button></>}</>}
+      {panel==='saved'&&<><label className="sr-only" htmlFor="spot-filter">Spot type</label><select id="spot-filter" value={filter} onChange={e=>setFilter(e.target.value)}>{['All',...pinKinds].map(k=><option key={k}>{k}</option>)}</select><div className="scout-saved-list">{filtered.map(pin=><button key={pin.id} onClick={()=>openSpot(pin)}><PinSymbol kind={pin.kind}/><span><strong>{pin.name}</strong><small>{pin.kind} · {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}</small></span><b>↗</b></button>)}{!filtered.length&&<p>No matching spots. Drop your first pin or search a different name.</p>}{filteredShapes.map(shape=><button key={shape.id} onClick={()=>openShape(shape)}><span className="scout-kind">{shape.type==='area'?'▱':'⌁'}</span><span><strong>{shape.name}</strong><small>{shape.type==='area'?formatArea(areaSqMeters(shape.coordinates)):formatDistance(distanceMeters(shape.coordinates))} · planning estimate</small></span><b>↗</b></button>)}</div><p className="scout-small">{doc.pins.length} spots · {doc.shapes.length} drawings · saved in this browser for this account</p></>}
+      {panel==='layers'&&<><p className="scout-small">Choose your view</p><div className="scout-basemaps">{Object.entries(basemaps).map(([id,b])=><button aria-pressed={base===id} key={id} onClick={()=>setBase(id as 'topo'|'aerial')}><span className={`scout-swatch ${id}`}/><strong>{b.name}</strong><small>{b.credit}</small></button>)}</div><label className="scout-toggle"><span>My saved spots</span><input type="checkbox" checked={showSpots} onChange={e=>setShowSpots(e.target.checked)}/></label><label className="scout-toggle"><span>My lines & areas</span><input type="checkbox" checked={showDrawings} onChange={e=>setShowDrawings(e.target.checked)}/></label><div className="scout-unavailable"><span>NOT CONNECTED</span><h3>Property lines & ownership</h3><p>Regrid parcels and verified hunting-access layers need a licensed, checked data connection. Terrain lines and your drawings are not parcel boundaries or hunting permission.</p></div><p className="scout-small">USGS online basemaps. Aerial imagery dates and resolution vary by location; it is not live imagery. Maps send requests for the viewed area to USGS.</p><a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer" target="_blank" rel="noreferrer">USGS imagery source & dates ↗</a></>}
+      {panel==='draw'&&<><p className="scout-small">Tap the map to add points. {tool==='area'?'At least three points make an area.':'At least two points make a line.'} This is a straight-line planning tool, not a navigable route.</p><div className="scout-measure"><strong>{tool==='area'?formatArea(areaSqMeters(vertices)):formatDistance(distanceMeters(vertices))}</strong><span>{vertices.length} points · approximate</span></div><div className="scout-draw-actions"><button disabled={!vertices.length} onClick={()=>setVertices(v=>v.slice(0,-1))}>Undo point</button><button disabled={!vertices.length} onClick={()=>setVertices([])}>Clear points</button></div><form onSubmit={e=>{e.preventDefault();saveDrawing();}}><label>Drawing name<input required maxLength={80} value={name} onChange={e=>setName(e.target.value)} placeholder={tool==='area'?'Food plot':'Access walk'}/></label><label>Field notes<textarea maxLength={1000} rows={2} value={notes} onChange={e=>setNotes(e.target.value)}/></label><button className="scout-primary" disabled={vertices.length<(tool==='area'?3:2)||!name.trim()}>Save drawing</button></form>{editing&&<button className="scout-delete" onClick={removeSelected}>Delete drawing</button>}<p className="scout-small">Measurements use a spherical Earth approximation. No terrain distance, elevation or survey accuracy is implied.</p></>}
+      {panel==='transfer'&&<><p>Keep a copy of your hunting spots and drawings.</p><button className="scout-primary" onClick={exportData}>Export GeoJSON backup</button><label className="scout-import">Import GeoJSON<input type="file" accept=".geojson,.json,application/geo+json,application/json" onChange={e=>{void importData(e.target.files?.[0]);e.target.value='';}}/></label><p className="scout-small">Import adds to your content; it does not replace it. Points, lines and simple areas only. No GPX import or cloud sync yet.</p><div className="scout-unavailable"><span>ONLINE MAPS ONLY</span><h3>Offline areas</h3><p>Map downloads are not enabled. Saved content stays in this browser, but basemaps need a connection. Export before clearing browser data or changing devices.</p></div><p className="scout-small">Location permission is requested only when you tap Locate. There is no background track recorder in this release.</p></>}
+    </div></aside>}
+    <nav className="scout-toolbar" aria-label="Field map tools"><button aria-pressed={tool==='pin'} onClick={()=>startTool('pin')}><span aria-hidden="true">＋</span>Pin</button><button aria-pressed={panel==='saved'} onClick={()=>{setPanel('saved');setTool('browse');setPoint(null);setVertices([]);setEditing('');}}><span aria-hidden="true">⚑</span>My spots <small>{doc.pins.length}</small></button><button aria-pressed={panel==='layers'} onClick={()=>{clearSelection();setPanel('layers');}}><span aria-hidden="true">▱</span>Layers</button><button aria-pressed={tool==='line'} onClick={()=>startTool('line')}><span aria-hidden="true">⌁</span>Line</button><button aria-pressed={tool==='area'} onClick={()=>startTool('area')}><span aria-hidden="true">⬡</span>Area</button><button aria-pressed={panel==='transfer'} onClick={()=>{clearSelection();setPanel('transfer');}}><span aria-hidden="true">⇅</span>Backup</button></nav>
+  </section>;
 }
