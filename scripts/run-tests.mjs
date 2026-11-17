@@ -8,16 +8,16 @@ try {
   const compile = spawnSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'),
     '--module', 'commonjs', '--moduleResolution', 'node', '--target', 'ES2022',
     '--skipLibCheck', '--strict', '--outDir', output,
-    'src/data.ts', 'src/harvestLimits.ts', 'src/seasonStatus.ts', 'src/categorySpecies.ts', 'src/sessionEntries.ts', 'src/gameCatalog.ts', 'src/huntingLocations.ts'], { stdio: 'inherit' });
+    'src/fieldWeather.ts', 'src/data.ts', 'src/harvestLimits.ts', 'src/seasonStatus.ts', 'src/categorySpecies.ts', 'src/sessionEntries.ts', 'src/gameCatalog.ts', 'src/huntingLocations.ts'], { stdio: 'inherit' });
   if (compile.status !== 0) process.exitCode = compile.status ?? 1;
   else {
     writeFileSync(join(output, 'package.json'), '{"type":"commonjs"}');
-    const run = spawnSync(process.execPath, ['--test', 'tests/regulations.test.cjs', 'tests/species.test.cjs'], {
+    const run = spawnSync(process.execPath, ['--test', 'tests/field-weather.test.cjs', 'tests/regulations.test.cjs', 'tests/species.test.cjs'], {
       stdio: 'inherit', env: { ...process.env, BLINDIQ_TEST_OUTPUT: output },
     });
     process.exitCode = run.status ?? 1;
     if (run.status === 0) {
-      const forecast = spawnSync(process.execPath, ['--test', 'tests/forecasting/pipeline.test.mjs', 'tests/forecasting/database.test.mjs'], { stdio: 'inherit' });
+      const forecast = spawnSync(process.execPath, ['--test', 'tests/hunt-delete-database.test.mjs', 'tests/forecasting/pipeline.test.mjs', 'tests/forecasting/database.test.mjs'], { stdio: 'inherit' });
       process.exitCode = forecast.status ?? 1;
     }
   }
