@@ -4,6 +4,7 @@ import { migrationStatus, previewMigrationData, type MigrationData, type Migrati
 import type { HarvestEntry, HuntCategoryId, HuntRecord, NewHuntRecord } from "./types";
 
 const REMEMBERED_DEVICE_KEY = "blindiq-remembered-device";
+const EXPLICIT_LOGOUT_KEY = "blindiq-explicit-logout-v1";
 const ACTIVE_TAB_KEY = "blindiq-active-tab";
 const DEMO_HUNTS_KEY = "blindiq-demo-hunts-v1";
 const OFFLINE_USER_KEY = "blindiq-offline-user-v1";
@@ -161,6 +162,8 @@ function activeTabUserId() {
 }
 
 export function rememberDevice(userId: string, shouldRemember: boolean) {
+  try { localStorage.removeItem(EXPLICIT_LOGOUT_KEY); } catch {}
+  try { sessionStorage.removeItem(EXPLICIT_LOGOUT_KEY); } catch {}
   markActiveTab(userId);
   try {
     if (shouldRemember) {
@@ -286,6 +289,8 @@ export async function getCurrentUser() {
 }
 
 export async function restoreRememberedUser() {
+  try { if (localStorage.getItem(EXPLICIT_LOGOUT_KEY)) return null; } catch {}
+  try { if (sessionStorage.getItem(EXPLICIT_LOGOUT_KEY)) return null; } catch {}
   const { device, expired } = readRememberedDevice();
   const tabUserId = activeTabUserId();
 
@@ -376,15 +381,39 @@ export async function restoreRememberedUser() {
   return user;
 }
 
+function clearPersistedAuth() {
+  if (!appConfig.supabaseUrl) return;
+  // Matches this configured client's default storage key in SupabaseClient.
+  const key = `sb-${new URL(appConfig.supabaseUrl).hostname.split(".")[0]}-auth-token`;
+  for (const storage of [() => localStorage, () => sessionStorage]) {
+    try {
+      const target = storage();
+      const keys = Array.from({length: target.length}, (_, index) => target.key(index));
+      for (const name of keys) if (name === key || name?.startsWith(key + "-")) target.removeItem(name);
+    } catch { /* Browser storage may be unavailable. */ }
+  }
+}
+
+export function forceLocalSignOut() {
+  try { localStorage.setItem(EXPLICIT_LOGOUT_KEY, "true"); } catch {}
+  try { sessionStorage.setItem(EXPLICIT_LOGOUT_KEY, "true"); } catch {}
+  forgetRememberedDevice();
+  clearOfflineAccountCache();
+  clearPersistedAuth();
+}
+
 export async function signOut() {
+  // Persist the user's explicit intent before any SDK/network wait. A reload
+  // must stay signed out even if the local Supabase sign-out cannot finish.
+  try { localStorage.setItem(EXPLICIT_LOGOUT_KEY, "true"); } catch {}
+  try { sessionStorage.setItem(EXPLICIT_LOGOUT_KEY, "true"); } catch {}
   forgetRememberedDevice();
   clearOfflineAccountCache();
   if (supabase) {
     try {
-      await supabase.auth.signOut({ scope: "local" });
-    } catch {
-      // Local app data has already been cleared, including during offline logout.
-    }
+      const { error } = await supabase.auth.signOut({ scope: "local" });
+      if (error) throw error;
+    } finally { clearPersistedAuth(); }
   }
 }
 
