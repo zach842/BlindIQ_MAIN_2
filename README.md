@@ -45,6 +45,7 @@ Keep credentials in local environment files or hosting secret stores. The client
 - [Push activation](PUSH_NOTIFICATIONS_SETUP.md) and [calendar review workflow](notifications/REVIEW_WORKFLOW.md)
 - [Deer/turkey forecasting foundation](docs/DEER_TURKEY_FORECASTING.md)
 - [Regulation review report](docs/REGULATION_VERIFICATION_2026-2027.md) and [source audit](docs/regulation-audit-2026-2027.json)
+- [Field map workspace](docs/RELEASE_v1.67.0.md)
 - [v1.66 release details](docs/RELEASE_v1.66.0.md)
 
-Maps currently use USGS topography and browser-local pins. Regrid parcels and cloud pin sync are not connected. Deer/turkey panels provide pilot-point weather and regional research, not validated animal activity scores. The notification backend and scheduler are deployed; each device must grant permission and pass Send test. Nationwide calendar verification remains incomplete. Repository cleanup does not activate or change hosted services.
+Maps provide USGS topo/aerial views, browser-local spots, line/area planning tools and GeoJSON backups. Regrid parcels and cloud pin sync are not connected. Deer/turkey panels provide pilot-point weather and regional research, not validated animal activity scores. The notification backend and scheduler are deployed; each device must grant permission and pass Send test. Nationwide calendar verification remains incomplete. Repository cleanup does not activate or change hosted services.

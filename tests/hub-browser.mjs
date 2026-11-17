@@ -32,7 +32,7 @@ await page.getByRole('button',{name:'New session',exact:true}).waitFor();
 const records=await page.evaluate(()=>JSON.parse(localStorage.getItem('blindiq-demo-hunts-v1')));
 if(records[0].entries.length!==2 || records[0].entries.reduce((sum,e)=>sum+e.count,0)!==1) throw Error('Save mismatch');
 await page.getByRole('button',{name:'Maps',exact:true}).click();
-await page.getByRole('heading',{name:'Maps & property lines'}).waitFor();
+await page.getByRole('heading',{name:'Field map'}).waitFor();
 await page.getByRole('button',{name:/Movement Forecast/}).click();
 await page.getByRole('button',{name:'Deer movement',exact:true}).click();
 await page.getByRole('heading',{name:'Maryland whitetail reference'}).waitFor();
