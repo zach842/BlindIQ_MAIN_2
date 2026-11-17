@@ -8,13 +8,13 @@ try {
   const compile = spawnSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'),
     '--module', 'commonjs', '--moduleResolution', 'node', '--target', 'ES2022',
     '--skipLibCheck', '--strict', '--outDir', output,
-    'src/fieldWeather.ts', 'src/data.ts', 'src/harvestLimits.ts', 'src/seasonStatus.ts', 'src/categorySpecies.ts', 'src/sessionEntries.ts', 'src/gameCatalog.ts', 'src/huntingLocations.ts'], { stdio: 'inherit' });
+    'src/logout.ts', 'src/fieldWeather.ts', 'src/data.ts', 'src/harvestLimits.ts', 'src/seasonStatus.ts', 'src/categorySpecies.ts', 'src/sessionEntries.ts', 'src/gameCatalog.ts', 'src/huntingLocations.ts'], { stdio: 'inherit' });
   if (compile.status !== 0) process.exitCode = compile.status ?? 1;
   else {
     writeFileSync(join(output, 'package.json'), '{"type":"commonjs"}');
     const policy = spawnSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'),'--module','commonjs','--target','ES2022','--skipLibCheck','--strict','--outDir',output,'supabase/functions/_shared/notification-policy.ts'], {stdio:'inherit'});
     if(policy.status !== 0) throw new Error('Notification policy compilation failed');
-    const run = spawnSync(process.execPath, ['--test', 'tests/notification-policy.test.cjs', 'tests/field-weather.test.cjs', 'tests/regulations.test.cjs', 'tests/species.test.cjs'], {
+    const run = spawnSync(process.execPath, ['--test', 'tests/logout.test.cjs', 'tests/notification-policy.test.cjs', 'tests/field-weather.test.cjs', 'tests/regulations.test.cjs', 'tests/species.test.cjs'], {
       stdio: 'inherit', env: { ...process.env, BLINDIQ_TEST_OUTPUT: output },
     });
     process.exitCode = run.status ?? 1;

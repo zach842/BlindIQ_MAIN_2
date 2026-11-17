@@ -192,7 +192,8 @@ function deviceLabel() {
 
 async function currentBrowserSubscription() {
   if (!("serviceWorker" in navigator)) return null;
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration || !("pushManager" in registration)) return null;
   return await registration.pushManager.getSubscription();
 }
 
@@ -246,10 +247,12 @@ export async function disablePushNotifications(preferences: NotificationPreferen
 export async function detachCurrentPushDevice() {
   const subscription = await currentBrowserSubscription();
   if (!subscription) return;
-  // Remove the account-to-device link while the current user is still signed
-  // in. The browser subscription itself stays available so another BlindIQ
-  // account on the same device can opt in without an endpoint collision.
-  if (supabase) await supabase.from("push_subscriptions").delete().eq("endpoint", subscription.endpoint);
+  // Unsubscribe even if the server link cannot be removed, so this browser
+  // stops receiving the signed-out account's pushes.
+  await Promise.allSettled([
+    supabase ? supabase.from("push_subscriptions").delete().eq("endpoint", subscription.endpoint) : Promise.resolve(),
+    subscription.unsubscribe(),
+  ]);
 }
 
 export async function syncCurrentPushDevice() {
