@@ -1,14 +1,10 @@
-# BlindIQ v1.65.2 — hunting-first landing page
+# BlindIQ v1.66.0 — nationwide notification foundation
 
-The landing page now introduces the state/category/Saw/Harvested flow with a labeled example, clear login/signup actions and accurate feature availability.
+Includes the previous landing, login, hunt deletion, maps and forecast features. New: all-50-state alert selection, nationwide scope, optional inactivity nudges, reviewed-zone time-aware season generation and retryable delivery.
 
-This full package retains v1.65.0 maps, pins and forecast pilots, plus the existing logger.
+**Scheduled push is not active.** The connected project has no notification tables/functions yet. Follow [PUSH_NOTIFICATIONS_SETUP.md](PUSH_NOTIFICATIONS_SETUP.md) for SQL, functions, private keys/public key, a closed-app test, then scheduler activation. Uploading files to GitHub alone cannot activate push.
 
-**Cloud hunt deletion needs a one-time database update:** open the existing project in Supabase → SQL Editor and run `supabase/HUNT_DELETE_SETUP.sql` once. This grants owner-only deletion; it does not delete any hunts. Uploading files to GitHub does not apply SQL. Demo deletion works without a database.
-
-Login now puts the form first, includes Show/Hide password, and uses mobile-safe input sizing while preserving pinch zoom. Hunt Logbook has a Delete button on each saved hunt with confirmation. Cloud deletion requires a connection. Unsynced offline hunts must sync before deletion.
-
-See `docs/RELEASE_v1.65.2.md` and screenshots in `preview/`.
+**No complete nationwide verified calendar is bundled.** All legacy seed rows remain unverified. See notifications/coverage-readiness.json and notifications/REVIEW_WORKFLOW.md. Season alerts fail closed until official dates, zones, eligibility, sources and time zones are reviewed. Regulation notices need reviewed publication.
 
 ## Preview
 
@@ -27,7 +23,7 @@ Regrid parcel boundaries, owner lookup, verified public hunting access layers, s
 
 ## Upload to GitHub
 
-Extract the ZIP. Open `BlindIQ_MAIN_2-v1.65.2`. Upload its CONTENTS into the existing repository root, not the ZIP or the outer folder. Include src, public, scripts, package.json and pnpm-lock.yaml together. Wait for all files to upload, then commit once. This prevents partial commits with mixed app versions. Wait for Vercel READY and verify BlindIQ v1.65.2 appears.
+Extract the ZIP. Open `BlindIQ_MAIN_2-v1.66.0`. Upload its CONTENTS into the existing repository root, not the ZIP or the outer folder. Include src, public, scripts, package.json and pnpm-lock.yaml together. Wait for all files to upload, then commit once. This prevents partial commits with mixed app versions. Wait for Vercel READY and verify BlindIQ v1.66.0 appears.
 
 No new environment variables or paid services are required. Apply the deletion SQL above for cloud hunt deletion. Existing production Supabase settings continue to apply to the original app. Do not upload credentials.
 

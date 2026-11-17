@@ -12,6 +12,11 @@ export type NotificationPreferences = {
   huntReminders: boolean;
   membershipAlerts: boolean;
   huntMilestones: boolean;
+  nationwideAlerts: boolean;
+  loggingNudges: boolean;
+  notificationTimezone: string;
+  nudgeEveryDays: number;
+  nudgeHour: number;
   followedStates: string[];
   followedFlyways: string[];
   migrationThreshold: number;
@@ -72,6 +77,11 @@ function defaults(userId: string, defaultState = "MD"): NotificationPreferences 
     huntReminders: true,
     membershipAlerts: true,
     huntMilestones: true,
+    nationwideAlerts: true,
+    loggingNudges: false,
+    notificationTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York",
+    nudgeEveryDays: 7,
+    nudgeHour: 18,
     followedStates: [defaultState],
     followedFlyways: ["Atlantic", "Mississippi", "Central", "Pacific"],
     migrationThreshold: 65,
@@ -110,6 +120,11 @@ function rowToPreferences(row: Record<string, unknown>): NotificationPreferences
     huntReminders: Boolean(row.hunt_reminders),
     membershipAlerts: Boolean(row.membership_alerts),
     huntMilestones: Boolean(row.hunt_milestones),
+    nationwideAlerts: Boolean(row.nationwide_alerts),
+    loggingNudges: Boolean(row.logging_nudges),
+    notificationTimezone: String(row.notification_timezone || "America/New_York"),
+    nudgeEveryDays: Number(row.nudge_every_days) || 7,
+    nudgeHour: Number(row.nudge_hour) || 18,
     followedStates: Array.isArray(row.followed_states) ? row.followed_states.filter((value): value is string => typeof value === "string") : [],
     followedFlyways: Array.isArray(row.followed_flyways) ? row.followed_flyways.filter((value): value is string => typeof value === "string") : [],
     migrationThreshold: Number(row.migration_threshold) || 65,
@@ -126,6 +141,11 @@ function preferencesToRow(preferences: NotificationPreferences) {
     hunt_reminders: preferences.huntReminders,
     membership_alerts: preferences.membershipAlerts,
     hunt_milestones: preferences.huntMilestones,
+    nationwide_alerts: preferences.nationwideAlerts,
+    logging_nudges: preferences.loggingNudges,
+    notification_timezone: preferences.notificationTimezone,
+    nudge_every_days: preferences.nudgeEveryDays,
+    nudge_hour: preferences.nudgeHour,
     followed_states: preferences.followedStates,
     followed_flyways: preferences.followedFlyways,
     migration_threshold: preferences.migrationThreshold,
@@ -147,6 +167,7 @@ export async function ensureNotificationPreferences(defaultState = "MD") {
 }
 
 export async function saveNotificationPreferences(preferences: NotificationPreferences) {
+  try { new Intl.DateTimeFormat("en-US",{timeZone:preferences.notificationTimezone}).format(); } catch { throw new Error("Enter a valid time zone, such as America/New_York or America/Denver."); }
   if (!supabase) {
     localStorage.setItem(DEMO_PREFERENCES_KEY, JSON.stringify(preferences));
     return preferences;
@@ -296,4 +317,11 @@ export async function sendTestNotification() {
   const { data, error } = await supabase.functions.invoke("notification-test", { method: "POST" });
   if (error) throw error;
   if (!data?.sent) throw new Error(data?.error || "The test alert could not be delivered.");
+}
+
+export async function notificationCalendarCoverage(): Promise<string[]> {
+  if (!supabase) return [];
+  const {data,error} = await supabase.from("notification_season_periods").select("state_code").eq("verification_status","verified").eq("data_status","current").eq("active",true).gte("verified_at",new Date(Date.now()-90*86400000).toISOString()).gte("end_date",new Date().toISOString().slice(0,10));
+  if (error) throw new Error("Verified notification calendar is unavailable. Apply the notification database setup before relying on alerts.");
+  return [...new Set((data || []).map(row=>String(row.state_code)))].sort();
 }

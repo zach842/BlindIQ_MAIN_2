@@ -1,8 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import { sendWebPush, webPushErrorMessage, webPushStatusCode } from "../_shared/webpush.ts";
 
+import { seasonNotices, nudgeDue, localParts, stateAudienceMatches } from "../_shared/notification-policy.ts";
+
 type EventRow = {
   id: string;
+  event_key: string;
   event_type: string;
   audience_kind: "all" | "state" | "flyway" | "user";
   target_value: string | null;
@@ -23,6 +26,11 @@ type PreferenceRow = {
   hunt_reminders: boolean;
   membership_alerts: boolean;
   hunt_milestones: boolean;
+  nationwide_alerts: boolean;
+  logging_nudges: boolean;
+  notification_timezone: string;
+  nudge_every_days: number;
+  nudge_hour: number;
   followed_states: string[];
   followed_flyways: string[];
   migration_threshold: number;
@@ -61,42 +69,53 @@ function categoryEnabled(eventType: string, preference: PreferenceRow) {
   if (eventType.startsWith("season_")) return preference.season_alerts;
   if (eventType === "regulation_update") return preference.regulation_alerts;
   if (eventType === "migration_threshold") return preference.migration_alerts;
+  if (eventType === "logging_nudge") return preference.logging_nudges;
   if (eventType === "hunt_reminder") return preference.hunt_reminders;
   if (eventType === "membership_trial") return preference.membership_alerts;
   if (eventType === "hunt_milestone") return preference.hunt_milestones;
   return true;
 }
 
+async function checked(query: PromiseLike<{error: unknown}>) { const result=await query; if(result.error) throw result.error; }
+
 async function queueEvent(row: Record<string, unknown>) {
   const { error } = await admin.from("notification_events").upsert(row, { onConflict: "event_key", ignoreDuplicates: true });
   if (error) throw error;
 }
 
-async function generateSeasonEvents(today: string) {
-  const tomorrow = shiftDate(today, 1);
-  const yesterday = shiftDate(today, -1);
-  const { data, error } = await admin
-    .from("notification_season_periods")
-    .select("id,state_code,state_name,season_name,category,zone,start_date,end_date,data_status,source_url")
-    .eq("active", true)
-    .or(`start_date.eq.${today},start_date.eq.${tomorrow},end_date.eq.${today},end_date.eq.${yesterday}`);
-  if (error) throw error;
+async function generateSeasonEvents() {
+  // Fetch all reviewed periods: the local calendar day belongs to the hunting zone,
+  // not to the hunter's home state or the scheduler's Eastern clock.
+  let offset = 0;
+  const now = new Date();
+  while (true) {
+    const {data,error} = await admin.from("notification_season_periods")
+      .select("id,state_code,state_name,season_name,category,zone,start_date,end_date,data_status,source_url,verification_status,verified_at,time_zone,conditions")
+      .eq("active",true).eq("verification_status","verified").eq("data_status","current")
+      .gte("end_date",new Date(now.getTime()-2*86400000).toISOString().slice(0,10))
+      .order("id").range(offset,offset+499);
+    if(error) throw error;
+    for(const period of data || []) for(const event of seasonNotices(period,now)) await queueEvent(event);
+    if(!data || data.length<500) break;
+    offset += 500;
+  }
+}
 
-  for (const period of data ?? []) {
-    const provisional = period.data_status !== "current";
-    const qualifier = provisional ? " Published dates are provisional—verify the official source." : " Verify zone details and current official rules before hunting.";
-    if (period.start_date === tomorrow) {
-      await queueEvent({ event_key: `season-opens-tomorrow:${period.id}:${period.start_date}`, event_type: "season_open_tomorrow", audience_kind: "state", target_value: period.state_code, title: `${period.state_name} ${period.season_name} opens tomorrow`, body: `${period.zone}.${qualifier}`, url: `/?view=dashboard&state=${period.state_code}`, priority: "urgent", payload: { periodId: period.id, stateCode: period.state_code, sourceUrl: period.source_url, provisional } });
+async function generateLoggingNudges() {
+  let offset = 0;
+  const now = new Date();
+  while(true) {
+    const {data,error} = await admin.from("notification_preferences").select("user_id,logging_nudges,notification_timezone,nudge_every_days,nudge_hour,created_at").eq("enabled",true).eq("logging_nudges",true).order("user_id").range(offset,offset+199);
+    if(error) throw error;
+    for(const preference of data || []) {
+      const hunt = await admin.from("hunts").select("hunted_at").eq("user_id",preference.user_id).eq("is_simulation",false).order("hunted_at",{ascending:false}).limit(1).maybeSingle();
+      const last = await admin.from("notification_events").select("created_at").eq("target_user_id",preference.user_id).eq("event_type","logging_nudge").order("created_at",{ascending:false}).limit(1).maybeSingle();
+      if(hunt.error || last.error) throw hunt.error || last.error;
+      const key = nudgeDue({userId:preference.user_id,enabled:preference.logging_nudges,timezone:preference.notification_timezone,everyDays:preference.nudge_every_days,hour:preference.nudge_hour,joinedAt:preference.created_at,lastHuntAt:hunt.data?.hunted_at,lastNudgeAt:last.data?.created_at},now);
+      if(key) await queueEvent({event_key:key,event_type:"logging_nudge",audience_kind:"user",target_user_id:preference.user_id,title:"Did you forget to log a hunt?",body:"Been out lately? Save your sightings and harvest—even a zero-harvest hunt is worth logging.",url:"/?view=dashboard",priority:"normal",payload:{localDate:localParts(now,preference.notification_timezone)?.date,timeZone:preference.notification_timezone,nudgeHour:preference.nudge_hour}});
     }
-    if (period.start_date === today) {
-      await queueEvent({ event_key: `season-open:${period.id}:${period.start_date}`, event_type: "season_open", audience_kind: "state", target_value: period.state_code, title: `${period.season_name} is now open in ${period.state_name}`, body: `${period.zone}.${qualifier}`, url: `/?view=dashboard&state=${period.state_code}`, priority: "urgent", payload: { periodId: period.id, stateCode: period.state_code, sourceUrl: period.source_url, provisional } });
-    }
-    if (period.end_date === today) {
-      await queueEvent({ event_key: `season-last-day:${period.id}:${period.end_date}`, event_type: "season_closes_today", audience_kind: "state", target_value: period.state_code, title: `Last loaded day: ${period.season_name}`, body: `${period.zone} in ${period.state_name}.${qualifier}`, url: `/?view=dashboard&state=${period.state_code}`, priority: "urgent", payload: { periodId: period.id, stateCode: period.state_code, sourceUrl: period.source_url, provisional } });
-    }
-    if (period.end_date === yesterday) {
-      await queueEvent({ event_key: `season-closed:${period.id}:${period.end_date}`, event_type: "season_closed", audience_kind: "state", target_value: period.state_code, title: `${period.season_name} segment has closed`, body: `${period.zone} in ${period.state_name}. Check BlindIQ for later splits and verify official rules.`, url: `/?view=dashboard&state=${period.state_code}`, priority: "normal", payload: { periodId: period.id, stateCode: period.state_code, sourceUrl: period.source_url, provisional } });
-    }
+    if(!data || data.length<200) break;
+    offset += 200;
   }
 }
 
@@ -114,16 +133,16 @@ async function generateTrialEvents() {
 
 async function generateActiveHuntReminders() {
   const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await admin.from("active_hunts").select("id,user_id,state_name,zone").eq("status", "active").is("reminder_sent_at", null).lte("started_at", fourHoursAgo).limit(500);
+  const { data, error } = await admin.from("active_hunts").select("id,user_id,state_name,zone").eq("status", "active").is("reminder_sent_at", null).gte("started_at", new Date(Date.now()-24*3600000).toISOString()).lte("started_at", fourHoursAgo).limit(500);
   if (error) throw error;
   for (const hunt of data ?? []) {
     await queueEvent({ event_key: `unfinished-hunt:${hunt.id}`, event_type: "hunt_reminder", audience_kind: "user", target_user_id: hunt.user_id, title: "Finish and save today’s hunt", body: `${hunt.state_name} • ${hunt.zone}. Open BlindIQ to finish or discard the active field log.`, url: "/?view=dashboard", priority: "normal", payload: { activeHuntId: hunt.id } });
-    await admin.from("active_hunts").update({ reminder_sent_at: new Date().toISOString() }).eq("id", hunt.id);
+    await checked(admin.from("active_hunts").update({ reminder_sent_at: new Date().toISOString() }).eq("id", hunt.id));
   }
 }
 
 async function generateRegulationEvents() {
-  const { data, error } = await admin.from("regulation_releases").select("id,state_code,season_year,version,title,summary,source_url").eq("status", "published").not("published_at", "is", null).order("published_at", { ascending: false }).limit(100);
+  const { data, error } = await admin.from("regulation_releases").select("id,state_code,season_year,version,title,summary,source_url").eq("status", "published").gte("published_at",new Date(Date.now()-7*86400000).toISOString()).not("published_at", "is", null).order("published_at", { ascending: false }).limit(100);
   if (error) throw error;
   for (const release of data ?? []) {
     await queueEvent({ event_key: `regulation-release:${release.id}:${release.version}`, event_type: "regulation_update", audience_kind: "state", target_value: release.state_code, title: release.title, body: release.summary, url: `/?view=dashboard&state=${release.state_code}`, priority: "urgent", payload: { releaseId: release.id, stateCode: release.state_code, seasonYear: release.season_year, sourceUrl: release.source_url } });
@@ -166,7 +185,7 @@ async function generateHuntMilestones() {
 function audienceMatches(event: EventRow, preference: PreferenceRow) {
   if (!categoryEnabled(event.event_type, preference)) return false;
   if (event.audience_kind === "user") return preference.user_id === event.target_user_id;
-  if (event.audience_kind === "state") return preference.followed_states.includes(event.target_value || "");
+  if (event.audience_kind === "state") return stateAudienceMatches(preference.nationwide_alerts,preference.followed_states,event.target_value || "");
   if (event.audience_kind === "flyway") {
     if (!preference.followed_flyways.includes(event.target_value || "")) return false;
     if (event.event_type === "migration_threshold") {
@@ -179,10 +198,15 @@ function audienceMatches(event: EventRow, preference: PreferenceRow) {
 }
 
 async function deliverEvent(event: EventRow) {
-  let preferenceQuery = admin.from("notification_preferences").select("user_id,enabled,season_alerts,regulation_alerts,migration_alerts,hunt_reminders,membership_alerts,hunt_milestones,followed_states,followed_flyways,migration_threshold");
+  let preferenceQuery = admin.from("notification_preferences").select("user_id,enabled,season_alerts,regulation_alerts,migration_alerts,hunt_reminders,membership_alerts,hunt_milestones,nationwide_alerts,logging_nudges,notification_timezone,nudge_every_days,nudge_hour,followed_states,followed_flyways,migration_threshold");
   if (event.audience_kind === "user" && event.target_user_id) preferenceQuery = preferenceQuery.eq("user_id", event.target_user_id);
-  const { data: preferenceData, error: preferenceError } = await preferenceQuery;
-  if (preferenceError) throw preferenceError;
+  const preferenceData: PreferenceRow[] = [];
+  for(let offset=0;;offset+=500) {
+    const page = await preferenceQuery.order("user_id").range(offset,offset+499);
+    if(page.error) throw page.error;
+    preferenceData.push(...(page.data || []) as PreferenceRow[]);
+    if(!page.data || page.data.length<500) break;
+  }
   const recipients = ((preferenceData ?? []) as PreferenceRow[]).filter((preference) => audienceMatches(event, preference));
   if (!recipients.length) return { recipients: 0, sent: 0, failed: 0 };
   const inboxRows = recipients.map((preference) => ({ event_id: event.id, user_id: preference.user_id, event_type: event.event_type, title: event.title, body: event.body, url: event.url, priority: event.priority, payload: event.payload, expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() }));
@@ -190,35 +214,52 @@ async function deliverEvent(event: EventRow) {
   if (inboxError) throw inboxError;
   const pushRecipients = recipients.filter((preference) => preference.enabled).map((preference) => preference.user_id);
   if (!pushRecipients.length) return { recipients: recipients.length, sent: 0, failed: 0 };
-  const { data: devices, error: deviceError } = await admin.from("push_subscriptions").select("id,user_id,endpoint,p256dh,auth_key").in("user_id", pushRecipients).eq("enabled", true);
-  if (deviceError) throw deviceError;
+  const devices: {id:string;user_id:string;endpoint:string;p256dh:string;auth_key:string}[] = [];
+  for(let start=0;start<pushRecipients.length;start+=200) {
+    for(let offset=0;;offset+=500) {
+      const page=await admin.from("push_subscriptions").select("id,user_id,endpoint,p256dh,auth_key").in("user_id",pushRecipients.slice(start,start+200)).eq("enabled",true).order("id").range(offset,offset+499);
+      if(page.error) throw page.error;
+      devices.push(...(page.data || []));
+      if(!page.data || page.data.length<500) break;
+    }
+  }
   let sent = 0;
   let failed = 0;
+  let retryable = 0;
   for (const device of devices ?? []) {
-    const { data: existing } = await admin.from("notification_deliveries").select("status").eq("event_id", event.id).eq("subscription_id", device.id).maybeSingle();
-    if (existing?.status === "sent") continue;
+    const { data: existing, error: existingError } = await admin.from("notification_deliveries").select("status,attempt_count").eq("event_id", event.id).eq("subscription_id", device.id).maybeSingle();
+    if (existingError) throw existingError;
+    if (existing?.status === "sent" || existing?.status === "expired" || (existing?.attempt_count || 0) >= 5) continue;
+    const attempt = (existing?.attempt_count || 0) + 1;
     try {
       await sendWebPush(device, { title: event.title, body: event.body, url: event.url, tag: `blindiq-${event.event_type}-${event.id}`, eventType: event.event_type, priority: event.priority, data: event.payload });
       sent += 1;
-      await admin.from("notification_deliveries").upsert({ event_id: event.id, user_id: device.user_id, subscription_id: device.id, status: "sent", response_code: 201, error_message: null, attempted_at: new Date().toISOString(), delivered_at: new Date().toISOString() }, { onConflict: "event_id,subscription_id" });
+      await checked(admin.from("notification_deliveries").upsert({ event_id: event.id, user_id: device.user_id, subscription_id: device.id, status: "sent", attempt_count: attempt, response_code: 201, error_message: null, attempted_at: new Date().toISOString(), delivered_at: new Date().toISOString() }, { onConflict: "event_id,subscription_id" }));
     } catch (error) {
       failed += 1;
       const statusCode = webPushStatusCode(error);
       const expired = statusCode === 404 || statusCode === 410;
-      await admin.from("notification_deliveries").upsert({ event_id: event.id, user_id: device.user_id, subscription_id: device.id, status: expired ? "expired" : "failed", response_code: statusCode, error_message: webPushErrorMessage(error), attempted_at: new Date().toISOString() }, { onConflict: "event_id,subscription_id" });
+      await checked(admin.from("notification_deliveries").upsert({ event_id: event.id, user_id: device.user_id, subscription_id: device.id, status: expired ? "expired" : "failed", attempt_count: attempt, response_code: statusCode, error_message: webPushErrorMessage(error), attempted_at: new Date().toISOString() }, { onConflict: "event_id,subscription_id" }));
+      if (!expired && attempt < 5) retryable += 1;
       if (expired) await admin.from("push_subscriptions").update({ enabled: false, updated_at: new Date().toISOString() }).eq("id", device.id);
     }
   }
-  return { recipients: recipients.length, sent, failed };
+  return { recipients: recipients.length, sent, failed, retryable };
 }
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const expectedSecret = Deno.env.get("NOTIFICATION_CRON_SECRET");
   if (!expectedSecret || request.headers.get("x-cron-secret") !== expectedSecret) return new Response("Unauthorized", { status: 401 });
+  let options: {dry_run?: boolean} = {};
+  try { const body = await request.json(); options = body && typeof body === "object" ? body : {}; } catch { /* Scheduler may send an empty body. */ }
+  if(options.dry_run) {
+    const calendar=await admin.from("notification_season_periods").select("state_code,verification_status,data_status,verified_at,time_zone").eq("active",true);
+    return Response.json({dryRun:true,noNotificationsSent:true,calendarRows:calendar.data?.length || 0,calendarError:calendar.error?.message || null,pushConfigured:Boolean(Deno.env.get("WEB_PUSH_PUBLIC_KEY") && Deno.env.get("WEB_PUSH_PRIVATE_KEY")),reviewedStates:[...new Set((calendar.data || []).filter(row=>row.verification_status==="verified" && row.data_status==="current").map(row=>row.state_code))]});
+  }
   const today = easternDate();
   const failures: string[] = [];
-  for (const generate of [() => generateSeasonEvents(today), generateTrialEvents, generateActiveHuntReminders, generateRegulationEvents, generateMigrationEvents, generateHuntMilestones]) {
+  for (const generate of [generateSeasonEvents, generateTrialEvents, generateActiveHuntReminders, generateLoggingNudges, generateRegulationEvents, generateMigrationEvents, generateHuntMilestones]) {
     try { await generate(); } catch (error) { failures.push(webPushErrorMessage(error)); }
   }
 
@@ -230,7 +271,7 @@ Deno.serve(async (request) => {
     .eq("status", "processing")
     .lt("processing_started_at", staleProcessingCutoff);
 
-  const { data: events, error: eventError } = await admin.from("notification_events").select("id,event_type,audience_kind,target_value,target_user_id,title,body,url,priority,payload").eq("status", "pending").lte("deliver_at", new Date().toISOString()).order("deliver_at").limit(100);
+  const { data: events, error: eventError } = await admin.from("notification_events").select("id,event_key,event_type,audience_kind,target_value,target_user_id,title,body,url,priority,payload").eq("status", "pending").lte("deliver_at", new Date().toISOString()).order("deliver_at").limit(100);
   if (eventError) return Response.json({ error: eventError.message, failures }, { status: 500 });
   let sent = 0;
   let recipients = 0;
@@ -251,15 +292,34 @@ Deno.serve(async (request) => {
     if (!claimed) continue;
     eventsProcessed += 1;
     try {
+      if (event.event_type.startsWith("season_")) {
+        const period = await admin.from("notification_season_periods").select("*").eq("id",event.payload.periodId).maybeSingle();
+        if(period.error) throw period.error;
+        const notice = period.data?.active ? seasonNotices(period.data,new Date()).find(item=>item.event_key===event.event_key) : null;
+        if(!notice) { await admin.from("notification_events").update({status:"cancelled",processed_at:new Date().toISOString()}).eq("id",event.id); continue; }
+        Object.assign(event,notice);
+      }
+      if(event.event_type === "regulation_update") {
+        const release = await admin.from("regulation_releases").select("status,published_at,source_url,version").eq("id",event.payload.releaseId).maybeSingle();
+        if(release.error) throw release.error;
+        if(!release.data || release.data.status!=="published" || !release.data.source_url?.startsWith("https://") || Date.parse(release.data.published_at || '') < Date.now()-7*86400000 || event.event_key!==`regulation-release:${event.payload.releaseId}:${release.data.version}`) { await admin.from("notification_events").update({status:"cancelled",processed_at:new Date().toISOString()}).eq("id",event.id); continue; }
+      }
+      if (event.event_type.startsWith("season_") || event.event_type === "logging_nudge") {
+        const local = typeof event.payload.timeZone === "string" ? localParts(new Date(),event.payload.timeZone) : null;
+        if (!local || event.payload.localDate !== local.date || (event.event_type === "logging_nudge" && local.hour !== event.payload.nudgeHour)) {
+          await checked(admin.from("notification_events").update({status:"cancelled",processed_at:new Date().toISOString()}).eq("id",event.id));
+          continue;
+        }
+      }
       const result = await deliverEvent(event);
       sent += result.sent;
       recipients += result.recipients;
       deliveryFailures += result.failed;
-      await admin.from("notification_events").update({ status: "sent", processed_at: new Date().toISOString() }).eq("id", event.id);
+      await checked(admin.from("notification_events").update({ status: result.retryable ? "pending" : "sent", processing_started_at: null, processed_at: new Date().toISOString() }).eq("id", event.id));
     } catch (error) {
       failures.push(webPushErrorMessage(error));
-      await admin.from("notification_events").update({ status: "pending", processing_started_at: null }).eq("id", event.id);
+      await checked(admin.from("notification_events").update({ status: "pending", processing_started_at: null }).eq("id", event.id));
     }
   }
-  return Response.json({ date: today, eventsProcessed, recipients, pushesSent: sent, pushFailures: deliveryFailures, generatorOrProcessingFailures: failures }, { status: failures.length ? 207 : 200 });
+  return Response.json({ date: today, eventsProcessed, recipients, pushesSent: sent, pushFailures: deliveryFailures, generatorOrProcessingFailures: failures }, { status: failures.length || deliveryFailures ? 207 : 200 });
 });

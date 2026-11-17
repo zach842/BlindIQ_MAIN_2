@@ -1,3 +1,7 @@
+# Current package: BlindIQ v1.66.0
+
+Nationwide field-alert infrastructure and preferences. Push remains inactive pending server activation and calendar review. [Start here](START_HERE.md) · [Activation](PUSH_NOTIFICATIONS_SETUP.md) · [Release](docs/RELEASE_v1.66.0.md).
+
 # Current package: BlindIQ v1.65.2
 
 Hunting-first landing page, with the login and saved-hunt deletion fixes retained. [Start here](START_HERE.md) · [Release details](docs/RELEASE_v1.65.2.md).

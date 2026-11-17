@@ -1,5 +1,5 @@
-# v1.65.2 preview evidence
+# v1.66.0 preview
 
-landing-desktop.png and landing-mobile.png show the current landing page. Login/deletion previews are retained from v1.65.1; maps/weather previews are retained from v1.65.0.
+notifications.png shows saved demo settings. It is not evidence of OS push delivery. No live notifications were sent. Other screenshots are retained from their respective prior feature releases.
 
-Current validation: six landing viewport widths, signup/login routing, no persisted example hunt data, login/deletion browser regression, production build and 51 automated tests passed. No hosted deployment or SQL changes were performed. Read START_HERE.md for upload and cloud-deletion SQL setup.
+59 automated tests, notification preferences browser checks and installed-app upgrade/offline checks passed. Live server activation, all-state date verification and physical-device background receipt remain outstanding. See START_HERE.md and PUSH_NOTIFICATIONS_SETUP.md.

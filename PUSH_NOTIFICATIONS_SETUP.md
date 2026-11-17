@@ -1,146 +1,27 @@
-# BlindIQ field-alert setup
+# BlindIQ v1.66.0 — activate field alerts
 
-BlindIQ v1.52 includes a member notification center and installable website-app push alerts for:
+## Observed production status (November 17, 2026)
 
-- season openings, final loaded days, and segment closings;
-- published regulation updates;
-- Atlantic, Mississippi, Central, and Pacific Flyway movement thresholds;
-- unfinished online hunts;
-- seven-day trial expiration reminders; and
-- saved live hunts with four or more birds.
+The connected Supabase project has no notification tables and neither notification-process nor notification-test deployed. Therefore scheduled server pushes are NOT active. This package does not change hosted infrastructure or send messages.
 
-The front end is complete, but push delivery requires this one-time Supabase and Vercel setup. The private Web Push key and scheduler secret must never be placed in GitHub or a variable beginning with `VITE_`.
+## Activation order
 
-## Step 1 — Apply the notification database update
+1. Back up/review the existing project migration history. In the existing Supabase SQL editor, apply supabase/migrations/202608270001_web_push_notifications.sql if the tables are absent, then supabase/NOTIFICATION_NATIONWIDE_SETUP.sql. For a project where the old notification schema already exists, apply only the new upgrade SQL. It is idempotent. Keep existing user opt-ins: the upgrade does not automatically enable pushes, nationwide scope or logging nudges for existing accounts.
+2. Generate one VAPID key pair using the official web-push tooling. Store WEB_PUSH_PRIVATE_KEY, WEB_PUSH_PUBLIC_KEY, WEB_PUSH_SUBJECT (mailto:office@blindiq.app) and a random NOTIFICATION_CRON_SECRET as Supabase server secrets. Only the VAPID public key belongs in Vercel as VITE_WEB_PUSH_PUBLIC_KEY. Never put private keys, service-role credentials or the cron secret in GitHub/Vite/client code. Keep the same key pair for existing subscriptions; rotation requires re-subscription.
+3. Deploy the included notification-test and notification-process Edge Functions, plus their _shared imports. They require gateway verify_jwt=false as specified in supabase/config.toml; each performs its own authentication (signed-in user for test; private x-cron-secret for processor). Use the installed Supabase CLI's --help to confirm current deploy/project flags before running commands. CLI v3 differs from older setup snippets.
+4. Deploy the full app package through the existing manual GitHub flow, with the public VAPID key configured in Vercel. On an installed compatible device, explicitly choose Allow notifications and Send test. Do not enable the scheduler until a test push arrives with the app closed and opens the correct destination. On iPhone, use a supported iOS version and the installed Home Screen app; OS permission remains required.
+5. Store notification_project_url and notification_cron_secret in Supabase Vault, using the same server cron secret. Apply supabase/cron/notification_process_schedule.sql to enable the 15-minute server job. It operates independently of whether the app is open. Review net.http responses/function logs after each job; HTTP 207 includes partial failures and is not an all-clear.
+6. A signed x-cron-secret POST with JSON {"dry_run":true} to notification-process returns configuration/calendar metadata without generating events or sending pushes. It does not prove endpoint delivery, coverage completeness or VAPID key validity. Never paste the secret into a public URL.
+7. Follow notifications/REVIEW_WORKFLOW.md to publish calendar rows and regulation releases. The legacy seed dates remain UNVERIFIED and will not produce season pushes. All-50-state source review is still required; no complete nationwide legal calendar is bundled.
 
-1. Open the BlindIQ project in Supabase.
-2. Choose **SQL Editor → New query**.
-3. Open this file from the package:
+## Behavior
 
-   ```text
-   supabase/migrations/202608270001_web_push_notifications.sql
-   ```
+- New accounts default to nationwide scope, but OS/server push remains off until enabled. Existing accounts retain scope. The all-50-state picker and nationwide toggle do not depend on residence.
+- Season notices cover tomorrow, start date, final date and day after a segment ends using each reviewed hunting-zone time zone. Notices are calendar guidance, not a legal opening-time determination.
+- Optional inactivity nudges are OFF by default, wait for 7/14/30 days without a saved live hunt and at least the same cooldown since the previous queued nudge, and use a varied 15-minute slot inside a chosen local hour between 8 AM and 8 PM. Nudges do not imply the user actually hunted. No continuous location collection is used. They can be skipped after an outage and do not catch up at night.
+- Existing unfinished online waterfowl session reminders remain distinct from general inactivity nudges; old active sessions beyond 24 hours are excluded.
+- Temporary delivery failures retry on later job runs, with a maximum of five recorded attempts. 404/410 subscriptions are disabled. Successful devices are skipped on retry. Event claims and unique keys limit duplicates, but a crash between provider acceptance and database acknowledgement can still duplicate a push: delivery is not exactly-once, nor can provider acceptance prove a person saw it.
+- Season events expire when the hunting-zone calendar day changes; logging nudges expire when their selected local hour ends. Unsent late events are cancelled instead of sending stale wording. Regulation releases are manually published, not inferred from package uploads or scraped pages.
+- Nationwide scope may create many notifications, one per applicable verified zone event. Users can switch to selected states and turn individual categories off. This release does not implement a national digest, global quiet hours or a daily push cap. Load-test throughput before a broad rollout; processor fan-out is serial and bounded by Edge runtime limits.
 
-4. Copy the entire file into Supabase and choose **Run** once.
-
-This creates private device subscriptions, member preferences, the in-app notification center, delivery records, exact season-alert periods, regulation releases, and online active-hunt reminders. Row Level Security keeps each hunter's devices, preferences, active hunts, and notification inbox private.
-
-The included exact season calendar covers the current source-backed Maryland, Virginia, North Dakota, and South Dakota periods. The other loaded states still receive regulation, membership, hunt, and followed-flyway alerts; add their exact season segments to `notification_season_periods` only after dates are verified.
-
-## Step 2 — Generate the Web Push keys
-
-In Terminal, run:
-
-```bash
-npx web-push generate-vapid-keys --json
-```
-
-The result contains one **publicKey** and one **privateKey**. Keep the private key secret. These two values are a permanent pair; do not generate a different pair for Vercel and Supabase.
-
-## Step 3 — Add the server-only Supabase secrets
-
-In Terminal from the BlindIQ project folder:
-
-```bash
-npx supabase login
-npx supabase link --project-ref YOUR_PROJECT_REF
-npx supabase secrets set WEB_PUSH_PUBLIC_KEY="YOUR_PUBLIC_KEY"
-npx supabase secrets set WEB_PUSH_PRIVATE_KEY="YOUR_PRIVATE_KEY"
-npx supabase secrets set WEB_PUSH_SUBJECT="mailto:office@blindiq.app"
-npx supabase secrets set NOTIFICATION_CRON_SECRET="CREATE_A_LONG_RANDOM_SECRET"
-```
-
-The project reference is the text before `.supabase.co` in your Supabase Project URL. Make the cron secret a long random value and save it temporarily; the same value is added to Vault in Step 6.
-
-## Step 4 — Deploy the two notification functions
-
-Run:
-
-```bash
-npx supabase functions deploy notification-test --no-verify-jwt
-npx supabase functions deploy notification-process --no-verify-jwt
-```
-
-`notification-test` manually verifies the signed-in member before sending. `notification-process` accepts only the private `x-cron-secret` header. Turning off the gateway check does not make either function publicly usable without those checks.
-
-## Step 5 — Add the public key to Vercel
-
-1. Open Vercel and choose the BlindIQ project.
-2. Open **Settings → Environment Variables**.
-3. Create:
-
-   ```text
-   VITE_WEB_PUSH_PUBLIC_KEY
-   ```
-
-4. Paste only the VAPID **publicKey** from Step 2.
-5. Enable it for **Production** and **Preview**.
-6. Save and redeploy the latest BlindIQ deployment.
-
-Never put the private key or `NOTIFICATION_CRON_SECRET` in Vercel's `VITE_` variables.
-
-## Step 6 — Store scheduler settings in Supabase Vault
-
-Open **Supabase → SQL Editor → New query** and run this after replacing both placeholders:
-
-```sql
-select vault.create_secret(
-  'https://YOUR_PROJECT_REF.supabase.co',
-  'notification_project_url'
-);
-
-select vault.create_secret(
-  'THE_SAME_LONG_RANDOM_SECRET_FROM_STEP_3',
-  'notification_cron_secret'
-);
-```
-
-## Step 7 — Turn on the automatic schedule
-
-1. Open:
-
-   ```text
-   supabase/cron/notification_process_schedule.sql
-   ```
-
-2. Copy the whole file into a new Supabase SQL Editor query.
-3. Choose **Run** once.
-
-Supabase now checks due alerts every 15 minutes. Unique event keys prevent repeat sends when the scheduler checks the same season date, regulation release, hunt, or migration snapshot again.
-
-## Step 8 — Test on a real device
-
-1. Open the deployed HTTPS BlindIQ site and sign in with an active account.
-2. On iPhone or iPad, use **ADD TO HOME SCREEN**, close Safari, and reopen BlindIQ from the installed icon. Apple requires this for website-app push alerts.
-3. Open the bell beside the user bubble, or go to **Account → Field alerts**.
-4. Choose **Allow notifications** and approve the phone/browser prompt.
-5. Choose **Send test**.
-6. Lock the phone or close BlindIQ and confirm the alert arrives.
-7. Tap the alert and confirm BlindIQ opens its Notification Center.
-
-Android and desktop browsers can normally enable alerts directly. The in-app Notification Center remains useful even if a browser does not support push.
-
-## Publishing a regulation update
-
-When BlindIQ publishes a reviewed regulation package or material correction, add a release row. The scheduler creates the alert automatically:
-
-```sql
-insert into public.regulation_releases
-  (state_code, season_year, version, title, summary, source_url, status, published_at)
-values
-  ('MD', '2026–2027', '2026.09.01',
-   'New 2026–2027 Maryland regulations are available',
-   'BlindIQ updated the loaded dates and material restrictions. Review the changes and verify the official DNR source.',
-   'https://dnr.maryland.gov/', 'published', now());
-```
-
-Use a new `version` value for each material release. Do not publish an alert for an unverified rumor, forum post, or cosmetic copy change.
-
-## Ongoing safeguards
-
-- Only members who explicitly allow alerts receive device push messages.
-- Members can turn categories, states, flyways, or the entire device off at any time.
-- Season alerts come only from exact rows in `notification_season_periods` and identify provisional data.
-- Migration alerts fire only when a followed flyway crosses the hunter's chosen threshold; Migration Pulse remains a planning forecast, not a promise of birds.
-- Expired browser endpoints are disabled automatically.
-- Push notifications are an additional planning aid. Hunters must still verify current official regulations.
+No real subscriber or live hunt was contacted during local verification. Live activation and all-state calendar verification remain outstanding.
