@@ -9,14 +9,15 @@ import {
   markNotificationRead,
   saveNotificationPreferences,
   sendTestNotification,
+  notificationCalendarCoverage,
   type NotificationInboxItem,
   type NotificationPreferences,
 } from "./notifications";
-import type { StateData } from "./types";
+import { isDemoMode } from "./services";
+import { huntingLocations } from "./huntingLocations";
 
 type Props = {
   defaultState: string;
-  states: StateData[];
   onInstall: () => void;
   onNavigate: (url: string) => void;
   onUnreadChange: (count: number) => void;
@@ -35,15 +36,17 @@ function formatAlertDate(value: string) {
   return new Date(value).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
-export default function NotificationsPage({ defaultState, states, onInstall, onNavigate, onUnreadChange }: Props) {
+export default function NotificationsPage({ defaultState, onInstall, onNavigate, onUnreadChange }: Props) {
   const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
   const [inbox, setInbox] = useState<NotificationInboxItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [stateToAdd, setStateToAdd] = useState(defaultState);
+  const [coverage, setCoverage] = useState<string[]>([]);
+  const [coverageError, setCoverageError] = useState("");
   const capability = getPushCapability();
-  const sortedStates = useMemo(() => [...states].sort((a, b) => a.name.localeCompare(b.name)), [states]);
+  const sortedStates = useMemo(() => [...huntingLocations].sort((a, b) => a.name.localeCompare(b.name)), []);
   const unread = inbox.filter((item) => !item.readAt).length;
 
   async function reloadInbox() {
@@ -55,6 +58,7 @@ export default function NotificationsPage({ defaultState, states, onInstall, onN
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    void notificationCalendarCoverage().then(value => { if (!cancelled) setCoverage(value); }).catch(error => { if (!cancelled) setCoverageError(error.message); });
     Promise.all([ensureNotificationPreferences(defaultState), listNotificationInbox()])
       .then(([nextPreferences, items]) => {
         if (cancelled) return;
@@ -85,7 +89,7 @@ export default function NotificationsPage({ defaultState, states, onInstall, onN
     }
   }
 
-  function update(key: keyof NotificationPreferences, value: boolean | number | string[]) {
+  function update(key: keyof NotificationPreferences, value: boolean | number | string | string[]) {
     setPreferences((current) => current ? { ...current, [key]: value } : current);
   }
 
@@ -111,6 +115,8 @@ export default function NotificationsPage({ defaultState, states, onInstall, onN
     onNavigate(item.url);
   }
 
+  if (!loading && !preferences) return <div className="page notifications-page"><h1>Field alerts need setup</h1><p role="alert">{message || "Notification settings could not be loaded."}</p><p>Ask the app administrator to apply the notification database setup. No alerts have been enabled.</p><button className="button" onClick={() => window.location.reload()}>Try again</button></div>;
+
   if (loading || !preferences) {
     return <div className="page notifications-page"><div className="notifications-loading"><span /><p>Loading BlindIQ alerts…</p></div></div>;
   }
@@ -123,12 +129,13 @@ export default function NotificationsPage({ defaultState, states, onInstall, onN
         <p>Choose the useful updates you want. BlindIQ alerts are a planning aid—always verify official regulations before hunting.</p>
       </header>
 
+      {isDemoMode && <p className="inline-toast">Demo: preferences stay in this browser. No scheduled server push notifications are active.</p>}
       <section className={`push-status-card ${preferences.enabled ? "push-status-card--enabled" : ""}`}>
         <div className="push-status-card__icon">{preferences.enabled ? "✓" : "!"}</div>
         <div>
           <p className="eyebrow">DEVICE ALERTS</p>
-          <h2>{preferences.enabled ? "Alerts are on." : capability.iosNeedsHomeScreen ? "Add BlindIQ first." : "Turn on field alerts."}</h2>
-          <p>{preferences.enabled ? "This account is ready for push alerts on enabled devices." : capability.iosNeedsHomeScreen ? "Apple allows website push alerts after BlindIQ is added to your iPhone or iPad Home Screen." : "Get season, regulation, migration, hunt, and membership updates even when BlindIQ is closed."}</p>
+          <h2>{preferences.enabled ? "Push preference is on." : capability.iosNeedsHomeScreen ? "Add BlindIQ first." : "Turn on field alerts."}</h2>
+          <p>{preferences.enabled ? "Delivery requires an enabled device, browser permission and the active server scheduler. Use Send test to check delivery." : capability.iosNeedsHomeScreen ? "Apple allows website push alerts after BlindIQ is added to your iPhone or iPad Home Screen." : "Get season, regulation, migration, hunt, and membership updates even when BlindIQ is closed."}</p>
         </div>
         {capability.iosNeedsHomeScreen ? (
           <button className="button button--gold" type="button" onClick={onInstall}>Add to Home Screen</button>
@@ -149,26 +156,32 @@ export default function NotificationsPage({ defaultState, states, onInstall, onN
           <label><span><strong>Season openings & closings</strong><small>Tomorrow, opening day, final loaded day, and segment closing.</small></span><input type="checkbox" checked={preferences.seasonAlerts} onChange={(event) => update("seasonAlerts", event.target.checked)} /></label>
           <label><span><strong>Regulation updates</strong><small>New packages, corrected dates, and material rule changes.</small></span><input type="checkbox" checked={preferences.regulationAlerts} onChange={(event) => update("regulationAlerts", event.target.checked)} /></label>
           <label><span><strong>Migration Pulse</strong><small>Alerts when a followed flyway crosses your selected movement threshold.</small></span><input type="checkbox" checked={preferences.migrationAlerts} onChange={(event) => update("migrationAlerts", event.target.checked)} /></label>
+          <label><span><strong>Did you forget to log a hunt?</strong><small>Optional, varied-time nudges after inactivity. Off until you choose to enable them.</small></span><input type="checkbox" checked={preferences.loggingNudges} onChange={event => update("loggingNudges", event.target.checked)} /></label>
           <label><span><strong>Unfinished hunt reminder</strong><small>A reminder after an online field log remains active for four hours.</small></span><input type="checkbox" checked={preferences.huntReminders} onChange={(event) => update("huntReminders", event.target.checked)} /></label>
           <label><span><strong>Trial & membership</strong><small>Including the day before your seven-day trial ends.</small></span><input type="checkbox" checked={preferences.membershipAlerts} onChange={(event) => update("membershipAlerts", event.target.checked)} /></label>
           <label><span><strong>Saved-hunt milestones</strong><small>Personal confirmations for standout hunts in your field log.</small></span><input type="checkbox" checked={preferences.huntMilestones} onChange={(event) => update("huntMilestones", event.target.checked)} /></label>
         </div>
+        {preferences.loggingNudges && <div className="nudge-settings"><label>Minimum days between nudges<select value={preferences.nudgeEveryDays} onChange={event => update("nudgeEveryDays",Number(event.target.value))}>{[7,14,30].map(days=><option key={days} value={days}>{days} days</option>)}</select></label><label>Preferred hour<select value={preferences.nudgeHour} onChange={event => update("nudgeHour",Number(event.target.value))}>{Array.from({length:13},(_,i)=>i+8).map(hour=><option key={hour} value={hour}>{hour > 12 ? hour-12 : hour}:00 {hour >= 12 ? "PM" : "AM"}</option>)}</select></label><label>Time zone<input value={preferences.notificationTimezone} onChange={event => update("notificationTimezone",event.target.value)} /></label><p>Only after at least {preferences.nudgeEveryDays} days without a saved live hunt. Sent within the selected hour, in your chosen time zone.</p></div>}
       </section>
 
       <section className="notification-settings-card">
         <div className="notification-section-title"><div><p className="eyebrow">YOUR COVERAGE</p><h2>States & flyways</h2></div></div>
+        <label className="nationwide-choice"><input type="checkbox" checked={preferences.nationwideAlerts} onChange={event => update("nationwideAlerts",event.target.checked)} /><span><strong>Nationwide season & regulation alerts</strong><small>All 50 states, regardless of where you live. Each verified state/zone event can generate an alert.</small></span></label>
+        <p>{preferences.nationwideAlerts ? "Nationwide selected. Followed states below are kept for when you switch to selected-state alerts." : "Selected-state alerts. Add any states you hunt or follow."}</p>
         <div className="followed-state-picker"><select value={stateToAdd} onChange={(event) => setStateToAdd(event.target.value)}>{sortedStates.map((state) => <option value={state.code} key={state.code}>{state.name}</option>)}</select><button type="button" onClick={addState}>Add state</button></div>
-        <div className="followed-state-chips">{preferences.followedStates.map((code) => <button type="button" key={code} onClick={() => removeState(code)}>{states.find((state) => state.code === code)?.name || code}<span>×</span></button>)}</div>
+        <div className="followed-state-chips">{preferences.followedStates.map((code) => <button type="button" key={code} onClick={() => removeState(code)}>{huntingLocations.find((state) => state.code === code)?.name || code}<span>×</span></button>)}</div>
         <div className="flyway-choice">
           {(["Atlantic", "Mississippi", "Central", "Pacific"] as const).map((flyway) => <label key={flyway}><input type="checkbox" checked={preferences.followedFlyways.includes(flyway)} onChange={(event) => update("followedFlyways", event.target.checked ? [...preferences.followedFlyways, flyway] : preferences.followedFlyways.filter((item) => item !== flyway))} /><span>{flyway} Flyway</span></label>)}
         </div>
         <label className="threshold-choice">MIGRATION ALERT THRESHOLD<select value={preferences.migrationThreshold} onChange={(event) => update("migrationThreshold", Number(event.target.value))}><option value={45}>45/100 — Moving</option><option value={65}>65/100 — Strong push</option><option value={80}>80/100 — Peak movement</option></select></label>
       </section>
 
+      <section className="notification-settings-card"><h2>Verified calendar coverage</h2><p>{coverageError || `${coverage.length} states currently have future or current reviewed date rows available: ${coverage.length ? coverage.join(", ") : "none"}.`}</p><p>This is not complete state/species/zone coverage. Nationwide selection does not verify a calendar. Tentative, unreviewed and stale dates do not generate season alerts. Regulation alerts require a reviewed, published release.</p></section>
+
       <section className="notification-inbox-card">
         <div className="notification-section-title"><div><p className="eyebrow">NOTIFICATION CENTER</p><h2>Recent updates</h2></div>{unread > 0 && <button type="button" onClick={() => void run(async () => { await markAllNotificationsRead(); setInbox((current) => current.map((item) => ({ ...item, readAt: new Date().toISOString() }))); onUnreadChange(0); }, "All updates marked read.")}>Mark all read</button>}</div>
         {!inbox.length && <div className="notification-empty"><strong>No updates yet.</strong><p>Season, regulation, migration, hunt, and account notices will appear here.</p></div>}
-        <div className="notification-inbox-list">{inbox.map((item) => <button className={!item.readAt ? "notification-inbox-row notification-inbox-row--unread" : "notification-inbox-row"} type="button" key={item.id} onClick={() => void openItem(item)}><span className="notification-inbox-row__icon">{inboxIcon(item.eventType)}</span><span><strong>{item.title}</strong><small>{item.body}</small><em>{formatAlertDate(item.createdAt)}</em></span><b>›</b></button>)}</div>
+        <div className="notification-inbox-list">{inbox.map((item) => <div className="notification-event" key={item.id}><button className={!item.readAt ? "notification-inbox-row notification-inbox-row--unread" : "notification-inbox-row"} type="button" onClick={() => void openItem(item)}><span className="notification-inbox-row__icon">{inboxIcon(item.eventType)}</span><span><strong>{item.title}</strong><small>{item.body}</small><em>{formatAlertDate(item.createdAt)}</em></span><b>›</b></button>{typeof item.payload.sourceUrl === "string" && item.payload.sourceUrl.startsWith("https://") && <a className="notification-source" href={item.payload.sourceUrl} target="_blank" rel="noreferrer">Official source ↗</a>}</div>)}</div>
       </section>
     </div>
   );

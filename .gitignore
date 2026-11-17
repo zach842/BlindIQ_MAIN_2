@@ -1,0 +1,23 @@
+# Dependencies and generated output
+node_modules
+dist/
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+
+# Local tools / OS metadata
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# Release exports and local screenshots belong outside the source repository
+*.zip
+*.zip.sha256
+RELEASE_MANIFEST_*.json
+preview/

@@ -1,0 +1,410 @@
+{
+  "checkedAt": "2026-11-17",
+  "scope": "Local notification calendar readiness, not a state regulation audit",
+  "nationwideSelectionStates": 50,
+  "reviewedStates": 0,
+  "hostedNotificationTablesPresent": false,
+  "hostedNotificationFunctionsPresent": false,
+  "states": [
+    {
+      "code": "AL",
+      "name": "Alabama",
+      "agencySourceCandidate": "https://outdooralabama.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "AK",
+      "name": "Alaska",
+      "agencySourceCandidate": "https://adfg.alaska.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "AZ",
+      "name": "Arizona",
+      "agencySourceCandidate": "https://azgfd.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "AR",
+      "name": "Arkansas",
+      "agencySourceCandidate": "https://agfc.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "CA",
+      "name": "California",
+      "agencySourceCandidate": "https://wildlife.ca.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "CO",
+      "name": "Colorado",
+      "agencySourceCandidate": "https://cpw.state.co.us/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "CT",
+      "name": "Connecticut",
+      "agencySourceCandidate": "https://portal.ct.gov/deep/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "DE",
+      "name": "Delaware",
+      "agencySourceCandidate": "https://dnrec.delaware.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "FL",
+      "name": "Florida",
+      "agencySourceCandidate": "https://myfwc.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "GA",
+      "name": "Georgia",
+      "agencySourceCandidate": "https://georgiawildlife.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "HI",
+      "name": "Hawaii",
+      "agencySourceCandidate": "https://dlnr.hawaii.gov/dofaw/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "ID",
+      "name": "Idaho",
+      "agencySourceCandidate": "https://idfg.idaho.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "IL",
+      "name": "Illinois",
+      "agencySourceCandidate": "https://dnr.illinois.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "IN",
+      "name": "Indiana",
+      "agencySourceCandidate": "https://in.gov/dnr/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "IA",
+      "name": "Iowa",
+      "agencySourceCandidate": "https://iowadnr.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "KS",
+      "name": "Kansas",
+      "agencySourceCandidate": "https://ksoutdoors.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "KY",
+      "name": "Kentucky",
+      "agencySourceCandidate": "https://fw.ky.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "LA",
+      "name": "Louisiana",
+      "agencySourceCandidate": "https://wlf.louisiana.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "ME",
+      "name": "Maine",
+      "agencySourceCandidate": "https://maine.gov/ifw/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "MD",
+      "name": "Maryland",
+      "agencySourceCandidate": "https://dnr.maryland.gov/wildlife/",
+      "legacySeedRows": 9,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "MA",
+      "name": "Massachusetts",
+      "agencySourceCandidate": "https://mass.gov/orgs/division-of-fisheries-and-wildlife/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "MI",
+      "name": "Michigan",
+      "agencySourceCandidate": "https://michigan.gov/dnr/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "MN",
+      "name": "Minnesota",
+      "agencySourceCandidate": "https://dnr.state.mn.us/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "MS",
+      "name": "Mississippi",
+      "agencySourceCandidate": "https://mdwfp.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "MO",
+      "name": "Missouri",
+      "agencySourceCandidate": "https://mdc.mo.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "MT",
+      "name": "Montana",
+      "agencySourceCandidate": "https://fwp.mt.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "NE",
+      "name": "Nebraska",
+      "agencySourceCandidate": "https://outdoornebraska.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "NV",
+      "name": "Nevada",
+      "agencySourceCandidate": "https://ndow.org/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "NH",
+      "name": "New Hampshire",
+      "agencySourceCandidate": "https://wildlife.nh.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "NJ",
+      "name": "New Jersey",
+      "agencySourceCandidate": "https://dep.nj.gov/njfw/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "NM",
+      "name": "New Mexico",
+      "agencySourceCandidate": "https://wildlife.dgf.nm.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "NY",
+      "name": "New York",
+      "agencySourceCandidate": "https://dec.ny.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "NC",
+      "name": "North Carolina",
+      "agencySourceCandidate": "https://ncwildlife.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "ND",
+      "name": "North Dakota",
+      "agencySourceCandidate": "https://gf.nd.gov/",
+      "legacySeedRows": 5,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "OH",
+      "name": "Ohio",
+      "agencySourceCandidate": "https://ohiodnr.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "OK",
+      "name": "Oklahoma",
+      "agencySourceCandidate": "https://wildlifedepartment.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "OR",
+      "name": "Oregon",
+      "agencySourceCandidate": "https://myodfw.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "PA",
+      "name": "Pennsylvania",
+      "agencySourceCandidate": "https://pa.gov/agencies/pgc/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "RI",
+      "name": "Rhode Island",
+      "agencySourceCandidate": "https://dem.ri.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "SC",
+      "name": "South Carolina",
+      "agencySourceCandidate": "https://dnr.sc.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "SD",
+      "name": "South Dakota",
+      "agencySourceCandidate": "https://gfp.sd.gov/",
+      "legacySeedRows": 5,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "TN",
+      "name": "Tennessee",
+      "agencySourceCandidate": "https://tn.gov/twra/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "TX",
+      "name": "Texas",
+      "agencySourceCandidate": "https://tpwd.texas.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "UT",
+      "name": "Utah",
+      "agencySourceCandidate": "https://wildlife.utah.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "VT",
+      "name": "Vermont",
+      "agencySourceCandidate": "https://vtfishandwildlife.com/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "VA",
+      "name": "Virginia",
+      "agencySourceCandidate": "https://dwr.virginia.gov/",
+      "legacySeedRows": 6,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "WA",
+      "name": "Washington",
+      "agencySourceCandidate": "https://wdfw.wa.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "WV",
+      "name": "West Virginia",
+      "agencySourceCandidate": "https://wvdnr.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "WI",
+      "name": "Wisconsin",
+      "agencySourceCandidate": "https://dnr.wisconsin.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    },
+    {
+      "code": "WY",
+      "name": "Wyoming",
+      "agencySourceCandidate": "https://wgfd.wyo.gov/",
+      "legacySeedRows": 0,
+      "reviewStatus": "requires official species/zone/date review",
+      "verifiedNotificationRows": 0
+    }
+  ]
+}

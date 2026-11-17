@@ -1,5 +1,7 @@
 # BlindIQ v1.61 — 2026–2027 waterfowl regulation audit
 
+> Historical audit evidence. The old nested application mentioned below was subsequently removed from the current tree during repository cleanup; it remains recoverable in Git history. Audit findings and source records are preserved.
+
 Review date: **November 11, 2026 (America/New_York)**. Baseline: `zach842/BlindIQ_MAIN_2`, `main`, commit `d8876d82c2b2a3411dd8340b7cb292e297a73b03`, package version 1.60.0.
 
 This is an incremental update of the existing application. The 29 states, existing navigation, accounts, subscriptions, weather, Migration Pulse, notifications, offline support, photos, sharing and saved-hunt formats remain. No database migration or application replacement is included. The legacy `BlindIQ-ID-OR-WA-v1.23 2` folder remains untouched; the active application is the repository root.
