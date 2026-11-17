@@ -1,0 +1,10 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { parseFieldWeather } = require(process.env.BLINDIQ_TEST_OUTPUT + '/fieldWeather.js');
+const now = Date.parse('2026-11-16T18:30:00Z');
+const fixture = () => ({ properties: { updateTime: '2026-11-16T18:00:00Z', periods: [{ startTime: '2026-11-16T18:00:00Z', endTime: '2026-11-16T19:00:00Z', temperature: 52, temperatureUnit: 'F', windSpeed: '5 mph', windDirection: 'NW', probabilityOfPrecipitation: {value: null}, shortForecast: 'Clear' }] } });
+test('preserves weather units and missing precipitation, expires at current hour boundary', () => { const p = parseFieldWeather(fixture(), now); assert.equal(p.hours[0].temperature, 52); assert.equal(p.hours[0].precipitation, null); assert.equal(p.expiresAt, Date.parse('2026-11-16T19:00:00Z')); });
+test('rejects stale and future issue times', () => { for (const time of ['2026-11-16T10:00:00Z', '2026-11-17T18:00:00Z', 'bad']) { const f=fixture(); f.properties.updateTime=time; assert.throws(() => parseFieldWeather(f,now)); } });
+test('rejects missing periods and unsupported temperature units', () => { assert.throws(() => parseFieldWeather({},now)); const f=fixture(); f.properties.periods[0].temperatureUnit='K'; assert.throws(()=>parseFieldWeather(f,now)); });
+test('rejects forecasts without current coverage', () => { const f=fixture(); f.properties.periods[0].startTime='2026-11-17T18:00:00Z'; f.properties.periods[0].endTime='2026-11-17T19:00:00Z'; assert.throws(()=>parseFieldWeather(f,now)); });
+test('does not convert absent temperature or invalid rain probability into zero', () => { const f=fixture(); f.properties.periods[0].temperature=null; f.properties.periods[0].probabilityOfPrecipitation.value=110; const p=parseFieldWeather(f,now); assert.equal(p.hours[0].temperature,null); assert.equal(p.hours[0].precipitation,null); });

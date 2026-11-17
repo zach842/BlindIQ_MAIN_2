@@ -71,7 +71,7 @@ alter table public.hunts enable row level security;
 revoke all on table public.hunts from anon;
 revoke all on table public.hunts from authenticated;
 grant usage on schema public to authenticated;
-grant select, insert on table public.hunts to authenticated;
+grant select, insert, delete on table public.hunts to authenticated;
 grant all on table public.hunts to service_role;
 
 drop policy if exists "Users can view their own hunts" on public.hunts;
@@ -87,6 +87,11 @@ create policy "Users can save their own hunts"
   for insert
   to authenticated
   with check ((select auth.uid()) is not null and (select auth.uid()) = user_id);
+
+drop policy if exists "Users can delete their own hunts" on public.hunts;
+create policy "Users can delete their own hunts"
+  on public.hunts for delete to authenticated
+  using ((select auth.uid()) is not null and (select auth.uid()) = user_id);
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (

@@ -1,3 +1,15 @@
+# Current package: BlindIQ v1.65.2
+
+Hunting-first landing page, with the login and saved-hunt deletion fixes retained. [Start here](START_HERE.md) · [Release details](docs/RELEASE_v1.65.2.md).
+
+# Current package: BlindIQ v1.65.1
+
+Login sizing and saved-hunt deletion update. Read [START_HERE.md](START_HERE.md), including the required one-time cloud deletion SQL setup. [Release details](docs/RELEASE_v1.65.1.md).
+
+# Current package: BlindIQ v1.65.0
+
+Field map and deer/turkey conditions preview. Start with [START_HERE.md](START_HERE.md) and [release details](docs/RELEASE_v1.65.0.md). Regrid parcels and animal activity scores are not connected.
+
 # BlindIQ v1.64.1 — simple category logging
 
 Choose State, then Hunting category (Waterfowl, Deer, Turkey, etc.). All species in that category appear together with Saw and Harvested controls. The long individual-species dropdown is removed. Deer rows adjust to the state; Maryland shows whitetail and sika rather than western deer.

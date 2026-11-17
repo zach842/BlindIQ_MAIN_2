@@ -1,0 +1,33 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH});
+const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block'});
+const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto(process.env.BLINDIQ_TEST_URL || 'http://127.0.0.1:5178');
+await page.getByRole('button',{name:'I already have an account'}).click();
+for(const width of [320,375,390,430,768,1440]) {
+ await page.setViewportSize({width,height:844});
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`login overflow ${width}`);
+ for(const input of await page.locator('.auth-card input:not([type=checkbox])').all()) { assert.ok(parseFloat(await input.evaluate(e=>getComputedStyle(e).fontSize))>=16); await input.focus(); assert.equal(await page.evaluate(()=>window.visualViewport?.scale || 1),1); }
+}
+await page.setViewportSize({width:390,height:844});await page.locator('input[autocomplete=username]').blur();
+await page.getByRole('button',{name:'Show password',exact:true}).click();assert.equal(await page.locator('input[autocomplete=current-password]').getAttribute('type'),'text');
+await page.getByRole('button',{name:'Hide password',exact:true}).click();
+await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:process.env.LOGIN_SCREENSHOT || '/tmp/blindiq-login.png',fullPage:true});
+await page.getByRole('button',{name:'Log in',exact:true}).click();await page.getByRole('heading',{name:'Hunt. Log. Done.'}).waitFor();
+const close=page.getByRole('button',{name:'Close installation instructions'});if(await close.isVisible())await close.click();
+await page.locator('#state').selectOption('MD');await page.locator('#hunt-category').selectOption('deer');
+await page.getByRole('button',{name:'Saw Whitetail — Buck',exact:true}).click();await page.getByRole('button',{name:'Add Whitetail — Buck',exact:true}).click();
+await page.getByRole('button',{name:'Save session',exact:true}).click();await page.getByRole('button',{name:'New session',exact:true}).waitFor();
+await page.getByRole('button',{name:'Logbook',exact:true}).click();
+assert.equal(await page.locator('.history-list article').count(),1);
+await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:process.env.DELETE_SCREENSHOT || '/tmp/blindiq-delete.png',fullPage:true});
+page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:/Delete Maryland hunt/}).click();assert.equal(await page.locator('.history-list article').count(),1,'cancel preserves record');
+await page.evaluate(()=>{window.originalStorageSet=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='blindiq-demo-hunts-v1')throw new Error('Test storage failure');return window.originalStorageSet.call(this,key,value);};});
+page.once('dialog',d=>d.accept());await page.getByRole('button',{name:/Delete Maryland hunt/}).click();await page.getByText(/This browser could not delete the hunt/).waitFor();assert.equal(await page.locator('.history-list article').count(),1,'failed delete preserves record');
+await page.evaluate(()=>{Storage.prototype.setItem=window.originalStorageSet;});
+page.once('dialog',d=>d.accept());await page.getByRole('button',{name:/Delete Maryland hunt/}).click();await page.getByText('Hunt deleted.',{exact:true}).waitFor();
+assert.equal(await page.locator('.history-list article').count(),0);
+assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('blindiq-demo-hunts-v1'))),[]);
+await page.reload();await page.getByRole('button',{name:'Logbook',exact:true}).click();await page.getByRole('heading',{name:'Hunt logbook'}).waitFor();assert.equal(await page.locator('.history-list article').count(),0,'deleted record does not return after reload');
+assert.deepEqual(errors,[]);console.log('PASS login responsive widths, 16px input sizing, focus scale, password visibility; delete cancellation/confirmation/persistence/reload');await browser.close();

@@ -1,20 +1,24 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState, lazy, Suspense } from "react";
 import { buildSessionEntries, changeSightings } from "./sessionEntries";
 import { huntingLocations } from "./huntingLocations";
 import { categorySpecies } from "./categorySpecies";
 import { huntCategories, huntCategoryById } from "./gameCatalog";
 import { states } from "./data";
 import { countBirds, duckBagLimit, effectiveBirdLimit, localDateKey, remainingBirds } from "./harvestLimits";
-import { beginActiveHunt, beginCheckout, finishActiveHunt, getDefaultState, getSubscription, isDemoMode, listHunts, openCustomerPortal, restoreRememberedUser, saveDefaultState, saveHuntRecord, signIn, signOut, signUp, syncPendingHunts, touchActiveHunt } from "./services";
+import { beginActiveHunt, beginCheckout, finishActiveHunt, getDefaultState, getSubscription, isDemoMode, listHunts, openCustomerPortal, restoreRememberedUser, saveDefaultState, saveHuntRecord, deleteHuntRecord, signIn, signOut, signUp, syncPendingHunts, touchActiveHunt } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
 import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
 import { getDashboardSeasonStatus } from "./seasonStatus";
 import { prepareHuntPhoto } from "./huntPhotos";
+import FieldBoundary from "./FieldBoundary";
 import MigrationPage from "./MigrationPage";
 import NotificationsPage from "./NotificationsPage";
 import { detachCurrentPushDevice, ensureNotificationPreferences, syncCurrentPushDevice, unreadNotificationCount } from "./notifications";
 import type { BirdRule, HarvestEntry, HuntRecord, HuntCategoryId } from "./types";
+
+const MapPage = lazy(() => import("./MapPage"));
+const FieldForecast = lazy(() => import("./FieldForecast"));
 
 type View = "welcome" | "login" | "signup" | "dashboard" | "maps" | "movement" | "migration" | "notifications" | "hunt" | "bird-guide" | "summary" | "history" | "account" | "terms" | "feedback";
 
@@ -113,7 +117,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.64.1",
+      "Submitted from BlindIQ v1.65.2",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -272,9 +276,11 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
   const [loading, setLoading] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(true);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
     setSuccess("");
     setLoading(true);
@@ -294,19 +300,18 @@ function AuthScreen({ mode, onSubmit, onSwitch, onBack }: { mode: "login" | "sig
         <Brand />
         <div className="auth-copy">
           <p className="eyebrow">BLINDIQ • YOUR HUNTING FIELD LOG</p>
-          <h1>{mode === "login" ? "Return to your logbook" : "Start your waterfowl logbook"}</h1>
-          <p>{mode === "login" ? "Start hunts, log your harvest, and revisit the memories you have saved." : isDemoMode ? "Create a temporary demo account and try the field-ready waterfowl hunt logger." : "Create your BlindIQ account to start hunts, record every harvest, and keep your complete waterfowl history in one place."}</p>
+          <h1>{mode === "login" ? "Welcome back" : "Start your hunting logbook"}</h1>
+          <p>{mode === "login" ? "Sign in and get back to your hunt." : isDemoMode ? "Create a temporary demo account and try the field-ready waterfowl hunt logger." : "Create your BlindIQ account to start hunts, record every harvest, and keep your complete waterfowl history in one place."}</p>
         </div>
-        <BrandPromise compact />
-        <aside className="trial-callout">
+        {mode === "signup" && <BrandPromise compact />}
+        {mode === "signup" && <aside className="trial-callout">
           <span>7 DAYS FREE</span>
           <p><strong>Try the complete BlindIQ waterfowl logbook.</strong><small>New members: seven days free, then $10.99/year. Cancel before the trial ends to avoid being charged.</small></p>
-        </aside>
-        {mode === "login" && <div className="auth-device-note"><span aria-hidden="true">●</span><p><strong>Any internet-connected device</strong><small>Sign in from your phone, tablet, or computer to access your account and hunt history.</small></p></div>}
+        </aside>}
         <form onSubmit={submit}>
           {mode === "signup" && <label>Display username<input required autoComplete="nickname" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Example: ChesapeakeHunter" /></label>}
-          <label>{isDemoMode && mode === "login" ? "Username" : "Email address"}<input required type={isDemoMode && mode === "login" ? "text" : "email"} autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-          <label>Password<input required autoComplete={mode === "login" ? "current-password" : "new-password"} type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+          <label>{isDemoMode && mode === "login" ? "Username" : "Email address"}<input required autoCapitalize="none" autoCorrect="off" spellCheck={false} enterKeyHint="next" inputMode={isDemoMode && mode === "login" ? "text" : "email"} type={isDemoMode && mode === "login" ? "text" : "email"} autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+          <label>Password<div className="password-field"><input required autoComplete={mode === "login" ? "current-password" : "new-password"} enterKeyHint="go" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? "Hide" : "Show"}</button></div></label>
           <label className="remember-device"><input type="checkbox" checked={rememberDevice} onChange={(e) => setRememberDevice(e.target.checked)} /><span><strong>Remember this device for 30 days</strong><small>Keeps this browser or installed Home Screen app signed in for up to 30 days. Use only on a private device; BlindIQ never stores your password.</small></span></label>
           {mode === "signup" && <label className="agreement-check"><input required type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} /><span>I have read and agree to the <button type="button" onClick={() => setShowTerms(true)}>Terms of Use and User Agreement</button>, including the hunting-law disclaimer, release, and limitation of liability.</span></label>}
           {error && <div className="auth-error" role="alert">{error}</div>}
@@ -346,6 +351,7 @@ export default function App() {
   const [preparedShareFile, setPreparedShareFile] = useState<File | null>(null);
   const [preparingShareFile, setPreparingShareFile] = useState(false);
   const [sharingHistoryId, setSharingHistoryId] = useState("");
+  const [deletingHistoryId, setDeletingHistoryId] = useState("");
   const [huntPhoto, setHuntPhoto] = useState<Blob | null>(null);
   const [huntPhotoPreview, setHuntPhotoPreview] = useState("");
   const [photoProcessing, setPhotoProcessing] = useState(false);
@@ -852,6 +858,19 @@ export default function App() {
     }
   }
 
+  async function deleteSavedHunt(hunt: HuntRecord) {
+    if (deletingHistoryId || !window.confirm(`Delete your ${hunt.state} hunt from ${hunt.date}? This removes the saved hunt and cannot be undone.`)) return;
+    setDeletingHistoryId(hunt.id);
+    setToast("");
+    try {
+      const result = await deleteHuntRecord(hunt);
+      setHistory(records => records.filter(record => record.id !== hunt.id));
+      setToast(result.warning || "Hunt deleted.");
+    } catch (cause) {
+      setToast(cause instanceof Error ? cause.message : "The hunt could not be deleted. Please try again.");
+    } finally { setDeletingHistoryId(""); }
+  }
+
   async function shareSavedHunt(hunt: HuntRecord) {
     if (sharingHistoryId) return;
     setSharingHistoryId(hunt.id);
@@ -898,25 +917,28 @@ export default function App() {
 
   if (view === "welcome") {
     return (
-      <div className="welcome">
-        <div className="welcome-photo" />
-        <div className="welcome-overlay" />
-        <div className="welcome-content">
-          <Brand />
-          <div className="welcome-copy">
-            <p className="eyebrow">DIGITAL FIELD GUIDE + MULTI-SPECIES HUNT LOG</p>
-            <h1>Hunt.<br />Log.<br />Share</h1>
-            <div className="welcome-trial"><strong>7 DAYS FREE</strong><span>Then only $10.99/year</span></div>
-            <p className="welcome-intro">Start a hunt, log your harvest, save photos and field notes, and share the memory—with verified waterfowl guidance and simple field logs for other game.</p>
-            <BrandPromise />
-            <div className="welcome-device-note"><span aria-hidden="true">●</span> Installable website app • Works offline after first load</div>
-          </div>
-          <div className="welcome-actions">
-            <button className="button button--gold button--wide" onClick={() => setView("signup")}>Start my 7-day free trial</button>
-            <button className="button button--ghost button--wide" onClick={() => setView("login")}>I already have an account</button>
-          </div>
-          <small>Always verify current rules with the official wildlife agency before hunting.</small>
-        </div>
+      <div className="landing">
+        <header className="landing-header"><Brand compact /><button className="landing-login" onClick={() => setView("login")}>Log in <span aria-hidden="true">↗</span></button></header>
+        <main className="landing-main">
+          <section className="landing-hero" aria-labelledby="landing-title">
+            <div className="landing-copy"><p className="eyebrow">THE NO FRILLS HUNTING LOGGER</p><h1 id="landing-title">Your hunt.<br /><span>Simply logged.</span></h1><p className="landing-lead">Pick your state. Choose your game. Log what you saw and what you harvested.</p><p className="landing-detail">One simple hub for your time in the blind, the stand, or the field.</p>
+              <div className="landing-actions"><button className="button button--gold" onClick={() => setView("signup")}>Start my 7-day free trial <span aria-hidden="true">→</span></button><p>Then $10.99/year. Cancel before the trial ends to avoid a charge.</p><button className="landing-return" onClick={() => setView("login")}>I already have an account</button></div>
+              <div className="landing-game-list" aria-label="Hunting categories"><span>Waterfowl</span><span>Deer</span><span>Turkey</span><span>Small game & more</span></div>
+            </div>
+            <div className="landing-example" aria-label="Illustration of a deer logging session; example counts are not saved">
+              <div className="landing-example-top"><span>YOUR FIELD LOG</span><span className="landing-example-badge">EXAMPLE</span></div>
+              <h2>Hunt. Log. Done.</h2><div className="landing-example-fields"><div><small>STATE</small><strong>Maryland <span aria-hidden="true">⌄</span></strong></div><div><small>HUNTING CATEGORY</small><strong>Deer <span aria-hidden="true">⌄</span></strong></div></div>
+              <p className="landing-example-rules">Official state regulations, seasons & licenses ↗</p>
+              <div className="landing-example-labels"><span>SPECIES</span><span>SAW</span><span>HARVESTED</span></div>
+              <div className="landing-example-row"><div><strong>Whitetail</strong><small>Buck</small></div><span>3</span><span>1</span></div>
+              <div className="landing-example-row"><div><strong>Whitetail</strong><small>Doe</small></div><span>5</span><span>0</span></div>
+              <div className="landing-example-save"><span aria-hidden="true">✓</span> A hunt worth remembering.</div><small className="landing-example-note">Illustrative session · Your log starts fresh.</small>
+            </div>
+          </section>
+          <section className="landing-steps" aria-label="How BlindIQ works"><div><span>01</span><h2>Set your hunt</h2><p>State, hunting category, and a link to the official rules.</p></div><div><span>02</span><h2>Saw + Harvested</h2><p>Quick counters for sightings and harvests. Zero-harvest hunts count, too.</p></div><div><span>03</span><h2>Keep the memory</h2><p>Save your hunt, add notes and a photo, and revisit your logbook.</p></div></section>
+          <section className="landing-tools"><div><p className="eyebrow">MORE CONTEXT, WHEN YOU WANT IT</p><h2>Your log comes first.</h2><p>Open Maps for USGS topography and device-saved hunting pins. Visit Movement Forecast for waterfowl migration and deer/turkey pilot weather with regional research.</p></div><span className="landing-tools-note">Maps & conditions: preview features<br />Parcel data and animal activity scores are not connected.</span></section>
+        </main>
+        <footer className="landing-footer"><Brand compact /><p>Built for the hunter. Across species. Across seasons.</p><small>Always check current rules with the official wildlife agency for your species and area.</small></footer>
       </div>
     );
   }
@@ -1081,7 +1103,7 @@ export default function App() {
           </section>
           </details>
           {huntSaved && <button className="button button--gold button--wide" onClick={() => { setSessionOpen(false); setIsSimulation(false); setHuntSaved(false); setHarvest({}); setSaw({}); setSessionArea(""); clearHuntDetails(); clearHuntPhoto(); setToast(""); setView("dashboard"); }}>New session</button>}
-          <small className="version-stamp">BlindIQ v1.64.1</small>
+          <small className="version-stamp">BlindIQ v1.65.2</small>
           {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>Open Hunt Logbook</button> : <button className="text-button" onClick={() => { if (!isSimulation && waterfowlRulesLoaded) void finishActiveHunt("discarded"); setSessionOpen(false); setIsSimulation(false); setHarvest({}); setSaw({}); setHuntSaved(false); clearHuntPhoto(); clearHuntDetails(); setView("dashboard"); }}>Discard hunt</button>}
         </div>
       )}
@@ -1102,7 +1124,7 @@ export default function App() {
               <article className={hunt.isSimulation ? "history-row--simulation" : ""} key={hunt.id}>
                 {hunt.photoUrl ? <a className="history-photo" href={hunt.photoUrl} target="_blank" rel="noreferrer" aria-label={`Open harvest photo from ${hunt.date}`}><img src={hunt.photoUrl} alt="Saved harvest" /></a> : <div className="date-tile"><strong>{hunt.date.split(" ")[1]?.replace(",", "")}</strong><span>{hunt.date.split(" ")[0]?.slice(0, 3)}</span></div>}
                 <div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}{hunt.id.startsWith("offline-") && <em>OFFLINE</em>}{hunt.photoUrl && <em>PHOTO</em>}</strong><span>{huntCategoryById(hunt.huntCategory ?? "waterfowl").shortLabel} • {hunt.zone} • {hunt.date}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.label}: ${entry.saw === undefined ? "" : `Saw ${entry.saw} • `}Harvested ${entry.count}`).join(" • ") : "Zero-harvest hunt"}</p>{(hunt.blindName || hunt.firearmUsed || hunt.notes) && <div className="history-field-details">{hunt.blindName && <span><b>Blind</b>{hunt.blindName}</span>}{hunt.firearmUsed && <span><b>Firearm</b>{hunt.firearmUsed}</span>}{hunt.notes && <p><b>Notes</b>{hunt.notes}</p>}</div>}</div>
-                <div className="history-actions"><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b><button type="button" disabled={sharingHistoryId === hunt.id} onClick={() => void shareSavedHunt(hunt)}>{sharingHistoryId === hunt.id ? "Preparing…" : "↗ Share"}</button></div>
+                <div className="history-actions"><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b><button type="button" disabled={sharingHistoryId === hunt.id || deletingHistoryId === hunt.id} onClick={() => void shareSavedHunt(hunt)}>{sharingHistoryId === hunt.id ? "Preparing…" : "↗ Share"}</button><button className="delete-hunt-button" type="button" aria-label={`Delete ${hunt.state} hunt from ${hunt.date}`} disabled={!!deletingHistoryId || sharingHistoryId === hunt.id} onClick={() => void deleteSavedHunt(hunt)}>{deletingHistoryId === hunt.id ? "Deleting…" : "Delete"}</button></div>
               </article>
             ))}
           </div>
@@ -1110,8 +1132,8 @@ export default function App() {
         </div>
       )}
 
-      {view === "maps" && <div className="page roadmap-page"><h1>Maps & property lines</h1><p>Your future field map, alongside your hunting log.</p><section className="section"><span className="roadmap-status">PLANNED • NO MAP DATA CONNECTED</span><h2>Built around your hunting ground</h2><ul><li>Topo and satellite basemaps</li><li>Licensed parcel boundaries and owner lookup</li><li>Private stand, blind and access waypoints</li><li>Offline areas where provider licensing permits</li></ul><p>Property lines and access permissions are not available in this release. No location is collected from this tab.</p></section></div>}
-      {view === "movement" && <div className="page roadmap-page"><h1>Movement Forecast</h1><div className="movement-tabs"><button className={movementMode === "waterfowl" ? "active" : ""} onClick={() => setMovementMode("waterfowl")}>Waterfowl migration</button><button className={movementMode === "deer" ? "active" : ""} onClick={() => setMovementMode("deer")}>Deer movement</button><button className={movementMode === "turkey" ? "active" : ""} onClick={() => setMovementMode("turkey")}>Turkey movement</button></div>{movementMode === "waterfowl" ? <MigrationPage stateCode={stateCode} isOnline={isOnline} /> : movementMode === "turkey" ? <section className="section"><span className="roadmap-status">TURKEY FORECAST • IN DEVELOPMENT</span><h2>Movement and gobbling</h2><p>Turkey forecasts are in development. Live turkey activity predictions are not available yet.</p><p>Gobbling, breeding and movement are different signals. We’re researching regional patterns so future guidance reflects the species and area you hunt.</p><a href="https://research.fs.usda.gov/treesearch/64503" target="_blank" rel="noreferrer">USDA Forest Service: turkey gobbling and weather research ↗</a></section> : <section className="section"><span className="roadmap-status">DEER FORECAST • IN PLANNING</span><h2>Rut timing, with local context</h2><p>A future forecast will combine regional breeding research, local conditions and observation history. No deer activity score or personalized prediction is available yet.</p>{location.code === "MD" ? <><h3>Maryland whitetail reference</h3><p>Maryland DNR describes breeding from October through mid-December, with most does becoming pregnant in the first half of November. This is regional biological context, not a daily movement forecast or guidance for sika deer.</p><a href="https://dnr.maryland.gov/wildlife/Pages/hunt_trap/wtdeerbiology.aspx" target="_blank" rel="noreferrer">Maryland DNR: white-tailed deer biology ↗</a></> : <p>Verified rut timing for {location.name} has not been loaded. Timing will be researched by region and species.</p>}</section>}</div>}
+      {view === "maps" && <FieldBoundary><Suspense fallback={<div className="page"><h1>Maps & property lines</h1><p>Loading field map…</p></div>}><MapPage key={accountUserId || "demo"} userId={accountUserId} /></Suspense></FieldBoundary>}
+      {view === "movement" && <div className="page roadmap-page"><h1>Movement Forecast</h1><div className="movement-tabs"><button className={movementMode === "waterfowl" ? "active" : ""} onClick={() => setMovementMode("waterfowl")}>Waterfowl migration</button><button className={movementMode === "deer" ? "active" : ""} onClick={() => setMovementMode("deer")}>Deer movement</button><button className={movementMode === "turkey" ? "active" : ""} onClick={() => setMovementMode("turkey")}>Turkey movement</button></div>{movementMode === "waterfowl" ? <MigrationPage stateCode={stateCode} isOnline={isOnline} /> : <FieldBoundary><Suspense fallback={<p>Loading field conditions…</p>}><FieldForecast key={movementMode} species={movementMode === "turkey" ? "turkey" : "deer"} /></Suspense></FieldBoundary>}</div>}
       {view === "migration" && <MigrationPage stateCode={stateCode} isOnline={isOnline} />}
 
       {view === "notifications" && <NotificationsPage defaultState={defaultStateCode} states={states} onInstall={() => setInstallGuideOpen(true)} onNavigate={navigateNotification} onUnreadChange={setUnreadNotifications} />}
@@ -1137,7 +1159,7 @@ export default function App() {
           <section className="community-card"><div className="community-card__icon">+</div><div><p className="eyebrow">BETTER THE COMMUNITY</p><h2>Help improve BlindIQ.</h2><p>Submit regulation errors, app bugs, and ideas directly to the BlindIQ team.</p></div><button className="button button--gold" type="button" onClick={() => openFeedback("account")}>Send feedback</button></section>
           <section className="settings-list"><button onClick={async () => { const membership = await getSubscription(); setIsPremium(membership.isPremium); setSubscriptionStatus(membership.status); setSubscriptionPeriodEnd(membership.currentPeriodEnd); setToast(`Membership status refreshed: ${membership.status}`); }}>Refresh membership <span>›</span></button><button>Membership status <span>{subscriptionStatus}</span></button><button type="button" onClick={() => setView("notifications")}>Field alerts <span>{unreadNotifications ? `${unreadNotifications} NEW` : "›"}</span></button><button type="button" onClick={() => setInstallGuideOpen(true)}>Add BlindIQ to Home Screen <span>›</span></button><button>Offline field mode <span>{isOnline ? "READY" : "ACTIVE"}</span></button><button onClick={() => setView("terms")}>Terms of Use & User Agreement <span>›</span></button><button onClick={() => { window.location.href = "mailto:office@blindiq.app?subject=BlindIQ%20Support"; }}>Contact support <span>›</span></button><button onClick={async () => { await detachCurrentPushDevice(); await signOut(); sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setSessionOpen(false); setCategoryId("waterfowl"); setHarvest({}); setSaw({}); setSessionArea(""); setSpeciesSearch(""); setHistoryFilter("all"); clearHuntPhoto(); clearHuntDetails(); setHuntSaved(false); setHistory([]); setUnreadNotifications(0); setIsPremium(false); setView("welcome"); }}>Log out <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.64.1</small>
+          <small className="version-stamp">BlindIQ v1.65.2</small>
         </div>
       )}
     </Shell>

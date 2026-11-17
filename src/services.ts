@@ -588,6 +588,37 @@ function readDemoHunts(): HuntRecord[] {
   }
 }
 
+export async function deleteHuntRecord(hunt: HuntRecord): Promise<{ warning?: string }> {
+  if (!supabase) {
+    try { localStorage.setItem(DEMO_HUNTS_KEY, JSON.stringify(readDemoHunts().filter(record => record.id !== hunt.id))); }
+    catch { throw new Error("This browser could not delete the hunt. Please check available storage and try again."); }
+    return {};
+  }
+  // Queued records can be in an active sync. Wait until sync finishes rather than
+  // racing an insert and incorrectly reporting that the hunt has been removed.
+  if (hunt.id.startsWith("offline-")) throw new Error("This hunt is waiting to sync. Connect to the internet and let it sync before deleting it.");
+  if (!navigator.onLine) throw new Error("Connect to the internet to delete a saved hunt. Nothing has been removed.");
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error("Please sign in again before deleting this hunt.");
+  const { data, error } = await supabase.from("hunts").delete()
+    .eq("id", hunt.id).eq("user_id", userData.user.id).select("id,photo_path");
+  if (error) {
+    if (isHuntDatabaseSetupError(error)) throw new Error("Hunt deletion needs the included one-time HUNT_DELETE_SETUP.sql database update. Your hunt has not been removed.");
+    throw new Error(error.message || "The hunt could not be deleted. Please try again.");
+  }
+  if (!data?.length) throw new Error("Deletion was not confirmed. Refresh your logbook; if the hunt remains, apply HUNT_DELETE_SETUP.sql. No local record was removed.");
+  cacheHunts(cachedHunts().filter(record => record.id !== hunt.id));
+  // Only use the path returned by the owner-filtered DELETE, never a UI-supplied path.
+  const path = data[0].photo_path;
+  if (typeof path === "string" && path.startsWith(userData.user.id + "/")) {
+    try {
+      const { error: photoError } = await supabase.storage.from(HUNT_PHOTOS_BUCKET).remove([path]);
+      if (photoError) return { warning: "Hunt deleted. Its stored photo could not be removed; please contact support for photo cleanup." };
+    } catch { return { warning: "Hunt deleted. Its stored photo could not be removed; please contact support for photo cleanup." }; }
+  }
+  return {};
+}
+
 export async function listHunts(): Promise<HuntRecord[]> {
   if (!supabase) return readDemoHunts();
   if (!navigator.onLine) return cachedHunts();
