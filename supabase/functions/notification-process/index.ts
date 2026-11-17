@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import { sendWebPush, webPushErrorMessage, webPushStatusCode } from "../_shared/webpush.ts";
 
+import { getPushRuntime } from "../_shared/push-config.ts";
 import { seasonNotices, nudgeDue, localParts, stateAudienceMatches } from "../_shared/notification-policy.ts";
 
 type EventRow = {
@@ -249,13 +250,15 @@ async function deliverEvent(event: EventRow) {
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
-  const expectedSecret = Deno.env.get("NOTIFICATION_CRON_SECRET");
+  let runtime: Record<string,string>;
+  try { runtime = await getPushRuntime(); } catch { return Response.json({error:"Push server configuration unavailable"},{status:503}); }
+  const expectedSecret = runtime.NOTIFICATION_CRON_SECRET;
   if (!expectedSecret || request.headers.get("x-cron-secret") !== expectedSecret) return new Response("Unauthorized", { status: 401 });
   let options: {dry_run?: boolean} = {};
   try { const body = await request.json(); options = body && typeof body === "object" ? body : {}; } catch { /* Scheduler may send an empty body. */ }
   if(options.dry_run) {
     const calendar=await admin.from("notification_season_periods").select("state_code,verification_status,data_status,verified_at,time_zone").eq("active",true);
-    return Response.json({dryRun:true,noNotificationsSent:true,calendarRows:calendar.data?.length || 0,calendarError:calendar.error?.message || null,pushConfigured:Boolean(Deno.env.get("WEB_PUSH_PUBLIC_KEY") && Deno.env.get("WEB_PUSH_PRIVATE_KEY")),reviewedStates:[...new Set((calendar.data || []).filter(row=>row.verification_status==="verified" && row.data_status==="current").map(row=>row.state_code))]});
+    return Response.json({dryRun:true,noNotificationsSent:true,calendarRows:calendar.data?.length || 0,calendarError:calendar.error?.message || null,pushConfigured:Boolean(runtime.WEB_PUSH_PUBLIC_KEY && runtime.WEB_PUSH_PRIVATE_KEY),reviewedStates:[...new Set((calendar.data || []).filter(row=>row.verification_status==="verified" && row.data_status==="current").map(row=>row.state_code))]});
   }
   const today = easternDate();
   const failures: string[] = [];

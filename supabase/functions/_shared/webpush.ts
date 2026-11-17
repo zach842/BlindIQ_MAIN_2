@@ -1,3 +1,4 @@
+import { getPushRuntime } from "./push-config.ts";
 import webpush from "npm:web-push@3.6.7";
 
 export type StoredPushSubscription = {
@@ -16,26 +17,17 @@ export type BlindIqPushPayload = {
   data?: Record<string, unknown>;
 };
 
-function requireEnv(name: string) {
-  const value = Deno.env.get(name);
-  if (!value) throw new Error(`${name} is not configured.`);
-  return value;
-}
-
 let configured = false;
-
-function configureWebPush() {
+async function configureWebPush() {
   if (configured) return;
-  webpush.setVapidDetails(
-    Deno.env.get("WEB_PUSH_SUBJECT") || "mailto:office@blindiq.app",
-    requireEnv("WEB_PUSH_PUBLIC_KEY"),
-    requireEnv("WEB_PUSH_PRIVATE_KEY"),
-  );
+  const config = await getPushRuntime();
+  if (!config.WEB_PUSH_PUBLIC_KEY || !config.WEB_PUSH_PRIVATE_KEY) throw new Error("Web Push keys are not configured.");
+  webpush.setVapidDetails(config.WEB_PUSH_SUBJECT || "mailto:office@blindiq.app", config.WEB_PUSH_PUBLIC_KEY, config.WEB_PUSH_PRIVATE_KEY);
   configured = true;
 }
 
 export async function sendWebPush(subscription: StoredPushSubscription, payload: BlindIqPushPayload) {
-  configureWebPush();
+  await configureWebPush();
   return await webpush.sendNotification(
     {
       endpoint: subscription.endpoint,
