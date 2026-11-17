@@ -1,3 +1,11 @@
+# Active installation — November 17, 2026
+
+The production notification schema, nationwide upgrade, hunt-deletion policy and both notification functions are deployed. Private push settings are in Supabase Vault; a service-only security-invoker RPC reads only the named push settings. The processor also supports Edge environment variables. Vercel has only the public VAPID key. A 15-minute scheduler is installed. Device permission and an actual Send test receipt are still required; complete verified calendar coverage is not yet loaded.
+
+Vault-based installs also apply `supabase/NOTIFICATION_VAULT_SETUP.sql`. Never grant its RPC to anon or authenticated. Existing VAPID keys must not be rotated casually.
+
+The original setup instructions below describe the alternative Edge-environment configuration and the historical pre-activation state. Do not repeat key generation on this active installation.
+
 # BlindIQ v1.66.0 — activate field alerts
 
 ## Observed production status (November 17, 2026)

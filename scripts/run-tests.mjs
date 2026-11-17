@@ -19,7 +19,7 @@ try {
     });
     process.exitCode = run.status ?? 1;
     if (run.status === 0) {
-      const forecast = spawnSync(process.execPath, ['--test', 'tests/notification-database.test.mjs', 'tests/hunt-delete-database.test.mjs', 'tests/forecasting/pipeline.test.mjs', 'tests/forecasting/database.test.mjs'], { stdio: 'inherit' });
+      const forecast = spawnSync(process.execPath, ['--test', 'tests/notification-vault.test.mjs', 'tests/notification-database.test.mjs', 'tests/hunt-delete-database.test.mjs', 'tests/forecasting/pipeline.test.mjs', 'tests/forecasting/database.test.mjs'], { stdio: 'inherit' });
       process.exitCode = forecast.status ?? 1;
     }
   }
