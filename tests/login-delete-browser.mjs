@@ -29,6 +29,7 @@ assert.equal(await page.locator('.history-list article').count(),1);
 await page.getByText(/Weather: 42°F, NW wind 8 mph/).waitFor();
 await page.getByText(/Morning hunt by the creek/).waitFor();
 await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:process.env.DELETE_SCREENSHOT || '/tmp/blindiq-delete.png',fullPage:true});
+assert.equal(await page.getByRole('button',{name:/Delete Maryland hunt/}).innerText(),'Delete log');
 page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:/Delete Maryland hunt/}).click();assert.equal(await page.locator('.history-list article').count(),1,'cancel preserves record');
 await page.evaluate(()=>{window.originalStorageSet=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='blindiq-demo-hunts-v1')throw new Error('Test storage failure');return window.originalStorageSet.call(this,key,value);};});
 page.once('dialog',d=>d.accept());await page.getByRole('button',{name:/Delete Maryland hunt/}).click();await page.getByText(/This browser could not delete the hunt/).waitFor();assert.equal(await page.locator('.history-list article').count(),1,'failed delete preserves record');
