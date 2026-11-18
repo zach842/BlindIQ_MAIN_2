@@ -39,6 +39,8 @@ Keep credentials in local environment files or hosting secret stores. The client
 
 ## Service setup and feature limits
 
+- [Optional location weather](docs/RELEASE_1.70.0.md)
+
 - [First-time state/category preferences](docs/RELEASE_1.69.0.md) and [database setup](supabase/HUNT_PREFERENCES_SETUP.sql)
 
 - [Membership/authentication setup](SECURE_MEMBERSHIP_SETUP.md)
