@@ -42,7 +42,7 @@ export default function HuntWeatherInput({ value, onChange, disabled, onBusyChan
     <div className="location-weather-actions"><button type="button" disabled={disabled || busy} onClick={() => void useLocation()}>{busy ? "Loading local weather…" : "Use my location"}</button>{busy && <button type="button" onClick={() => { cancel(); setStatus("Lookup cancelled. You can enter weather manually."); }}>Cancel</button>}</div>
     <small>Only when tapped. Approximate location is sent to the National Weather Service; coordinates aren’t saved to your hunt.</small>
     {status && <p className="weather-lookup-status" role="status">{status}</p>}
-    <label htmlFor="hunt-weather">Weather conditions<input id="hunt-weather" value={value} maxLength={300} disabled={disabled} onChange={event => { cancel(); setStatus(""); onChange(event.target.value); }} placeholder="42°F, light rain, NW wind 8 mph" /></label>
+    <label htmlFor="hunt-weather">Weather conditions<textarea id="hunt-weather" rows={4} value={value} maxLength={300} disabled={disabled} onChange={event => { cancel(); setStatus(""); onChange(event.target.value); }} placeholder="42°F, light rain, NW wind 8 mph" /></label>
     <small>Saved with this hunt’s notes. <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noreferrer">Weather source: NWS ↗</a></small>
   </>;
 }
