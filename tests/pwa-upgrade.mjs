@@ -24,6 +24,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{})});
 try{
  const context=await browser.newContext();const page=await context.newPage();
+ await page.addInitScript(()=>{if(!localStorage.getItem('blindiq-hunt-preferences-v1:demo-user'))localStorage.setItem('blindiq-hunt-preferences-v1:demo-user',JSON.stringify({stateCode:'MD',categoryId:'waterfowl'}));});
  await page.goto(`http://127.0.0.1:${server.address().port}/`);
  await page.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.includes('1.62.1'));
  await page.waitForFunction(async()=>(await caches.keys()).includes('blindiq-offline-v1.62.1'));

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH});
 const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block'});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto(process.env.BLINDIQ_TEST_URL || 'http://127.0.0.1:5178');
+await page.addInitScript(()=>{if(!localStorage.getItem('blindiq-hunt-preferences-v1:demo-user'))localStorage.setItem('blindiq-hunt-preferences-v1:demo-user',JSON.stringify({stateCode:'MD',categoryId:'waterfowl'}));});
+ await page.goto(process.env.BLINDIQ_TEST_URL || 'http://127.0.0.1:5178');
 await page.getByRole('button',{name:'I already have an account'}).click();
 for(const width of [320,375,390,430,768,1440]) {
  await page.setViewportSize({width,height:844});

@@ -1,4 +1,5 @@
 import { createClient, type User } from "@supabase/supabase-js";
+import { parseHuntPreferences, validateHuntPreferences, type HuntPreferences } from "./huntPreferences";
 import { TERMS_VERSION } from "./legal";
 import { migrationStatus, previewMigrationData, type MigrationData, type MigrationRegion, type MigrationSnapshot } from "./migration";
 import type { HarvestEntry, HuntCategoryId, HuntRecord, NewHuntRecord } from "./types";
@@ -280,6 +281,43 @@ export async function saveDefaultState(stateCode: string) {
   if (!userData.user) throw new Error("Log in before saving a default state.");
   const { error } = await supabase.from("profiles").update({ default_state: stateCode, updated_at: new Date().toISOString() }).eq("id", userData.user.id);
   if (error) throw error;
+}
+
+// The cache is account-scoped; a second hunter on this device cannot inherit setup.
+const huntPreferencesKey = (userId: string) => `blindiq-hunt-preferences-v1:${userId}`;
+function cachedHuntPreferences(userId: string): HuntPreferences | null {
+  try {
+    const value = localStorage.getItem(huntPreferencesKey(userId));
+    return value ? parseHuntPreferences(JSON.parse(value)) : null;
+  } catch { return null; }
+}
+function cacheHuntPreferences(userId: string, preferences: HuntPreferences) {
+  try { localStorage.setItem(huntPreferencesKey(userId), JSON.stringify(preferences)); } catch { /* Cloud save still succeeded. */ }
+}
+export async function getHuntPreferences(userId: string): Promise<HuntPreferences> {
+  const cached = cachedHuntPreferences(userId);
+  if (!supabase) return cached ?? parseHuntPreferences({ stateCode: localStorage.getItem("blindiq-default-state") });
+  if (!navigator.onLine) return cached ?? { stateCode: "MD", categoryId: null };
+  const { data, error } = await supabase.from("profiles").select("default_state,default_hunt_category").eq("id", userId).maybeSingle();
+  if (error) { if (cached && isConnectivityError(error)) return cached; throw error; }
+  const preferences = parseHuntPreferences({ stateCode: data?.default_state, categoryId: data?.default_hunt_category });
+  cacheHuntPreferences(userId, preferences);
+  return preferences;
+}
+export async function saveHuntPreferences(userId: string, stateCode: string, categoryId: HuntCategoryId) {
+  validateHuntPreferences(stateCode, categoryId);
+  const preferences = { stateCode, categoryId };
+  if (!supabase) {
+    try { localStorage.setItem(huntPreferencesKey(userId), JSON.stringify(preferences)); }
+    catch { throw new Error("This browser could not save your defaults. Allow browser storage and try again."); }
+    return;
+  }
+  if (!navigator.onLine) throw new Error("Connect to the internet to save defaults to your account.");
+  const { data, error } = await supabase.from("profiles").update({ default_state: stateCode, default_hunt_category: categoryId, updated_at: new Date().toISOString() }).eq("id", userId).select("id");
+  if (error) throw error;
+  if (!data?.length) throw new Error("Your defaults were not saved. Please sign in again and retry.");
+  cacheHuntPreferences(userId, preferences);
+  try { localStorage.setItem(OFFLINE_DEFAULT_STATE_KEY, stateCode); } catch { /* Optional offline compatibility cache. */ }
 }
 
 export async function getCurrentUser() {
