@@ -18,8 +18,9 @@ export type HuntShareInput = {
 function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("The BlindIQ share image could not be prepared."));
+    const timeout = window.setTimeout(() => { image.src = ""; reject(new Error("The share image took too long to load. Please retry.")); }, 15_000);
+    image.onload = () => { clearTimeout(timeout); resolve(image); };
+    image.onerror = () => { clearTimeout(timeout); reject(new Error("The BlindIQ share image could not be prepared.")); };
     image.src = src;
   });
 }
@@ -30,7 +31,7 @@ async function loadOptionalPhoto(source?: Blob | string | null) {
   try {
     const blob = source instanceof Blob
       ? source
-      : await fetch(source, { cache: "no-store" }).then((response) => {
+      : await fetch(source, { cache: "no-store", signal: AbortSignal.timeout(15_000) }).then((response) => {
           if (!response.ok) throw new Error("Saved hunt photo is unavailable.");
           return response.blob();
         });
@@ -39,7 +40,7 @@ async function loadOptionalPhoto(source?: Blob | string | null) {
     return { image, release: () => URL.revokeObjectURL(objectUrl) };
   } catch {
     if (objectUrl) URL.revokeObjectURL(objectUrl);
-    return null;
+    throw new Error("Your hunt photo could not be loaded. Retry, or turn off Include hunt photo to share a card without it.");
   }
 }
 
@@ -71,14 +72,16 @@ export async function createHuntShareFile(input: HuntShareInput) {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("This browser cannot create a hunt card.");
 
-  const [background, logo, huntPhoto] = await Promise.all([
-    loadImage("/duck-home-page.png"),
-    loadImage("/icon-512-v1631.png"),
-    loadOptionalPhoto(input.photo),
-  ]);
+  const logo = await loadImage("/icon-512-v1631.png");
+  const huntPhoto = await loadOptionalPhoto(input.photo);
 
   try {
-    drawCover(context, huntPhoto?.image ?? background, 0, 0, canvas.width, 720);
+    if (huntPhoto) drawCover(context, huntPhoto.image, 0, 0, canvas.width, 720);
+    else {
+      const background = context.createLinearGradient(0, 0, 1080, 720);
+      background.addColorStop(0, "#365b42"); background.addColorStop(1, "#102e25");
+      context.fillStyle = background; context.fillRect(0, 0, canvas.width, 720);
+    }
     const photoGradient = context.createLinearGradient(0, 0, 0, 720);
     photoGradient.addColorStop(0, "rgba(7, 28, 22, .52)");
     photoGradient.addColorStop(.48, "rgba(7, 28, 22, .18)");
@@ -161,6 +164,10 @@ export async function createHuntShareFile(input: HuntShareInput) {
       });
     }
 
+    if (input.entries.length > displayed.length) {
+      context.fillStyle = "#6e7772"; context.font = "600 19px Inter, sans-serif";
+      context.fillText(`+ ${input.entries.length - displayed.length} more species in my logbook`, 72, 1225);
+    }
     context.fillStyle = "#0d261f";
     context.fillRect(0, 1240, canvas.width, 110);
     context.fillStyle = "#d8c6a2";
@@ -174,7 +181,7 @@ export async function createHuntShareFile(input: HuntShareInput) {
 
     const blob = await canvasBlob(canvas);
     const dateStamp = new Date().toISOString().slice(0, 10);
-    return new File([blob], `blindiq-${safeFileName(input.state)}-hunt-${dateStamp}.png`, { type: "image/png" });
+    return new File([blob], `blindiq-${safeFileName(input.state)}-${safeFileName(input.huntCategoryLabel)}-${safeFileName(input.date || dateStamp)}.png`, { type: "image/png" });
   } finally {
     huntPhoto?.release();
   }
@@ -191,16 +198,25 @@ export function downloadHuntShareFile(file: File) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-export async function shareHuntFile(file: File, input: HuntShareInput) {
-  const data: ShareData = {
-    title: `My ${input.state} ${input.huntCategoryLabel.toLowerCase()} hunt — BlindIQ`,
-    text: `${input.totalCount} ${input.totalCount === 1 ? "harvest" : "harvests"} logged with BlindIQ. Hunt. Log. Share.`,
-    files: [file],
-  };
-  if (navigator.share && navigator.canShare?.({ files: [file] })) {
-    await navigator.share(data);
-    return "shared" as const;
-  }
-  downloadHuntShareFile(file);
-  return "downloaded" as const;
+export function huntShareCaption(input: HuntShareInput) {
+  const hasSightings = input.entries.every(entry => entry.saw !== undefined);
+  const sightings = input.entries.reduce((sum, entry) => sum + (entry.saw ?? 0), 0);
+  return [
+    `${input.isSimulation ? "Practice" : "My"} ${input.state} ${input.huntCategoryLabel.toLowerCase()} hunt${input.date ? ` · ${input.date}` : ""}`,
+    `${hasSightings ? `Saw ${sightings} · ` : ""}Harvested ${input.totalCount}`,
+    "Hunt. Log. Share. #BlindIQ",
+    "https://blindiq.app",
+  ].join("\n");
+}
+
+export function canShareHuntFile(file: File) {
+  try { return typeof navigator !== "undefined" && typeof navigator.share === "function" && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] }); }
+  catch { return false; }
+}
+
+// Invoke immediately from a fresh user click. Preparation must finish beforehand.
+// Files-only data keeps image targets available; captions are copied separately.
+export function shareHuntFile(file: File) {
+  if (!canShareHuntFile(file)) return Promise.reject(new Error("This browser cannot share images to apps. Save the image and attach it in your social app."));
+  return navigator.share({ files: [file] });
 }
