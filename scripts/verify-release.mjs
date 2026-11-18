@@ -15,7 +15,7 @@ const html=await read('dist/index.html');
 const bundle=html.match(/src="(\/assets\/[^\"]+\.js)"/);
 assert.ok(bundle,'Built index must point to a JavaScript entry');
 const js=await read('dist'+bundle[1]);
-for(const text of ['Make it your hunt.','Save & continue','Default hunting category','Hunt. Log. Share.','Movement Forecast','Your hunt.','Simply logged.',`BlindIQ v${pkg.version}`]) assert.ok(js.includes(text),`Production bundle is missing ${text}`);
+for(const text of ['Use my location','Make it your hunt.','Save & continue','Default hunting category','Hunt. Log. Share.','Movement Forecast','Your hunt.','Simply logged.',`BlindIQ v${pkg.version}`]) assert.ok(js.includes(text),`Production bundle is missing ${text}`);
 const manifest=JSON.parse(await read('dist/manifest.webmanifest'));
 for(const icon of manifest.icons){assert.ok(!icon.src.includes('..'));await access(new URL('../dist'+icon.src,import.meta.url));}
 const logo=app.match(/<img src="([^\"]+)"/)[1];

@@ -297,3 +297,9 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 
 .default-state-card .hunt-preferences-form { min-width: 0; }
 
 .default-state-card { grid-template-columns: 1fr; }
+
+.location-weather-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+.location-weather-actions button { min-height: 44px; padding: 10px 14px; font: inherit; font-weight: 700; color: #244a39; background: #e3ebdf; border: 1px solid #cdd7ce; border-radius: 9px; }
+.location-weather-actions button:disabled { opacity: .6; }
+.weather-lookup-status { font-size: 13px; line-height: 1.5; color: #365b42; }
+#hunt-extra-weather label { margin-top: 14px; }

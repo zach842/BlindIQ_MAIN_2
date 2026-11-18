@@ -12,6 +12,7 @@ import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
 import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
 import { getDashboardSeasonStatus } from "./seasonStatus";
 import { prepareHuntPhoto } from "./huntPhotos";
+import HuntWeatherInput from "./HuntWeatherInput";
 import HuntPreferencesForm from "./HuntPreferencesForm";
 import FieldBoundary from "./FieldBoundary";
 import MigrationPage from "./MigrationPage";
@@ -117,7 +118,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.69.0",
+      "Submitted from BlindIQ v1.70.0",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -360,6 +361,8 @@ export default function App() {
   const [firearmUsed, setFirearmUsed] = useState("");
   const [huntNotes, setHuntNotes] = useState("");
   const [huntWeather, setHuntWeather] = useState("");
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [huntDetailsVersion, setHuntDetailsVersion] = useState(0);
   const [huntExtra, setHuntExtra] = useState<"photo" | "weather" | "notes" | null>(null);
   const [managingMembership, setManagingMembership] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -439,6 +442,7 @@ export default function App() {
   }
 
   function clearHuntDetails() {
+    setHuntDetailsVersion(version => version + 1);
     setBlindName("");
     setFirearmUsed("");
     setHuntNotes("");
@@ -827,6 +831,7 @@ export default function App() {
   }, [shareCardSignature]);
 
   async function saveHunt() {
+    if (weatherLoading) { setToast("Wait for weather to finish, or cancel the lookup before saving."); return; }
     if (huntSaved || savingHunt) return;
     if (!isPremium) { setView("account"); return; }
     setSessionOpen(true);
@@ -990,8 +995,8 @@ export default function App() {
 
   const huntExtras = (
     <section className="hunt-extras" aria-label="Add to your hunt">
-      <div className="hunt-extra-actions">{(["photo", "weather", "notes"] as const).map(item => <button key={item} type="button" aria-expanded={huntExtra === item} aria-controls={`hunt-extra-${item}`} onClick={() => setHuntExtra(huntExtra === item ? null : item)}><span aria-hidden="true">{item === "photo" ? "◎" : item === "weather" ? "☀" : "▤"}</span>{item === "photo" ? huntPhotoPreview ? "Photo added" : "Add photo" : item === "weather" ? huntWeather ? "Weather added" : "Add weather" : huntNotes ? "Notes added" : "Add notes"}</button>)}</div>
-      <div id="hunt-extra-weather" hidden={huntExtra !== "weather"}><label htmlFor="hunt-weather">Weather conditions<input id="hunt-weather" value={huntWeather} maxLength={300} disabled={huntSaved} onChange={event => setHuntWeather(event.target.value)} placeholder="42°F, light rain, NW wind 8 mph" /></label><small>Record what you experienced. Saved with this hunt’s notes.</small></div>
+      <div className="hunt-extra-actions">{(["photo", "weather", "notes"] as const).map(item => <button key={item} type="button" aria-expanded={huntExtra === item} aria-controls={`hunt-extra-${item}`} onClick={() => setHuntExtra(huntExtra === item ? null : item)}><span aria-hidden="true">{item === "photo" ? "◎" : item === "weather" ? "☀" : "▤"}</span>{item === "photo" ? huntPhotoPreview ? "Photo added" : "Add photo" : item === "weather" ? weatherLoading ? "Loading weather…" : huntWeather ? "Weather added" : "Add weather" : huntNotes ? "Notes added" : "Add notes"}</button>)}</div>
+      <div id="hunt-extra-weather" hidden={huntExtra !== "weather"}><HuntWeatherInput key={huntDetailsVersion} value={huntWeather} onChange={setHuntWeather} disabled={huntSaved} onBusyChange={setWeatherLoading} /></div>
       <div id="hunt-extra-notes" hidden={huntExtra !== "notes"}><label htmlFor="hunt-notes">Field notes<textarea id="hunt-notes" maxLength={1600} rows={3} value={huntNotes} disabled={huntSaved} onChange={event => setHuntNotes(event.target.value)} placeholder="What would you like to remember?" /></label></div>
       <div id="hunt-extra-photo" hidden={huntExtra !== "photo"}>          {huntExtra === "photo" && !isSimulation && (!huntSaved || huntPhotoPreview) && (
             <section className={`hunt-photo-card ${huntPhotoPreview ? "hunt-photo-card--selected" : ""}`}>
@@ -1136,7 +1141,7 @@ export default function App() {
           {view === "summary" && huntExtras}
           {photoError && <div className="history-error" role="alert"><strong>Photo not added.</strong><span>{photoError}</span></div>}
           {toast && <div className="inline-toast">{toast}</div>}
-          {!huntSaved && <button className="button button--gold button--wide" disabled={savingHunt || photoProcessing} onClick={() => void saveHunt()}>{savingHunt ? huntPhoto ? "Uploading photo & saving…" : "Saving…" : isSimulation ? "Save practice session" : "Save session"}</button>}
+          {!huntSaved && <button className="button button--gold button--wide" disabled={savingHunt || photoProcessing || weatherLoading} onClick={() => void saveHunt()}>{savingHunt ? huntPhoto ? "Uploading photo & saving…" : "Saving…" : isSimulation ? "Save practice session" : "Save session"}</button>}
           {huntSaved && <section className="hub-share-section" aria-label="Share or download session">
           <section className={`share-hunt-card ${huntSaved ? "share-hunt-card--ready" : ""}`}>
             <div className="share-hunt-card__icon">↗</div>
@@ -1146,7 +1151,7 @@ export default function App() {
           </section>
           </section>}
           {huntSaved && <button className="button button--gold button--wide" onClick={() => { setSessionOpen(false); setIsSimulation(false); setHuntSaved(false); setHarvest({}); setSaw({}); setSessionArea(""); clearHuntDetails(); clearHuntPhoto(); setToast(""); applyHuntingDefaults(); setView("dashboard"); }}>New session</button>}
-          <small className="version-stamp">BlindIQ v1.69.0</small>
+          <small className="version-stamp">BlindIQ v1.70.0</small>
           {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>Open Hunt Logbook</button> : <button className="text-button" onClick={() => { if (!isSimulation && waterfowlRulesLoaded) void finishActiveHunt("discarded"); setSessionOpen(false); setIsSimulation(false); setHarvest({}); setSaw({}); setHuntSaved(false); clearHuntPhoto(); clearHuntDetails(); applyHuntingDefaults(); setView("dashboard"); }}>Discard hunt</button>}
         </div>
       )}
@@ -1209,7 +1214,7 @@ export default function App() {
               if (result.reloadRequired) { forceLocalSignOut(); window.location.replace(window.location.pathname); }
             }}>{loggingOut ? "Logging out…" : "Log out"} <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.69.0</small>
+          <small className="version-stamp">BlindIQ v1.70.0</small>
         </div>
       )}
     </Shell>
