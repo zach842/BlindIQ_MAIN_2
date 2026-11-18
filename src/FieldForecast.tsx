@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { parseFieldWeather, type WeatherBatch } from './fieldWeather';
-import './fieldMaps.css';
+import './forecast.css';
 const pilots = { MD: { name: 'Central Maryland pilot', lat: 39.05, lng: -76.65, timezone: 'America/New_York' }, SC: { name: 'South Carolina coastal pilot', lat: 32.8, lng: -80.8, timezone: 'America/New_York' } };
 export default function FieldForecast({ species }: { species: 'deer' | 'turkey' }) {
   const [region, setRegion] = useState(''); const [batch, setBatch] = useState<WeatherBatch | null>(null);

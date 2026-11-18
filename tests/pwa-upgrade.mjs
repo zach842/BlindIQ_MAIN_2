@@ -37,10 +37,10 @@ try{
  await page.waitForTimeout(300);
  await page.getByRole('button',{name:'I already have an account'}).click();
  await page.getByRole('button',{name:'Log in',exact:true}).click();
- await page.getByRole('heading',{name:'Hunt. Log. Done.'}).waitFor();
+ await page.getByRole('heading',{name:'Hunt. Log. Share.'}).waitFor();
  const keys=await page.evaluate(()=>caches.keys());
  assert.ok(keys.includes(`blindiq-offline-v${version}`));assert.ok(!keys.includes('blindiq-offline-v1.62.1'));
  await context.setOffline(true);await page.reload();
- await page.getByRole('heading',{name:'Hunt. Log. Done.'}).waitFor();
+ await page.getByRole('heading',{name:'Hunt. Log. Share.'}).waitFor();
  console.log(`PASS installed cache upgrades from v1.62.1 to v${version}; old cache removed; new hub opens offline`);
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
