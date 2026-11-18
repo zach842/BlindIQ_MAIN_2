@@ -6,12 +6,13 @@ import { categorySpecies } from "./categorySpecies";
 import { huntCategories, huntCategoryById } from "./gameCatalog";
 import { states } from "./data";
 import { countBirds, duckBagLimit, effectiveBirdLimit, localDateKey, remainingBirds } from "./harvestLimits";
-import { beginActiveHunt, beginCheckout, finishActiveHunt, getDefaultState, getSubscription, isDemoMode, listHunts, openCustomerPortal, restoreRememberedUser, saveDefaultState, saveHuntRecord, deleteHuntRecord, signIn, signOut, forceLocalSignOut, signUp, syncPendingHunts, touchActiveHunt } from "./services";
+import { beginActiveHunt, beginCheckout, finishActiveHunt, getHuntPreferences, getSubscription, isDemoMode, listHunts, openCustomerPortal, restoreRememberedUser, saveHuntPreferences, saveHuntRecord, deleteHuntRecord, signIn, signOut, forceLocalSignOut, signUp, syncPendingHunts, touchActiveHunt } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
 import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
 import { getDashboardSeasonStatus } from "./seasonStatus";
 import { prepareHuntPhoto } from "./huntPhotos";
+import HuntPreferencesForm from "./HuntPreferencesForm";
 import FieldBoundary from "./FieldBoundary";
 import MigrationPage from "./MigrationPage";
 import NotificationsPage from "./NotificationsPage";
@@ -35,7 +36,6 @@ type InstallUi = {
   install: () => Promise<void>;
 };
 
-const sortedStates = [...states].sort((first, second) => first.name.localeCompare(second.name, "en"));
 const INSTALL_NUDGE_SESSION_KEY = "blindiq-install-nudge-shown-v1";
 const SESSION_RESTORE_TIMEOUT_MS = 12_000;
 
@@ -117,7 +117,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.68.0",
+      "Submitted from BlindIQ v1.69.0",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -330,6 +330,8 @@ export default function App() {
   const [userName, setUserName] = useState("Hunter");
   const [stateCode, setStateCode] = useState("MD");
   const [defaultStateCode, setDefaultStateCode] = useState("MD");
+  const [defaultCategoryId, setDefaultCategoryId] = useState<HuntCategoryId | null>(null);
+  const [needsPreferenceSetup, setNeedsPreferenceSetup] = useState(false);
   const [sessionOpen, setSessionOpen] = useState(false);
   const [fieldStateCode, setFieldStateCode] = useState("MD");
   const [categoryId, setCategoryId] = useState<HuntCategoryId>("waterfowl");
@@ -598,17 +600,20 @@ export default function App() {
         setAccountUserId(user.id);
         const [membershipResult, savedStateResult] = await Promise.allSettled([
           withTimeout(getSubscription(), SESSION_RESTORE_TIMEOUT_MS, "Membership check timed out."),
-          withTimeout(getDefaultState(), SESSION_RESTORE_TIMEOUT_MS, "Default-state check timed out."),
+          withTimeout(getHuntPreferences(user.id), SESSION_RESTORE_TIMEOUT_MS, "Hunting preferences check timed out."),
         ]);
         if (cancelled) return;
         const membership = membershipResult.status === "fulfilled"
           ? membershipResult.value
           : { status: "inactive", isPremium: false, currentPeriodEnd: null };
-        const savedState = savedStateResult.status === "fulfilled" ? savedStateResult.value : "MD";
-        const nextState = states.find((state) => state.code === savedState) ?? states[0];
-        setDefaultStateCode(nextState.code);
-        setStateCode(nextState.code);
-        setZone(nextState.zones[0]);
+        const preferences = savedStateResult.status === "fulfilled" ? savedStateResult.value : { stateCode: "MD", categoryId: null };
+        setDefaultStateCode(preferences.stateCode);
+        setDefaultCategoryId(preferences.categoryId);
+        setNeedsPreferenceSetup(savedStateResult.status === "fulfilled" && !preferences.categoryId);
+        setCategoryId(preferences.categoryId ?? "waterfowl");
+        setFieldStateCode(preferences.stateCode);
+        setStateCode(preferences.stateCode);
+        setZone(states.find(state => state.code === preferences.stateCode)?.zones[0] ?? "");
         setHarvest({}); setSaw({});
         setIsPremium(membership.isPremium);
         setSubscriptionStatus(membership.status);
@@ -616,14 +621,14 @@ export default function App() {
         if (membership.isPremium) {
           const requestedView = new URLSearchParams(window.location.search).get("view");
           setView(requestedView === "migration" || requestedView === "history" || requestedView === "account" || requestedView === "notifications" ? requestedView : "home");
-          void loadNotificationAccount(nextState.code);
+          void loadNotificationAccount(preferences.stateCode);
         } else {
           setView("account");
         }
         if (membershipResult.status === "rejected" || savedStateResult.status === "rejected") {
           setToast("Your login was restored, but some account details could not be refreshed. Please try again when connected.");
         }
-        if (membership.isPremium && !isInstalledApp() && sessionStorage.getItem(INSTALL_NUDGE_SESSION_KEY) !== "shown") {
+        if (membership.isPremium && preferences.categoryId && !isInstalledApp() && sessionStorage.getItem(INSTALL_NUDGE_SESSION_KEY) !== "shown") {
           sessionStorage.setItem(INSTALL_NUDGE_SESSION_KEY, "shown");
           setInstallGuideOpen(true);
         }
@@ -660,20 +665,23 @@ export default function App() {
       setUserName(user.name);
       setAccountEmail(user.email);
       setAccountUserId(user.id);
-      const [membership, savedState] = await Promise.all([
+      const [membership, preferences] = await Promise.all([
         withTimeout(getSubscription(), SESSION_RESTORE_TIMEOUT_MS, "Membership check timed out."),
-        withTimeout(getDefaultState(), SESSION_RESTORE_TIMEOUT_MS, "Default-state check timed out."),
+        withTimeout(getHuntPreferences(user.id), SESSION_RESTORE_TIMEOUT_MS, "Hunting preferences check timed out."),
       ]);
-      const validState = states.some((state) => state.code === savedState) ? savedState : "MD";
+      const validState = preferences.stateCode;
       setDefaultStateCode(validState);
+      setDefaultCategoryId(preferences.categoryId);
+      setNeedsPreferenceSetup(!preferences.categoryId);
       selectState(validState);
+      setCategoryId(preferences.categoryId ?? "waterfowl");
       setIsPremium(membership.isPremium);
       setSubscriptionStatus(membership.status);
       setSubscriptionPeriodEnd(membership.currentPeriodEnd);
       if (membership.isPremium) {
         setView("home");
         void loadNotificationAccount(validState);
-        if (!isInstalledApp()) {
+        if (preferences.categoryId && !isInstalledApp()) {
           sessionStorage.setItem(INSTALL_NUDGE_SESSION_KEY, "shown");
           setInstallGuideOpen(true);
         }
@@ -702,6 +710,25 @@ export default function App() {
     if (checkoutResult === "demo") {
       setToast("Stripe checkout is not configured.");
       setView("account");
+    }
+  }
+
+  function applyHuntingDefaults(state = defaultStateCode, category: HuntCategoryId = defaultCategoryId ?? "waterfowl") {
+    setFieldStateCode(state);
+    setStateCode(state);
+    setZone(states.find(item => item.code === state)?.zones[0] ?? "");
+    setCategoryId(category);
+  }
+
+  async function saveHuntingDefaults(state: string, category: HuntCategoryId) {
+    await saveHuntPreferences(accountUserId, state, category);
+    setDefaultStateCode(state);
+    setDefaultCategoryId(category);
+    setNeedsPreferenceSetup(false);
+    setToast("Hunting defaults saved.");
+    if (!sessionOpen && !huntSaved && !huntNotes && !huntWeather && !huntPhoto && !sessionArea && !blindName && !firearmUsed) {
+      selectState(state);
+      applyHuntingDefaults(state, category);
     }
   }
 
@@ -831,6 +858,9 @@ export default function App() {
 
   function finishSavedHunt() {
     setSessionOpen(false);
+    setIsSimulation(false);
+    setSessionArea("");
+    applyHuntingDefaults();
     setHarvest({}); setSaw({});
     setHuntSaved(false);
     setPreparedShareFile(null);
@@ -985,7 +1015,12 @@ export default function App() {
 
   return (
     <Shell view={view} setView={setView} userName={userName} isPremium={isPremium} installUi={installUi} isOnline={isOnline} unreadNotifications={unreadNotifications}>
-      {view === "home" && <div className="page simple-home"><div className="simple-home-brand"><Brand /><h1>Hunt. Log. Share.</h1><p>The no frills hunting logger.<br />Built for the hunter.</p></div><div className="simple-home-actions"><button className="button button--gold" onClick={() => setView("dashboard")}>{sessionOpen ? "Continue hunt" : "Go Hunt"}<span aria-hidden="true">→</span></button><button className="button" onClick={() => setView("history")}>My Logbook<span aria-hidden="true">≡</span></button></div></div>}
+      {view === "home" && <div className="page simple-home">
+        {needsPreferenceSetup ? <><Brand /><HuntPreferencesForm preferences={{ stateCode: defaultStateCode, categoryId: defaultCategoryId }} firstTime onSave={saveHuntingDefaults} /></> : <>
+          <div className="simple-home-brand"><Brand /><h1>Hunt. Log. Share.</h1><p>The no frills hunting logger.<br />Built for the hunter.</p></div>
+          <div className="simple-home-actions"><button className="button button--gold" onClick={() => setView("dashboard")}>{sessionOpen ? "Continue hunt" : "Go Hunt"}<span aria-hidden="true">→</span></button><button className="button" onClick={() => setView("history")}>My Logbook<span aria-hidden="true">≡</span></button></div>
+        </>}
+      </div>}
       {view === "dashboard" && (
         <div className="page hunting-hub">
           <div className="hub-heading"><h1>Hunt. Log. Share.</h1><p>The no frills hunting logger. Built for the hunter.</p></div>
@@ -1110,9 +1145,9 @@ export default function App() {
             <div className="share-hunt-actions"><button className="button button--gold" disabled={sharingHunt || preparingShareFile || !huntSaved} type="button" onClick={() => void prepareShare("share")}>{!huntSaved ? "Save hunt first" : sharingHunt ? "Opening share menu…" : preparingShareFile ? "Preparing card…" : "Share to social media"}</button><button className="button share-download" disabled={sharingHunt || preparingShareFile || !huntSaved} type="button" onClick={() => void prepareShare("download")}>Download backup</button></div>
           </section>
           </section>}
-          {huntSaved && <button className="button button--gold button--wide" onClick={() => { setSessionOpen(false); setIsSimulation(false); setHuntSaved(false); setHarvest({}); setSaw({}); setSessionArea(""); clearHuntDetails(); clearHuntPhoto(); setToast(""); setView("dashboard"); }}>New session</button>}
-          <small className="version-stamp">BlindIQ v1.68.0</small>
-          {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>Open Hunt Logbook</button> : <button className="text-button" onClick={() => { if (!isSimulation && waterfowlRulesLoaded) void finishActiveHunt("discarded"); setSessionOpen(false); setIsSimulation(false); setHarvest({}); setSaw({}); setHuntSaved(false); clearHuntPhoto(); clearHuntDetails(); setView("dashboard"); }}>Discard hunt</button>}
+          {huntSaved && <button className="button button--gold button--wide" onClick={() => { setSessionOpen(false); setIsSimulation(false); setHuntSaved(false); setHarvest({}); setSaw({}); setSessionArea(""); clearHuntDetails(); clearHuntPhoto(); setToast(""); applyHuntingDefaults(); setView("dashboard"); }}>New session</button>}
+          <small className="version-stamp">BlindIQ v1.69.0</small>
+          {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>Open Hunt Logbook</button> : <button className="text-button" onClick={() => { if (!isSimulation && waterfowlRulesLoaded) void finishActiveHunt("discarded"); setSessionOpen(false); setIsSimulation(false); setHarvest({}); setSaw({}); setHuntSaved(false); clearHuntPhoto(); clearHuntDetails(); applyHuntingDefaults(); setView("dashboard"); }}>Discard hunt</button>}
         </div>
       )}
 
@@ -1151,8 +1186,8 @@ export default function App() {
           {isPremium && <button className="button button--wide" onClick={() => setView("movement")}>Movement Forecast →</button>}
           <section className="profile-card"><div className="profile-avatar">{userName.slice(0, 1)}</div><div><strong>{userName}</strong><span>{accountEmail || `@${userName.toLowerCase()}`}</span></div><span className="demo-pill">{isDemoMode ? "DEMO" : subscriptionStatus === "trialing" ? "TRIAL" : isPremium ? "ACTIVE" : "INACTIVE"}</span></section>
           <section className="default-state-card">
-            <div><p className="eyebrow">HUNTING PREFERENCE</p><h2>Default state</h2><p>BlindIQ will open your dashboard with this state selected.</p></div>
-            <label htmlFor="default-state">DEFAULT HUNTING STATE<select id="default-state" value={defaultStateCode} onChange={async (e) => { const code = e.target.value; setDefaultStateCode(code); try { await saveDefaultState(code); selectState(code); setToast(`${states.find((state) => state.code === code)?.name} saved as your default state.`); } catch (cause) { setToast(cause instanceof Error ? cause.message : "Unable to save your default state."); } }}>{sortedStates.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}</select></label>
+            <HuntPreferencesForm key={`${accountUserId}:${defaultStateCode}:${defaultCategoryId}`} preferences={{ stateCode: defaultStateCode, categoryId: defaultCategoryId }} onSave={saveHuntingDefaults} />
+            {(sessionOpen || huntSaved) && <p>Changes apply to future hunts. Your current session stays as logged.</p>}
           </section>
           <section className="premium-card">
             <p className="eyebrow">BLINDIQ ANNUAL MEMBERSHIP</p>
@@ -1170,11 +1205,11 @@ export default function App() {
               setLoggingOut(true);
               const result = await completeLogout(detachCurrentPushDevice, signOut);
               try { sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); } catch {}
-              setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setSessionOpen(false); setCategoryId("waterfowl"); setHarvest({}); setSaw({}); setSessionArea(""); setSpeciesSearch(""); setHistoryFilter("all"); clearHuntPhoto(); clearHuntDetails(); setHuntSaved(false); setHistory([]); setUnreadNotifications(0); setIsPremium(false); setLoggingOut(false); setToast(""); setView("welcome");
+              setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setSessionOpen(false); setCategoryId("waterfowl"); setDefaultStateCode("MD"); setDefaultCategoryId(null); setNeedsPreferenceSetup(false); setHarvest({}); setSaw({}); setSessionArea(""); setSpeciesSearch(""); setHistoryFilter("all"); clearHuntPhoto(); clearHuntDetails(); setHuntSaved(false); setHistory([]); setUnreadNotifications(0); setIsPremium(false); setLoggingOut(false); setToast(""); setView("welcome");
               if (result.reloadRequired) { forceLocalSignOut(); window.location.replace(window.location.pathname); }
             }}>{loggingOut ? "Logging out…" : "Log out"} <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.68.0</small>
+          <small className="version-stamp">BlindIQ v1.69.0</small>
         </div>
       )}
     </Shell>

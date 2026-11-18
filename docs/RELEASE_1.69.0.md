@@ -1,0 +1,9 @@
+# BlindIQ v1.69.0 — personal hunting defaults
+
+On the first signed-in Home visit, hunters choose their usual state and hunting category with Save & continue. All 50 states and the existing nine hunting categories are available. A category must be explicitly chosen. Existing accounts retain their saved state and see setup once to add their category. Defaults remain editable in Account.
+
+Both values are saved together in the authenticated owner's `profiles` row. Nullable `default_hunt_category` distinguishes existing profiles that have not completed setup; this release does not backfill a category or overwrite any saved state. The additive, idempotent SQL is in `supabase/HUNT_PREFERENCES_SETUP.sql` and is applied to the linked hosted project. Existing owner-only SELECT/UPDATE RLS policies remain unchanged. A save must return an updated row before the UI reports success. Offline account edits require a connection; cached preferences are scoped by account and can be read offline. Demo preferences are browser-local.
+
+Defaults populate the logger after sign-in/restore and when a new session starts after saving or discarding a hunt. Per-hunt state/category selections do not modify account defaults. Editing defaults during an active hunt preserves its state, category and counts; the new defaults apply to subsequent hunts. Draft photos/notes/details are also preserved when updating account defaults.
+
+Validation: 73 unit/database tests, including category validation, legacy/null preferences, idempotent database upgrade, invalid-category rejection and owner-only profile writes. Browser coverage checks first-time setup, responsive widths, failed-save/retry, all 50 states, reload persistence, per-hunt overrides, Account editing and active-hunt protection. Existing category/harvest, login/deletion, logout and PWA upgrade checks also pass. Production build guards still exclude the map renderer and verify app/cache versions.

@@ -39,6 +39,8 @@ Keep credentials in local environment files or hosting secret stores. The client
 
 ## Service setup and feature limits
 
+- [First-time state/category preferences](docs/RELEASE_1.69.0.md) and [database setup](supabase/HUNT_PREFERENCES_SETUP.sql)
+
 - [Membership/authentication setup](SECURE_MEMBERSHIP_SETUP.md)
 - [Saved hunt details setup](FIELD_LOG_DETAILS_SETUP.md); [owner-only hunt deletion SQL](supabase/HUNT_DELETE_SETUP.sql)
 - [Waterfowl Migration Pulse setup](MIGRATION_PULSE_SETUP.md)

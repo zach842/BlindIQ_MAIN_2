@@ -1,6 +1,7 @@
 import {chromium} from 'playwright';import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH});const page=await browser.newPage({viewport:{width:390,height:844},serviceWorkers:'block'});const errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto(process.env.BLINDIQ_TEST_URL || 'http://127.0.0.1:5178');await page.getByRole('button',{name:'I already have an account'}).click();await page.getByRole('button',{name:'Log in',exact:true}).click();await page.getByRole('heading',{name:'Hunt. Log. Share.'}).waitFor();
+await page.addInitScript(()=>{if(!localStorage.getItem('blindiq-hunt-preferences-v1:demo-user'))localStorage.setItem('blindiq-hunt-preferences-v1:demo-user',JSON.stringify({stateCode:'MD',categoryId:'waterfowl'}));});
+ await page.goto(process.env.BLINDIQ_TEST_URL || 'http://127.0.0.1:5178');await page.getByRole('button',{name:'I already have an account'}).click();await page.getByRole('button',{name:'Log in',exact:true}).click();await page.getByRole('heading',{name:'Hunt. Log. Share.'}).waitFor();
 const close=page.getByRole('button',{name:'Close installation instructions'});if(await close.isVisible())await close.click();await page.getByRole('button',{name:'BlindIQ alerts',exact:true}).click();await page.getByRole('heading',{name:'Stay ahead of the hunt.'}).waitFor();
 assert.equal(await page.locator('.followed-state-picker option').count(),50);
 const nationwide=page.getByRole('checkbox',{name:/Nationwide season/});assert.equal(await nationwide.isChecked(),true);await nationwide.uncheck();
