@@ -9,7 +9,8 @@ import { countBirds, duckBagLimit, effectiveBirdLimit, localDateKey, remainingBi
 import { beginActiveHunt, beginCheckout, finishActiveHunt, getHuntPreferences, getSubscription, isDemoMode, listHunts, openCustomerPortal, restoreRememberedUser, saveHuntPreferences, saveHuntRecord, deleteHuntRecord, signIn, signOut, forceLocalSignOut, signUp, syncPendingHunts, touchActiveHunt } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
-import { createHuntShareFile, downloadHuntShareFile, shareHuntFile } from "./shareHunt";
+import type { HuntShareInput } from "./shareHunt";
+import HuntShareDialog from "./HuntShareDialog";
 import { getDashboardSeasonStatus } from "./seasonStatus";
 import { prepareHuntPhoto } from "./huntPhotos";
 import HuntWeatherInput from "./HuntWeatherInput";
@@ -118,7 +119,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.70.0",
+      "Submitted from BlindIQ v1.71.0",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -348,10 +349,8 @@ export default function App() {
   const [historyError, setHistoryError] = useState("");
   const [savingHunt, setSavingHunt] = useState(false);
   const [huntSaved, setHuntSaved] = useState(false);
-  const [sharingHunt, setSharingHunt] = useState(false);
-  const [preparedShareFile, setPreparedShareFile] = useState<File | null>(null);
-  const [preparingShareFile, setPreparingShareFile] = useState(false);
-  const [sharingHistoryId, setSharingHistoryId] = useState("");
+  const [shareInput, setShareInput] = useState<HuntShareInput | null>(null);
+  const [huntShareDate, setHuntShareDate] = useState("");
   const [deletingHistoryId, setDeletingHistoryId] = useState("");
   const [huntPhoto, setHuntPhoto] = useState<Blob | null>(null);
   const [huntPhotoPreview, setHuntPhotoPreview] = useState("");
@@ -411,7 +410,7 @@ export default function App() {
     setHarvest({}); setSaw({});
     setIsSimulation(false);
     setHuntSaved(false);
-    setPreparedShareFile(null);
+
     clearHuntPhoto();
     clearHuntDetails();
   }
@@ -427,7 +426,7 @@ export default function App() {
     setSpeciesSearch("");
     setIsSimulation(simulation);
     setHuntSaved(false);
-    setPreparedShareFile(null);
+
     clearHuntPhoto();
     clearHuntDetails();
     setView("dashboard");
@@ -438,10 +437,11 @@ export default function App() {
     setHuntPhoto(null);
     setHuntPhotoPreview("");
     setPhotoError("");
-    setPreparedShareFile(null);
+
   }
 
   function clearHuntDetails() {
+    setHuntShareDate("");
     setHuntDetailsVersion(version => version + 1);
     setBlindName("");
     setFirearmUsed("");
@@ -778,7 +778,8 @@ export default function App() {
 
   const entries: HarvestEntry[] = buildSessionEntries(sessionSpecies, harvest, saw);
 
-  const currentShareInput = {
+  const currentShareInput: HuntShareInput = {
+    date: huntShareDate || undefined,
     state: location.name,
     zone: sessionZone,
     entries,
@@ -791,45 +792,6 @@ export default function App() {
     firearmUsed: firearmUsed.trim(),
     photo: huntPhoto,
   };
-  const shareCardSignature = JSON.stringify({
-    view,
-    huntSaved,
-    state: location.code,
-    zone,
-    entries: entries.map((entry) => [entry.id, entry.count, entry.saw]),
-    duckCount,
-    gooseCount,
-    isSimulation,
-    blindName,
-    firearmUsed,
-    photo: huntPhoto ? `${huntPhoto.size}:${huntPhoto.type}` : "",
-  });
-
-  useEffect(() => {
-    if (view !== "summary" && !(view === "dashboard" && huntSaved)) {
-      setPreparedShareFile(null);
-      setPreparingShareFile(false);
-      return;
-    }
-    let cancelled = false;
-    setPreparingShareFile(true);
-    void createHuntShareFile(currentShareInput)
-      .then((file) => {
-        if (!cancelled) setPreparedShareFile(file);
-      })
-      .catch(() => {
-        if (!cancelled) setPreparedShareFile(null);
-      })
-      .finally(() => {
-        if (!cancelled) setPreparingShareFile(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // shareCardSignature intentionally captures the serializable share-card content.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shareCardSignature]);
-
   async function saveHunt() {
     if (weatherLoading) { setToast("Wait for weather to finish, or cancel the lookup before saving."); return; }
     if (huntSaved || savingHunt) return;
@@ -851,6 +813,7 @@ export default function App() {
         notes: [huntWeather.trim() ? `Weather: ${huntWeather.trim()}` : "", huntNotes.trim()].filter(Boolean).join("\n\n"),
       }, isSimulation ? null : huntPhoto);
       setHistory((current) => [record, ...current.filter((hunt) => hunt.id !== record.id)]);
+      setHuntShareDate(record.date);
       setHuntSaved(true);
       if (!isSimulation && waterfowlRulesLoaded) await finishActiveHunt("saved");
       setToast(record.id.startsWith("offline-") ? "Hunt saved offline. It will sync automatically when service returns." : isSimulation ? "Test hunt saved. You can share it or open your logbook." : "Hunt saved. You can share it or open your logbook.");
@@ -868,32 +831,12 @@ export default function App() {
     applyHuntingDefaults();
     setHarvest({}); setSaw({});
     setHuntSaved(false);
-    setPreparedShareFile(null);
+
     clearHuntPhoto();
     clearHuntDetails();
     setToast("");
     setHistoryFilter("all");
     setView("history");
-  }
-
-  async function prepareShare(mode: "share" | "download") {
-    setSharingHunt(true);
-    setToast("");
-    try {
-      const file = preparedShareFile ?? await createHuntShareFile(currentShareInput);
-      if (mode === "download") {
-        downloadHuntShareFile(file);
-        setToast("Backup image downloaded.");
-        return;
-      }
-      const result = await shareHuntFile(file, currentShareInput);
-      setToast(result === "shared" ? "Choose Facebook, Instagram, Messages, or another app." : "Sharing is not supported here, so the hunt card was downloaded.");
-    } catch (cause) {
-      if (cause instanceof DOMException && cause.name === "AbortError") return;
-      setToast(cause instanceof Error ? cause.message : "The hunt card could not be prepared.");
-    } finally {
-      setSharingHunt(false);
-    }
   }
 
   async function deleteSavedHunt(hunt: HuntRecord) {
@@ -909,36 +852,21 @@ export default function App() {
     } finally { setDeletingHistoryId(""); }
   }
 
-  async function shareSavedHunt(hunt: HuntRecord) {
-    if (sharingHistoryId) return;
-    setSharingHistoryId(hunt.id);
-    setToast("");
-    try {
-      const savedDuckCount = hunt.entries.filter((entry) => entry.group === "Ducks").reduce((sum, entry) => sum + entry.count, 0);
-      const savedGooseCount = hunt.entries.filter((entry) => entry.group === "Geese").reduce((sum, entry) => sum + entry.count, 0);
-      const shareInput = {
-        state: hunt.state,
-        zone: hunt.zone,
-        entries: hunt.entries,
-        duckCount: savedDuckCount,
-        gooseCount: savedGooseCount,
-        totalCount: hunt.entries.reduce((sum, entry) => sum + entry.count, 0),
-        huntCategoryLabel: huntCategoryById(hunt.huntCategory ?? "waterfowl").label,
-        isSimulation: hunt.isSimulation,
-        date: hunt.date,
-        blindName: hunt.blindName,
-        firearmUsed: hunt.firearmUsed,
-        photo: hunt.photoUrl,
-      };
-      const file = await createHuntShareFile(shareInput);
-      const result = await shareHuntFile(file, shareInput);
-      setToast(result === "shared" ? "Choose where to share your saved hunt." : "Sharing is not supported here, so the hunt card was downloaded.");
-    } catch (cause) {
-      if (cause instanceof DOMException && cause.name === "AbortError") return;
-      setToast(cause instanceof Error ? cause.message : "That saved hunt could not be shared.");
-    } finally {
-      setSharingHistoryId("");
-    }
+  function shareSavedHunt(hunt: HuntRecord) {
+    setShareInput({
+      state: hunt.state,
+      zone: hunt.zone,
+      entries: hunt.entries,
+      duckCount: hunt.entries.filter(entry => entry.group === "Ducks").reduce((sum, entry) => sum + entry.count, 0),
+      gooseCount: hunt.entries.filter(entry => entry.group === "Geese").reduce((sum, entry) => sum + entry.count, 0),
+      totalCount: hunt.entries.reduce((sum, entry) => sum + entry.count, 0),
+      huntCategoryLabel: huntCategoryById(hunt.huntCategory ?? "waterfowl").label,
+      isSimulation: hunt.isSimulation,
+      date: hunt.date,
+      blindName: hunt.blindName,
+      firearmUsed: hunt.firearmUsed,
+      photo: hunt.photoUrl,
+    });
   }
 
   const installUi: InstallUi = {
@@ -1145,13 +1073,12 @@ export default function App() {
           {huntSaved && <section className="hub-share-section" aria-label="Share or download session">
           <section className={`share-hunt-card ${huntSaved ? "share-hunt-card--ready" : ""}`}>
             <div className="share-hunt-card__icon">↗</div>
-            <div><p className="eyebrow">SAVE IT • SHARE IT</p><h2>{huntSaved ? "Your hunt card is ready." : "Save the hunt, then share it."}</h2><p>Open your phone’s sharing menu and send the finished card directly to Facebook, Instagram, Messages, and more. No camera-roll step required on supported phones.</p></div>
-            <div className="share-targets" aria-label="Sharing options"><span>Facebook</span><span>Instagram</span><span>Messages</span></div>
-            <div className="share-hunt-actions"><button className="button button--gold" disabled={sharingHunt || preparingShareFile || !huntSaved} type="button" onClick={() => void prepareShare("share")}>{!huntSaved ? "Save hunt first" : sharingHunt ? "Opening share menu…" : preparingShareFile ? "Preparing card…" : "Share to social media"}</button><button className="button share-download" disabled={sharingHunt || preparingShareFile || !huntSaved} type="button" onClick={() => void prepareShare("download")}>Download backup</button></div>
+            <div><p className="eyebrow">SAVE IT • SHARE IT</p><h2>Share your hunt.</h2><p>Preview your hunt card, copy a caption, then choose a compatible app from your device’s share sheet.</p></div>
+            <div className="share-hunt-actions"><button className="button button--gold" type="button" onClick={() => setShareInput(currentShareInput)}>Share hunt</button></div>
           </section>
           </section>}
           {huntSaved && <button className="button button--gold button--wide" onClick={() => { setSessionOpen(false); setIsSimulation(false); setHuntSaved(false); setHarvest({}); setSaw({}); setSessionArea(""); clearHuntDetails(); clearHuntPhoto(); setToast(""); applyHuntingDefaults(); setView("dashboard"); }}>New session</button>}
-          <small className="version-stamp">BlindIQ v1.70.0</small>
+          <small className="version-stamp">BlindIQ v1.71.0</small>
           {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>Open Hunt Logbook</button> : <button className="text-button" onClick={() => { if (!isSimulation && waterfowlRulesLoaded) void finishActiveHunt("discarded"); setSessionOpen(false); setIsSimulation(false); setHarvest({}); setSaw({}); setHuntSaved(false); clearHuntPhoto(); clearHuntDetails(); applyHuntingDefaults(); setView("dashboard"); }}>Discard hunt</button>}
         </div>
       )}
@@ -1172,7 +1099,7 @@ export default function App() {
               <article className={hunt.isSimulation ? "history-row--simulation" : ""} key={hunt.id}>
                 {hunt.photoUrl ? <a className="history-photo" href={hunt.photoUrl} target="_blank" rel="noreferrer" aria-label={`Open harvest photo from ${hunt.date}`}><img src={hunt.photoUrl} alt="Saved harvest" /></a> : <div className="date-tile"><strong>{hunt.date.split(" ")[1]?.replace(",", "")}</strong><span>{hunt.date.split(" ")[0]?.slice(0, 3)}</span></div>}
                 <div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}{hunt.id.startsWith("offline-") && <em>OFFLINE</em>}{hunt.photoUrl && <em>PHOTO</em>}</strong><span>{huntCategoryById(hunt.huntCategory ?? "waterfowl").shortLabel} • {hunt.zone} • {hunt.date}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.label}: ${entry.saw === undefined ? "" : `Saw ${entry.saw} • `}Harvested ${entry.count}`).join(" • ") : "Zero-harvest hunt"}</p>{(hunt.blindName || hunt.firearmUsed || hunt.notes) && <div className="history-field-details">{hunt.blindName && <span><b>Blind</b>{hunt.blindName}</span>}{hunt.firearmUsed && <span><b>Firearm</b>{hunt.firearmUsed}</span>}{hunt.notes && <p><b>Notes</b>{hunt.notes}</p>}</div>}</div>
-                <div className="history-actions"><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b><button type="button" disabled={sharingHistoryId === hunt.id || deletingHistoryId === hunt.id} onClick={() => void shareSavedHunt(hunt)}>{sharingHistoryId === hunt.id ? "Preparing…" : "↗ Share"}</button><button className="delete-hunt-button" type="button" aria-label={`Delete ${hunt.state} hunt from ${hunt.date}`} disabled={!!deletingHistoryId || sharingHistoryId === hunt.id} onClick={() => void deleteSavedHunt(hunt)}>{deletingHistoryId === hunt.id ? "Deleting…" : "Delete log"}</button></div>
+                <div className="history-actions"><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b><button type="button" disabled={!!deletingHistoryId} onClick={() => shareSavedHunt(hunt)}>↗ Share</button><button className="delete-hunt-button" type="button" aria-label={`Delete ${hunt.state} hunt from ${hunt.date}`} disabled={!!deletingHistoryId} onClick={() => void deleteSavedHunt(hunt)}>{deletingHistoryId === hunt.id ? "Deleting…" : "Delete log"}</button></div>
               </article>
             ))}
           </div>
@@ -1210,13 +1137,14 @@ export default function App() {
               setLoggingOut(true);
               const result = await completeLogout(detachCurrentPushDevice, signOut);
               try { sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); } catch {}
-              setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setSessionOpen(false); setCategoryId("waterfowl"); setDefaultStateCode("MD"); setDefaultCategoryId(null); setNeedsPreferenceSetup(false); setHarvest({}); setSaw({}); setSessionArea(""); setSpeciesSearch(""); setHistoryFilter("all"); clearHuntPhoto(); clearHuntDetails(); setHuntSaved(false); setHistory([]); setUnreadNotifications(0); setIsPremium(false); setLoggingOut(false); setToast(""); setView("welcome");
+              setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setSessionOpen(false); setCategoryId("waterfowl"); setDefaultStateCode("MD"); setDefaultCategoryId(null); setNeedsPreferenceSetup(false); setHarvest({}); setSaw({}); setSessionArea(""); setSpeciesSearch(""); setHistoryFilter("all"); clearHuntPhoto(); clearHuntDetails(); setHuntSaved(false); setHistory([]); setShareInput(null); setUnreadNotifications(0); setIsPremium(false); setLoggingOut(false); setToast(""); setView("welcome");
               if (result.reloadRequired) { forceLocalSignOut(); window.location.replace(window.location.pathname); }
             }}>{loggingOut ? "Logging out…" : "Log out"} <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.70.0</small>
+          <small className="version-stamp">BlindIQ v1.71.0</small>
         </div>
       )}
+      {shareInput && <HuntShareDialog input={shareInput} onClose={() => setShareInput(null)} />}
     </Shell>
   );
 }

@@ -1,0 +1,12 @@
+const test=require('node:test');const assert=require('node:assert/strict');
+const {canShareHuntFile,shareHuntFile,huntShareCaption}=require(process.env.BLINDIQ_TEST_OUTPUT+'/shareHunt.js');
+const input=()=>({state:'Maryland',zone:'PRIVATE AREA',blindName:'PRIVATE BLIND',entries:[{id:'deer',label:'Whitetail',count:1,saw:3}],duckCount:0,gooseCount:0,totalCount:1,huntCategoryLabel:'Deer',isSimulation:false,date:'November 18, 2026'});
+test('caption includes sightings, harvest and hunt date, excluding private area/blind details',()=>{const caption=huntShareCaption(input());assert.match(caption,/Maryland deer hunt.*November 18, 2026/);assert.match(caption,/Saw 3 · Harvested 1/);assert.ok(!caption.includes('PRIVATE'));const legacy=input();delete legacy.entries[0].saw;assert.ok(!huntShareCaption(legacy).includes('Saw 0'));const practice=input();practice.isSimulation=true;assert.match(huntShareCaption(practice),/^Practice/);});
+test('native sharing passes the prepared image synchronously, without extra text or links',async()=>{
+ const previous=Object.getOwnPropertyDescriptor(global,'navigator');let called=false;const file=new File(['png'],'hunt.png',{type:'image/png'});
+ try{Object.defineProperty(global,'navigator',{configurable:true,value:{canShare:({files})=>files[0]===file,share(data){called=true;assert.deepEqual(Object.keys(data),['files']);assert.equal(data.files[0],file);return Promise.resolve();}}});assert.equal(canShareHuntFile(file),true);const result=shareHuntFile(file);assert.equal(called,true,'native call must occur before awaiting any preparation');await result;}finally{if(previous)Object.defineProperty(global,'navigator',previous);else delete global.navigator;}
+});
+test('unsupported capabilities and cancellation never trigger automatic image downloads',async()=>{
+ const previous=Object.getOwnPropertyDescriptor(global,'navigator');const file=new File(['png'],'hunt.png',{type:'image/png'});
+ try{Object.defineProperty(global,'navigator',{configurable:true,value:{canShare(){throw Error('blocked')},share(){throw Error('should not run')}}});assert.equal(canShareHuntFile(file),false);await assert.rejects(shareHuntFile(file),/cannot share images/);Object.defineProperty(global,'navigator',{configurable:true,value:{canShare:()=>true,share:()=>Promise.reject(new DOMException('cancelled','AbortError'))}});await assert.rejects(shareHuntFile(file),{name:'AbortError'});}finally{if(previous)Object.defineProperty(global,'navigator',previous);else delete global.navigator;}
+});

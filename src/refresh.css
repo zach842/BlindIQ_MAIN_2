@@ -303,3 +303,29 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 
 .location-weather-actions button:disabled { opacity: .6; }
 .weather-lookup-status { font-size: 13px; line-height: 1.5; color: #365b42; }
 #hunt-extra-weather label { margin-top: 14px; }
+
+.hunt-share-dialog { width: min(520px, calc(100% - 24px)); max-height: calc(100dvh - 32px); box-sizing: border-box; padding: 22px; border: 1px solid #cdd7ce; border-radius: 18px; color: #183e30; background: #fbfaf6; overflow-y: auto; }
+.hunt-share-dialog::backdrop { background: #102e25b8; backdrop-filter: blur(3px); }
+.hunt-share-dialog header { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.hunt-share-dialog h2 { font-size: 28px; margin: 6px 0; }
+.hunt-share-dialog p { font-size: 13px; line-height: 1.6; }
+.hunt-share-dialog .share-close { min-width: 44px; min-height: 44px; border: 1px solid #cdd7ce; border-radius: 50%; background: transparent; color: #183e30; font-size: 26px; }
+.share-preview { min-height: 100px; max-width: 280px; margin: 18px auto; background: #e3ebdf; border-radius: 10px; overflow: hidden; }
+.share-preview img { display: block; width: 100%; height: auto; }
+.share-preview p { text-align: center; padding: 20px; }
+.share-options { display: grid; gap: 12px; margin: 16px 0; }
+.share-options label { display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 30px; }
+.share-options input { width: 20px; height: 20px; accent-color: #244a39; }
+.share-caption-label { display: grid; gap: 8px; font-weight: 700; font-size: 14px; }
+.share-caption-label textarea { box-sizing: border-box; width: 100%; font: inherit; font-size: 16px; line-height: 1.5; border: 1px solid #cdd7ce; border-radius: 9px; padding: 12px; background: white; color: #183e30; }
+.share-caption-help { color: #657064; }
+.hunt-share-dialog .share-error { color: #943e30; padding: 10px; border: 1px solid #c5897c; border-radius: 8px; }
+.share-status,.share-fallback { padding: 10px; background: #e3ebdf; border-radius: 8px; }
+.share-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.share-dialog-actions .button { min-height: 48px; border: 1px solid #cdd7ce; padding: 10px; }
+.share-dialog-actions .button:last-child { grid-column: 1 / -1; }
+@media(max-width:360px){.hunt-share-dialog{padding:16px}.share-dialog-actions{grid-template-columns:1fr}.share-dialog-actions .button:last-child{grid-column:auto}}
+
+.hunt-share-dialog[open] { display: flex; flex-direction: column; overflow: hidden; }
+.share-dialog-content { overflow-y: auto; min-height: 0; padding-right: 4px; }
+.share-dialog-actions { flex-shrink: 0; border-top: 1px solid #cdd7ce; padding-top: 12px; }
