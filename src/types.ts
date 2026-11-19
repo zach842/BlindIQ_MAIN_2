@@ -55,10 +55,15 @@ export type StateData = {
 
 export type HarvestEntry = BirdRule & { count: number; saw?: number };
 
+export type HarvestReport = { id: string; speciesId: string; confirmationNumber: string; harvestDate: string; county: string; weaponClass: string };
+
 export type HuntRecord = {
   id: string;
   date: string;
   huntedAt: string;
+  huntLocalDate?: string;
+  spotName?: string | null;
+  reportingDetails?: HarvestReport[];
   stateCode: string;
   state: string;
   zone: string;
@@ -73,6 +78,8 @@ export type HuntRecord = {
 };
 
 export type NewHuntRecord = {
+  huntLocalDate?: string;
+  spotName?: string;
   stateCode: string;
   state: string;
   zone: string;

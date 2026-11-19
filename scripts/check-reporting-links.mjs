@@ -1,0 +1,6 @@
+// Availability check only. HTTP success does not verify a reporting rule or deadline.
+import {readFile,writeFile} from 'node:fs/promises';
+const directory=JSON.parse(await readFile(new URL('../docs/reporting/STATE_REPORTING_SOURCES.json',import.meta.url),'utf8'));
+const queue=Object.entries(directory);const results=[];
+async function worker(){while(queue.length){const [stateCode,[url,label]]=queue.shift();try{const response=await fetch(url,{signal:AbortSignal.timeout(20000),headers:{'User-Agent':'BlindIQ source-link review (https://blindiq.app)'}});const type=response.headers.get('content-type')||'';const text=type.includes('html')?await response.text():'';results.push({stateCode,url,label,status:response.status,resolvedUrl:response.url,title:text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g,' ').trim()??'Document or application',checkedAt:new Date().toISOString()});}catch(error){results.push({stateCode,url,label,error:String(error),checkedAt:new Date().toISOString()});}}}
+await Promise.all(Array.from({length:4},worker));const output=JSON.stringify(results.sort((a,b)=>a.stateCode.localeCompare(b.stateCode)),null,2)+'\n';if(process.argv[2])await writeFile(process.argv[2],output);else process.stdout.write(output);

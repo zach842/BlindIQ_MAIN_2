@@ -6,10 +6,13 @@ import { categorySpecies } from "./categorySpecies";
 import { huntCategories, huntCategoryById } from "./gameCatalog";
 import { states } from "./data";
 import { countBirds, duckBagLimit, effectiveBirdLimit, localDateKey, remainingBirds } from "./harvestLimits";
-import { beginActiveHunt, beginCheckout, finishActiveHunt, getHuntPreferences, getSubscription, isDemoMode, listHunts, openCustomerPortal, restoreRememberedUser, saveHuntPreferences, saveHuntRecord, deleteHuntRecord, signIn, signOut, forceLocalSignOut, signUp, syncPendingHunts, touchActiveHunt } from "./services";
+import { beginActiveHunt, beginCheckout, finishActiveHunt, getHuntPreferences, getSubscription, isDemoMode, listHunts, openCustomerPortal, restoreRememberedUser, saveHuntPreferences, getHuntReadNotice, saveHuntReportingDetails, saveHuntRecord, deleteHuntRecord, signIn, signOut, forceLocalSignOut, signUp, syncPendingHunts, touchActiveHunt } from "./services";
 import { TERMS_EFFECTIVE_DATE, TERMS_VERSION, termsSections } from "./legal";
 import { birdGuideEntries, birdPhotoFor } from "./birdGuide";
 import type { HuntShareInput } from "./shareHunt";
+import LogbookInsights from "./LogbookInsights";
+import HuntReportingDialog from "./HuntReportingDialog";
+import { defaultLogbookFilter, filterHunts, spotKey, spotName } from "./logbookSummary";
 import HuntShareDialog from "./HuntShareDialog";
 import { getDashboardSeasonStatus } from "./seasonStatus";
 import { prepareHuntPhoto } from "./huntPhotos";
@@ -119,7 +122,7 @@ function FeedbackForm({ stateName, accountEmail, onBack }: { stateName: string; 
       "Steps to reproduce or additional context:",
       steps.trim() || "Not provided",
       "",
-      "Submitted from BlindIQ v1.71.0",
+      "Submitted from BlindIQ v1.72.0",
     ].join("\n");
     window.location.href = `mailto:office@blindiq.app?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
   }
@@ -340,6 +343,8 @@ export default function App() {
   const [movementMode, setMovementMode] = useState("waterfowl");
   const [speciesSearch, setSpeciesSearch] = useState("");
   const [historyFilter, setHistoryFilter] = useState("all");
+  const [logFilter, setLogFilter] = useState(defaultLogbookFilter);
+  const [reportingHunt, setReportingHunt] = useState<HuntRecord | null>(null);
   const [sessionArea, setSessionArea] = useState("");
   const [zone, setZone] = useState(states[0].zones[0]);
   const [saw, setSaw] = useState<Record<string, number>>({});
@@ -347,6 +352,7 @@ export default function App() {
   const [history, setHistory] = useState<HuntRecord[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
+  const [historyNotice, setHistoryNotice] = useState("");
   const [savingHunt, setSavingHunt] = useState(false);
   const [huntSaved, setHuntSaved] = useState(false);
   const [shareInput, setShareInput] = useState<HuntShareInput | null>(null);
@@ -396,7 +402,7 @@ export default function App() {
   const limitForBird = (bird: BirdRule) => effectiveBirdLimit(bird, zone, regulationDate);
   const remaining = (bird: BirdRule) => waterfowlRulesLoaded ? remainingBirds(selected, bird, harvest, zone, regulationDate) : Infinity;
   const availableBirds = selected.birds.filter((bird) => remaining(bird) > 0);
-  const filteredHistory = history.filter((hunt) => view !== "history" || historyFilter === "all" || (hunt.huntCategory ?? "waterfowl") === historyFilter);
+  const filteredHistory = view === "history" ? filterHunts(history, logFilter, historyFilter) : history;
   const liveHistory = filteredHistory.filter((hunt) => !hunt.isSimulation);
   const liveBirdCount = liveHistory.reduce((sum, hunt) => sum + hunt.entries.reduce((entrySum, entry) => entrySum + entry.count, 0), 0);
   const lastLiveHunt = liveHistory[0] ?? null;
@@ -538,7 +544,9 @@ export default function App() {
       try {
         const synced = await syncPendingHunts();
         if (!synced || cancelled) return;
-        setHistory(await listHunts());
+        const records = await listHunts();
+        setHistory(records);
+        setHistoryNotice(getHuntReadNotice(records));
         if (!cancelled) setToast(`${synced} offline hunt${synced === 1 ? "" : "s"} synced.`);
       } catch {
         if (!cancelled) setToast("You are back online, but offline hunts could not sync yet. BlindIQ will try again later.");
@@ -575,7 +583,7 @@ export default function App() {
     setHistoryError("");
     void listHunts()
       .then((records) => {
-        if (!cancelled) setHistory(records);
+        if (!cancelled) { setHistory(records); setHistoryNotice(getHuntReadNotice(records)); }
       })
       .catch((cause) => {
         if (!cancelled) setHistoryError(cause instanceof Error ? cause.message : "Unable to load saved hunts.");
@@ -808,6 +816,7 @@ export default function App() {
         isSimulation,
         huntCategory: categoryId,
         seasonYear: waterfowlRulesLoaded ? selected.seasonYear : undefined,
+        spotName: blindName.trim() || sessionArea.trim(),
         blindName: blindName.trim(),
         firearmUsed: firearmUsed.trim(),
         notes: [huntWeather.trim() ? `Weather: ${huntWeather.trim()}` : "", huntNotes.trim()].filter(Boolean).join("\n\n"),
@@ -836,6 +845,7 @@ export default function App() {
     clearHuntDetails();
     setToast("");
     setHistoryFilter("all");
+    setLogFilter(defaultLogbookFilter());
     setView("history");
   }
 
@@ -863,7 +873,7 @@ export default function App() {
       huntCategoryLabel: huntCategoryById(hunt.huntCategory ?? "waterfowl").label,
       isSimulation: hunt.isSimulation,
       date: hunt.date,
-      blindName: hunt.blindName,
+      blindName: hunt.spotName || hunt.blindName,
       firearmUsed: hunt.firearmUsed,
       photo: hunt.photoUrl,
     });
@@ -965,6 +975,7 @@ export default function App() {
             {(sessionOpen || huntSaved) && <small>Save or discard this session to change state or category.</small>}
 
           </section>
+          <label className="hub-spot">Spot name (optional)<input list="saved-hunt-spots" value={blindName} disabled={huntSaved} maxLength={120} onChange={event => setBlindName(event.target.value)} placeholder="North blind or creek stand" /><datalist id="saved-hunt-spots">{[...new Set(history.filter(hunt => !hunt.isSimulation && hunt.stateCode === fieldStateCode).map(spotName).filter(Boolean))].sort().map(name => <option value={name} key={name} />)}</datalist></label>
           {huntExtras}
           <section className="harvest-panel hub-counter-panel" aria-label="Session counters">
               <div className="bird-list bird-list--observations">
@@ -1078,7 +1089,7 @@ export default function App() {
           </section>
           </section>}
           {huntSaved && <button className="button button--gold button--wide" onClick={() => { setSessionOpen(false); setIsSimulation(false); setHuntSaved(false); setHarvest({}); setSaw({}); setSessionArea(""); clearHuntDetails(); clearHuntPhoto(); setToast(""); applyHuntingDefaults(); setView("dashboard"); }}>New session</button>}
-          <small className="version-stamp">BlindIQ v1.71.0</small>
+          <small className="version-stamp">BlindIQ v1.72.0</small>
           {huntSaved ? <button className="button button--wide share-history-button" type="button" onClick={finishSavedHunt}>Open Hunt Logbook</button> : <button className="text-button" onClick={() => { if (!isSimulation && waterfowlRulesLoaded) void finishActiveHunt("discarded"); setSessionOpen(false); setIsSimulation(false); setHarvest({}); setSaw({}); setHuntSaved(false); clearHuntPhoto(); clearHuntDetails(); applyHuntingDefaults(); setView("dashboard"); }}>Discard hunt</button>}
         </div>
       )}
@@ -1089,17 +1100,19 @@ export default function App() {
           {!isPremium && <section className="locked-card"><span>MEMBERSHIP REQUIRED</span><h2>Unlock your hunt history</h2><p>Activate your BlindIQ membership to save and revisit every hunt.</p><button className="button button--gold" onClick={() => setView("account")}>View membership</button></section>}
           {isPremium && <>
           <label className="history-filter">SHOW HUNTS<select value={historyFilter} onChange={(event) => setHistoryFilter(event.target.value)}><option value="all">All species</option>{huntCategories.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
-          <div className="stats-strip"><div><strong>{liveHistory.length}</strong><span>Live hunts</span></div><div><strong>{liveBirdCount}</strong><span>Harvests</span></div><div><strong>{new Set(liveHistory.map((hunt) => hunt.state)).size}</strong><span>States</span></div></div>
+          <button className="button" type="button" disabled={historyLoading} onClick={async () => { setHistoryLoading(true); setHistoryError(""); try { const records = await listHunts(); setHistory(records); setHistoryNotice(getHuntReadNotice(records)); } catch (cause) { setHistoryError(cause instanceof Error ? cause.message : "The logbook could not be refreshed."); } finally { setHistoryLoading(false); } }}>Refresh logbook</button>
+          {historyNotice && <p className="history-error" role="status">{historyNotice}</p>}
+          {!historyLoading && !historyError && <LogbookInsights hunts={history} filter={logFilter} onChange={setLogFilter} category={historyFilter} />}
           {toast && <div className="inline-toast">{toast}</div>}
           {historyLoading && <p className="history-status">Loading your hunts…</p>}
           {historyError && <div className="history-error" role="alert"><strong>Saved hunts could not be loaded.</strong><span>{historyError}</span></div>}
-          {!historyLoading && !historyError && filteredHistory.length === 0 && <section className="empty-history"><h2>No hunts saved yet.</h2><p>Start a live hunt or use Test Hunt to practice. Zero-harvest hunts can also be saved.</p></section>}
+          {!historyLoading && !historyError && filteredHistory.length === 0 && <section className="empty-history"><h2>No hunts saved yet.</h2><p>No logs match these filters. Change the dates, state, category or spot, or start a new hunt.</p></section>}
           <div className="history-list">
             {filteredHistory.map((hunt) => (
               <article className={hunt.isSimulation ? "history-row--simulation" : ""} key={hunt.id}>
                 {hunt.photoUrl ? <a className="history-photo" href={hunt.photoUrl} target="_blank" rel="noreferrer" aria-label={`Open harvest photo from ${hunt.date}`}><img src={hunt.photoUrl} alt="Saved harvest" /></a> : <div className="date-tile"><strong>{hunt.date.split(" ")[1]?.replace(",", "")}</strong><span>{hunt.date.split(" ")[0]?.slice(0, 3)}</span></div>}
-                <div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}{hunt.id.startsWith("offline-") && <em>OFFLINE</em>}{hunt.photoUrl && <em>PHOTO</em>}</strong><span>{huntCategoryById(hunt.huntCategory ?? "waterfowl").shortLabel} • {hunt.zone} • {hunt.date}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.label}: ${entry.saw === undefined ? "" : `Saw ${entry.saw} • `}Harvested ${entry.count}`).join(" • ") : "Zero-harvest hunt"}</p>{(hunt.blindName || hunt.firearmUsed || hunt.notes) && <div className="history-field-details">{hunt.blindName && <span><b>Blind</b>{hunt.blindName}</span>}{hunt.firearmUsed && <span><b>Firearm</b>{hunt.firearmUsed}</span>}{hunt.notes && <p><b>Notes</b>{hunt.notes}</p>}</div>}</div>
-                <div className="history-actions"><b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b><button type="button" disabled={!!deletingHistoryId} onClick={() => shareSavedHunt(hunt)}>↗ Share</button><button className="delete-hunt-button" type="button" aria-label={`Delete ${hunt.state} hunt from ${hunt.date}`} disabled={!!deletingHistoryId} onClick={() => void deleteSavedHunt(hunt)}>{deletingHistoryId === hunt.id ? "Deleting…" : "Delete log"}</button></div>
+                <div><strong>{hunt.state}{hunt.isSimulation && <em>TEST</em>}{hunt.id.startsWith("offline-") && <em>OFFLINE</em>}{hunt.photoUrl && <em>PHOTO</em>}</strong><span>{huntCategoryById(hunt.huntCategory ?? "waterfowl").shortLabel} • {hunt.zone} • {hunt.date}</span><p>{hunt.entries.length ? hunt.entries.map((entry) => `${entry.label}: ${entry.saw === undefined ? "" : `Saw ${entry.saw} • `}Harvested ${entry.count}`).join(" • ") : "Zero-harvest hunt"}</p>{(hunt.spotName || hunt.blindName || hunt.firearmUsed || hunt.notes) && <div className="history-field-details">{(hunt.spotName || hunt.blindName) && <span><b>Spot</b>{hunt.spotName || hunt.blindName}</span>}{hunt.firearmUsed && <span><b>Firearm</b>{hunt.firearmUsed}</span>}{hunt.notes && <p><b>Notes</b>{hunt.notes}</p>}</div>}</div>
+                <div className="history-actions">{!hunt.isSimulation && <button type="button" onClick={() => setReportingHunt(hunt)}>Reporting details{hunt.reportingDetails?.length ? ` (${hunt.reportingDetails.length})` : ""}</button>}<b>{hunt.entries.reduce((sum, entry) => sum + entry.count, 0)}</b><button type="button" disabled={!!deletingHistoryId} onClick={() => shareSavedHunt(hunt)}>↗ Share</button><button className="delete-hunt-button" type="button" aria-label={`Delete ${hunt.state} hunt from ${hunt.date}`} disabled={!!deletingHistoryId} onClick={() => void deleteSavedHunt(hunt)}>{deletingHistoryId === hunt.id ? "Deleting…" : "Delete log"}</button></div>
               </article>
             ))}
           </div>
@@ -1137,13 +1150,14 @@ export default function App() {
               setLoggingOut(true);
               const result = await completeLogout(detachCurrentPushDevice, signOut);
               try { sessionStorage.removeItem(INSTALL_NUDGE_SESSION_KEY); } catch {}
-              setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setSessionOpen(false); setCategoryId("waterfowl"); setDefaultStateCode("MD"); setDefaultCategoryId(null); setNeedsPreferenceSetup(false); setHarvest({}); setSaw({}); setSessionArea(""); setSpeciesSearch(""); setHistoryFilter("all"); clearHuntPhoto(); clearHuntDetails(); setHuntSaved(false); setHistory([]); setShareInput(null); setUnreadNotifications(0); setIsPremium(false); setLoggingOut(false); setToast(""); setView("welcome");
+              setUserName("Hunter"); setAccountEmail(""); setAccountUserId(""); setSessionOpen(false); setCategoryId("waterfowl"); setDefaultStateCode("MD"); setDefaultCategoryId(null); setNeedsPreferenceSetup(false); setHarvest({}); setSaw({}); setSessionArea(""); setSpeciesSearch(""); setHistoryFilter("all"); clearHuntPhoto(); clearHuntDetails(); setHuntSaved(false); setHistory([]); setHistoryNotice(""); setLogFilter(defaultLogbookFilter()); setReportingHunt(null); setShareInput(null); setUnreadNotifications(0); setIsPremium(false); setLoggingOut(false); setToast(""); setView("welcome");
               if (result.reloadRequired) { forceLocalSignOut(); window.location.replace(window.location.pathname); }
             }}>{loggingOut ? "Logging out…" : "Log out"} <span>›</span></button></section>
           <div className="integration-note"><strong>{isDemoMode ? "Demo connection" : "Account connection active"}</strong><p>{isDemoMode ? "Add Supabase environment settings to activate persistent accounts." : "Supabase is connected for persistent authentication. Stripe checkout will activate after its public payment link is added."}</p></div>
-          <small className="version-stamp">BlindIQ v1.71.0</small>
+          <small className="version-stamp">BlindIQ v1.72.0</small>
         </div>
       )}
+      {reportingHunt && <HuntReportingDialog hunt={reportingHunt} onClose={() => setReportingHunt(null)} onSave={async (hunt, reports, spot) => { const record = await saveHuntReportingDetails(hunt, reports, spot); setHistory(rows => rows.map(row => row.id === record.id ? record : row)); setReportingHunt(record); if (logFilter.spot === spotKey(hunt)) setLogFilter(filter => ({ ...filter, spot: spotKey(record) || "all" })); }} />}
       {shareInput && <HuntShareDialog input={shareInput} onClose={() => setShareInput(null)} />}
     </Shell>
   );

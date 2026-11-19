@@ -8,18 +8,18 @@ try {
   const compile = spawnSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'),
     '--module', 'commonjs', '--moduleResolution', 'node', '--target', 'ES2022',
     '--skipLibCheck', '--strict', '--outDir', output,
-    'src/shareHunt.ts', 'src/locationWeather.ts', 'src/huntPreferences.ts', 'src/mapData.ts', 'src/logout.ts', 'src/fieldWeather.ts', 'src/data.ts', 'src/harvestLimits.ts', 'src/seasonStatus.ts', 'src/categorySpecies.ts', 'src/sessionEntries.ts', 'src/gameCatalog.ts', 'src/huntingLocations.ts'], { stdio: 'inherit' });
+    'src/logbookSummary.ts', 'src/reportingDirectory.ts', 'src/shareHunt.ts', 'src/locationWeather.ts', 'src/huntPreferences.ts', 'src/mapData.ts', 'src/logout.ts', 'src/fieldWeather.ts', 'src/data.ts', 'src/harvestLimits.ts', 'src/seasonStatus.ts', 'src/categorySpecies.ts', 'src/sessionEntries.ts', 'src/gameCatalog.ts', 'src/huntingLocations.ts'], { stdio: 'inherit' });
   if (compile.status !== 0) process.exitCode = compile.status ?? 1;
   else {
     writeFileSync(join(output, 'package.json'), '{"type":"commonjs"}');
     const policy = spawnSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'),'--module','commonjs','--target','ES2022','--skipLibCheck','--strict','--outDir',output,'supabase/functions/_shared/notification-policy.ts'], {stdio:'inherit'});
     if(policy.status !== 0) throw new Error('Notification policy compilation failed');
-    const run = spawnSync(process.execPath, ['--test', 'tests/share-hunt.test.cjs', 'tests/location-weather.test.cjs', 'tests/hunt-preferences.test.cjs', 'tests/map-data.test.cjs', 'tests/logout.test.cjs', 'tests/notification-policy.test.cjs', 'tests/field-weather.test.cjs', 'tests/regulations.test.cjs', 'tests/species.test.cjs'], {
+    const run = spawnSync(process.execPath, ['--test', 'tests/logbook-summary.test.cjs', 'tests/share-hunt.test.cjs', 'tests/location-weather.test.cjs', 'tests/hunt-preferences.test.cjs', 'tests/map-data.test.cjs', 'tests/logout.test.cjs', 'tests/notification-policy.test.cjs', 'tests/field-weather.test.cjs', 'tests/regulations.test.cjs', 'tests/species.test.cjs'], {
       stdio: 'inherit', env: { ...process.env, BLINDIQ_TEST_OUTPUT: output },
     });
     process.exitCode = run.status ?? 1;
     if (run.status === 0) {
-      const forecast = spawnSync(process.execPath, ['--test', 'tests/hunt-preferences-database.test.mjs', 'tests/notification-vault.test.mjs', 'tests/notification-database.test.mjs', 'tests/hunt-delete-database.test.mjs', 'tests/forecasting/pipeline.test.mjs', 'tests/forecasting/database.test.mjs'], { stdio: 'inherit' });
+      const forecast = spawnSync(process.execPath, ['--test', 'tests/logbook-read.test.mjs', 'tests/logbook-database.test.mjs', 'tests/hunt-preferences-database.test.mjs', 'tests/notification-vault.test.mjs', 'tests/notification-database.test.mjs', 'tests/hunt-delete-database.test.mjs', 'tests/forecasting/pipeline.test.mjs', 'tests/forecasting/database.test.mjs'], { stdio: 'inherit' });
       process.exitCode = forecast.status ?? 1;
     }
   }
