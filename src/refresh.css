@@ -329,3 +329,27 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 
 .hunt-share-dialog[open] { display: flex; flex-direction: column; overflow: hidden; }
 .share-dialog-content { overflow-y: auto; min-height: 0; padding-right: 4px; }
 .share-dialog-actions { flex-shrink: 0; border-top: 1px solid #cdd7ce; padding-top: 12px; }
+
+.logbook-insights { margin: 18px 0; padding: 18px; background: #f5f6f0; border: 1px solid #cdd7ce; border-radius: 12px; }
+.logbook-insights h2 { margin: 0 0 10px; }
+.logbook-insights p,.logbook-insights small,.reporting-resources small { font-size: 13px; line-height: 1.6; }
+.logbook-filter-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin: 16px 0; }
+.logbook-filter-grid label,.reporting-dialog label,.reporting-resources label,.hub-spot { display: grid; gap: 7px; font-size: 13px; font-weight: 700; min-width: 0; }
+.logbook-filter-grid select,.logbook-filter-grid input,.reporting-dialog input,.reporting-dialog select,.reporting-resources select,.hub-spot input { box-sizing: border-box; width: 100%; min-height: 46px; padding: 10px; font: inherit; font-size: 16px; color: #183e30; background: white; border: 1px solid #cdd7ce; border-radius: 8px; min-width: 0; }
+.logbook-insights details { margin: 14px 0; padding: 12px 0; border-top: 1px solid #cdd7ce; }
+.logbook-insights summary { cursor: pointer; font-weight: 700; min-height: 32px; }
+.logbook-insights .button,.reporting-dialog .button { min-height: 44px; padding: 10px 14px; margin: 10px 4px 0 0; border: 1px solid #cdd7ce; }
+.summary-table-scroll { overflow-x: auto; margin: 10px 0; }
+.summary-table-scroll table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.summary-table-scroll th,.summary-table-scroll td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #cdd7ce; }
+.reporting-resources { display: grid; gap: 10px; margin: 14px 0; padding: 12px; background: #e3ebdf; border-radius: 9px; }
+.reporting-resources a { color: #244a39; font-size: 14px; }
+.reporting-dialog { width: min(560px,calc(100% - 24px)); max-height: calc(100dvh - 32px); box-sizing: border-box; overflow-y: auto; border: 1px solid #cdd7ce; border-radius: 15px; background: #fbfaf6; color: #183e30; padding: 20px; }
+.reporting-dialog::backdrop { background: #102e25b8; }
+.reporting-dialog header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.reporting-dialog header button { min-width: 44px; min-height: 44px; border: 1px solid #cdd7ce; border-radius: 50%; font-size: 24px; }
+.reporting-dialog p { font-size: 14px; line-height: 1.6; }
+.reporting-dialog fieldset { display: grid; gap: 12px; min-width: 0; border: 1px solid #cdd7ce; border-radius: 10px; margin: 14px 0; padding: 14px; }
+.hub-spot { margin: 16px 0; }
+.history-actions { flex-wrap: wrap; }
+@media(max-width:380px){.logbook-filter-grid{grid-template-columns:1fr}.logbook-insights{padding:12px}}

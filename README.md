@@ -39,6 +39,8 @@ Keep credentials in local environment files or hosting secret stores. The client
 
 ## Service setup and feature limits
 
+- [Season/spot summaries, renewal reference and confirmation storage](docs/RELEASE_1.72.0.md); [state source review](docs/reporting/SOURCE_REVIEW_2026-11-19.md)
+
 - [Native hunt sharing and device limits](docs/RELEASE_1.71.0.md)
 
 - [Optional location weather](docs/RELEASE_1.70.0.md)

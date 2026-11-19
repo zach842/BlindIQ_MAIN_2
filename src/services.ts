@@ -1,8 +1,9 @@
 import { createClient, type User } from "@supabase/supabase-js";
 import { parseHuntPreferences, validateHuntPreferences, type HuntPreferences } from "./huntPreferences";
+import { validateReports, validDay } from "./logbookSummary";
 import { TERMS_VERSION } from "./legal";
 import { migrationStatus, previewMigrationData, type MigrationData, type MigrationRegion, type MigrationSnapshot } from "./migration";
-import type { HarvestEntry, HuntCategoryId, HuntRecord, NewHuntRecord } from "./types";
+import type { HarvestEntry, HuntCategoryId, HuntRecord, HarvestReport, NewHuntRecord } from "./types";
 
 const REMEMBERED_DEVICE_KEY = "blindiq-remembered-device";
 const EXPLICIT_LOGOUT_KEY = "blindiq-explicit-logout-v1";
@@ -570,6 +571,9 @@ function formatHuntDate(value: string) {
 type HuntRow = {
   id: string;
   hunted_at: string;
+  hunt_local_date?: string | null;
+  spot_name?: string | null;
+  reporting_details?: unknown;
   state_code: string;
   state_name: string;
   zone: string;
@@ -587,8 +591,11 @@ function rowToHuntRecord(row: HuntRow): HuntRecord {
   const categoryFromEntries = entries.find((entry) => entry.huntCategory)?.huntCategory;
   return {
     id: row.id,
-    date: formatHuntDate(row.hunted_at),
+    date: formatHuntDate(row.hunt_local_date ? row.hunt_local_date + "T12:00:00" : row.hunted_at),
     huntedAt: row.hunted_at,
+    huntLocalDate: row.hunt_local_date ?? undefined,
+    spotName: row.spot_name ?? null,
+    reportingDetails: Array.isArray(row.reporting_details) ? row.reporting_details.filter((r): r is HarvestReport => !!r && typeof r === "object" && ["id","speciesId","confirmationNumber","harvestDate","county","weaponClass"].every(key => typeof (r as Record<string, unknown>)[key] === "string")) : [],
     stateCode: row.state_code,
     state: row.state_name,
     zone: row.zone,
@@ -686,23 +693,56 @@ export async function deleteHuntRecord(hunt: HuntRecord): Promise<{ warning?: st
   return {};
 }
 
+export async function saveHuntReportingDetails(hunt: HuntRecord, reports: HarvestReport[], spot = hunt.spotName ?? hunt.blindName ?? ""): Promise<HuntRecord> {
+  const reportingDetails = validateReports(hunt, reports);
+  if (spot.length > 120) throw new Error("Spot names must be 120 characters or fewer.");
+  if (!supabase) {
+    const record = { ...hunt, reportingDetails, spotName: spot.trim() || null };
+    const rows = readDemoHunts();
+    const stored = rows.find(row => row.id === hunt.id);
+    if (!stored || JSON.stringify(stored.reportingDetails ?? []) !== JSON.stringify(hunt.reportingDetails ?? []) || (stored.spotName ?? null) !== (hunt.spotName ?? null)) throw new Error("This hunt changed. Close this panel and refresh the logbook before editing.");
+    try { localStorage.setItem(DEMO_HUNTS_KEY, JSON.stringify(rows.map(row => row.id === hunt.id ? record : row))); }
+    catch { throw new Error("This browser could not save reporting details. Please retry."); }
+    return record;
+  }
+  if (!navigator.onLine || hunt.id.startsWith("offline-")) throw new Error("Connect and sync this hunt before saving confirmation numbers.");
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error("Please sign in again before editing this hunt.");
+  let query = supabase.from("hunts").update({ reporting_details: reportingDetails, spot_name: spot.trim() || null }).eq("id", hunt.id).eq("user_id", userData.user.id).eq("reporting_details", JSON.stringify(hunt.reportingDetails ?? []));
+  query = hunt.spotName ? query.eq("spot_name", hunt.spotName) : query.is("spot_name", null);
+  const { data, error } = await query.select("id,reporting_details");
+  if (error) throw new Error(error.message || "Reporting details could not be saved.");
+  if (!data?.length) throw new Error("This hunt changed or saving was not confirmed. Close this panel and refresh the logbook before editing.");
+  const record = { ...hunt, reportingDetails, spotName: spot.trim() || null };
+  cacheHunts(cachedHunts().map(row => row.id === hunt.id ? record : row));
+  return record;
+}
+
+const huntReadNotices = new WeakMap<HuntRecord[], string>();
+export const getHuntReadNotice = (records: HuntRecord[]) => huntReadNotices.get(records) ?? "";
+function readCopy(records: HuntRecord[], notice: string) { huntReadNotices.set(records, notice); return records; }
 export async function listHunts(): Promise<HuntRecord[]> {
   if (!supabase) return readDemoHunts();
-  if (!navigator.onLine) return cachedHunts();
-  const { data, error } = await supabase
-    .from("hunts")
-    .select("*")
-    .order("hunted_at", { ascending: false });
-  if (error) {
-    if (isConnectivityError(error)) return cachedHunts();
-    const cached = cachedHunts();
-    if (cached.length) return cached;
-    if (isHuntDatabaseSetupError(error)) throw new Error(huntDatabaseSetupMessage("load"));
-    throw new Error(error.message || "Unable to load saved hunts.");
+  if (!navigator.onLine) { return readCopy(cachedHunts(), "Offline copy: hunts saved on other devices may be missing. Refresh online before using renewal totals."); }
+  const rows: HuntRow[] = [];
+  const cutoff = new Date().toISOString();
+  for (let start = 0; ; start += 500) {
+    const { data, error } = await supabase.from("hunts").select("*").lte("hunted_at", cutoff).order("hunted_at", { ascending: false }).order("id", { ascending: false }).range(start, start + 499);
+    if (error) {
+      const cached = cachedHunts();
+      if (cached.length || isConnectivityError(error)) { return readCopy(cached, "Saved copy: the logbook could not be refreshed. Totals may be incomplete; retry online before using renewal information."); }
+      if (isHuntDatabaseSetupError(error)) throw new Error(huntDatabaseSetupMessage("load"));
+      throw new Error(error.message || "Unable to load saved hunts.");
+    }
+    rows.push(...(data ?? []) as HuntRow[]);
+    if (!data || data.length < 500) break;
   }
-  const records = await addPrivatePhotoUrls((data ?? []).map((row) => rowToHuntRecord(row as HuntRow)));
-  cacheHunts(records);
-  return records;
+  const records = await addPrivatePhotoUrls([...new Map(rows.map(row => [row.id, rowToHuntRecord(row)])).values()]);
+  const ids = new Set(records.map(row => row.id));
+  const queued = pendingHunts().filter(item => !ids.has(item.offlineId.replace(/^offline-/, ""))).map(item => offlineRecord(item.input, item.huntedAt, item.offlineId));
+  const combined = [...queued, ...records];
+  cacheHunts(combined);
+  return combined;
 }
 
 function offlineRecord(input: NewHuntRecord, huntedAt: string, id = `offline-${crypto.randomUUID()}`): HuntRecord {
@@ -710,6 +750,9 @@ function offlineRecord(input: NewHuntRecord, huntedAt: string, id = `offline-${c
     id,
     date: formatHuntDate(huntedAt),
     huntedAt,
+    huntLocalDate: input.huntLocalDate,
+    spotName: input.spotName || null,
+    reportingDetails: [],
     stateCode: input.stateCode,
     state: input.state,
     zone: input.zone,
@@ -731,6 +774,10 @@ function queueOfflineHunt(input: NewHuntRecord, huntedAt: string) {
 
 export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null): Promise<HuntRecord> {
   const huntedAt = new Date().toISOString();
+  const local = new Date(huntedAt);
+  const day = `${local.getFullYear()}-${String(local.getMonth()+1).padStart(2,"0")}-${String(local.getDate()).padStart(2,"0")}`;
+  input = { ...input, huntLocalDate: input.huntLocalDate ?? day };
+  if (!validDay(input.huntLocalDate ?? "")) throw new Error("The hunt date is invalid.");
   const birdCount = input.entries.reduce((sum, entry) => sum + entry.count, 0);
 
   if (!supabase) {
@@ -739,6 +786,9 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       id: crypto.randomUUID(),
       date: formatHuntDate(huntedAt),
       huntedAt,
+      huntLocalDate: input.huntLocalDate,
+      spotName: input.spotName || null,
+      reportingDetails: [],
       stateCode: input.stateCode,
       state: input.state,
       zone: input.zone,
@@ -785,6 +835,8 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       id: huntId,
       user_id: userData.user.id,
       hunted_at: huntedAt,
+      hunt_local_date: input.huntLocalDate,
+      spot_name: input.spotName?.trim() || null,
       state_code: input.stateCode,
       state_name: input.state,
       zone: input.zone,
@@ -797,19 +849,19 @@ export async function saveHuntRecord(input: NewHuntRecord, photo?: Blob | null):
       firearm_used: input.firearmUsed?.trim() || null,
       notes: input.notes?.trim() || null,
       photo_path: photoPath,
-      app_version: "1.60",
+      app_version: "1.72.0",
     };
   let { data, error } = await supabase
     .from("hunts")
     .insert(insertPayload)
-    .select("id,hunted_at,state_code,state_name,zone,is_simulation,hunt_category,entries,blind_name,firearm_used,notes,photo_path")
+    .select("id,hunted_at,hunt_local_date,spot_name,reporting_details,state_code,state_name,zone,is_simulation,hunt_category,entries,blind_name,firearm_used,notes,photo_path")
     .single();
   if (isMissingHuntCategoryColumn(error)) {
     const { hunt_category: _huntCategory, ...legacyPayload } = insertPayload;
     const legacyResult = await supabase
       .from("hunts")
       .insert(legacyPayload)
-      .select("id,hunted_at,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
+      .select("id,hunted_at,hunt_local_date,spot_name,reporting_details,state_code,state_name,zone,is_simulation,entries,blind_name,firearm_used,notes,photo_path")
       .single();
     data = legacyResult.data ? { ...legacyResult.data, hunt_category: null } : null;
     error = legacyResult.error;
@@ -841,8 +893,11 @@ export async function syncPendingHunts() {
     const item = queue[index];
     const birdCount = item.input.entries.reduce((sum, entry) => sum + entry.count, 0);
     const insertPayload = {
+      id: item.offlineId.replace(/^offline-/, ""),
       user_id: userData.user.id,
       hunted_at: item.huntedAt,
+      hunt_local_date: item.input.huntLocalDate ?? null,
+      spot_name: item.input.spotName?.trim() || null,
       state_code: item.input.stateCode,
       state_name: item.input.state,
       zone: item.input.zone,
@@ -854,12 +909,12 @@ export async function syncPendingHunts() {
       blind_name: item.input.blindName?.trim() || null,
       firearm_used: item.input.firearmUsed?.trim() || null,
       notes: item.input.notes?.trim() || null,
-      app_version: "1.60-offline-sync",
+      app_version: "1.72.0-offline-sync",
     };
-    let { error } = await supabase.from("hunts").insert(insertPayload);
+    let { error } = await supabase.from("hunts").upsert(insertPayload, { onConflict: "id", ignoreDuplicates: true });
     if (isMissingHuntCategoryColumn(error)) {
       const { hunt_category: _huntCategory, ...legacyPayload } = insertPayload;
-      const legacyResult = await supabase.from("hunts").insert(legacyPayload);
+      const legacyResult = await supabase.from("hunts").upsert(legacyPayload, { onConflict: "id", ignoreDuplicates: true });
       error = legacyResult.error;
     }
     if (error) {

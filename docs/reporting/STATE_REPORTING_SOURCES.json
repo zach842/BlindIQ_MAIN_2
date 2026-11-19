@@ -1,0 +1,202 @@
+{
+  "AL": [
+    "https://www.outdooralabama.com/gamecheck",
+    "Game Check and harvest records"
+  ],
+  "AK": [
+    "https://www.adfg.alaska.gov/index.cfm?adfg=deerhunting.reporting",
+    "Deer harvest reporting"
+  ],
+  "AZ": [
+    "https://www.azgfd.com/hunting/hunt-draw-and-licenses/harvest-reporting/harvest-reporting-tracking/",
+    "Harvest reporting and tracking"
+  ],
+  "AR": [
+    "https://www.agfc.com/education/licensing-and-vems-system-support/",
+    "Official licensing and game-check support"
+  ],
+  "CA": [
+    "https://wildlife.ca.gov/Licensing/Hunting/Tag-Reporting",
+    "Hunting tag reporting"
+  ],
+  "CO": [
+    "https://cpw.state.co.us/activities/hunting/big-game/hunting-deer/deer-field",
+    "Deer field guidance and harvest survey"
+  ],
+  "CT": [
+    "https://portal.ct.gov/deep/hunting/tagging-and-reporting-deer-and-turkey-harvests",
+    "Deer and turkey tagging and reporting"
+  ],
+  "DE": [
+    "https://dnrec.delaware.gov/fish-wildlife/licenses-registrations/",
+    "Licenses, tags and harvest reporting"
+  ],
+  "FL": [
+    "https://myfwc.com/hunting/deer/harvest-report/",
+    "Deer and turkey harvest reporting"
+  ],
+  "GA": [
+    "https://georgiawildlife.com/HarvestRecordGeorgiaGameCheck",
+    "Georgia Game Check"
+  ],
+  "HI": [
+    "https://dlnr.hawaii.gov/dofaw/app/",
+    "Official app and area harvest reporting"
+  ],
+  "ID": [
+    "https://idfg.idaho.gov/hunt/report",
+    "Mandatory hunter reports (deer, elk, pronghorn)"
+  ],
+  "IL": [
+    "https://dnr.illinois.gov/hunting/harvestreporting.html",
+    "Harvest reporting"
+  ],
+  "IN": [
+    "https://www.in.gov/dnr/fish-and-wildlife/hunting-and-trapping/indiana-checkin-game/",
+    "CheckIN Game"
+  ],
+  "IA": [
+    "https://www.iowadnr.gov/things-do/hunting-trapping/report-your-harvest",
+    "Report your harvest"
+  ],
+  "KS": [
+    "https://www.ksoutdoors.gov/outdoor-activities/hunting-in-kansas/what-to-hunt/turkey",
+    "Turkey guidance and voluntary harvest reporting"
+  ],
+  "KY": [
+    "https://fw.ky.gov/Hunt/pages/telecheck-info.aspx",
+    "Telecheck information"
+  ],
+  "LA": [
+    "https://support.louisianaoutdoors.com/hc/en-us/articles/34562523877396-LDWF-Tag-Validation-Guide",
+    "LDWF licensing support: tag validation"
+  ],
+  "ME": [
+    "https://www.maine.gov/ifw/hunting-trapping/hunting/laws-rules/tagging-transportation-registration.html",
+    "Tagging, transportation and registration"
+  ],
+  "MD": [
+    "https://dnr.maryland.gov/wildlife/pages/hunt_trap/deer-hunting-in-maryland.aspx",
+    "Deer check-in procedures and official check-in links"
+  ],
+  "MA": [
+    "https://www.mass.gov/info-details/harvest-reporting",
+    "Harvest reporting"
+  ],
+  "MI": [
+    "https://www.michigan.gov/dnr/things-to-do/hunting/harvest-reporting",
+    "Harvest reporting"
+  ],
+  "MN": [
+    "https://www.dnr.state.mn.us/licenses/online-sales.html",
+    "Official licensing and harvest registration"
+  ],
+  "MS": [
+    "https://www.mdwfp.com/licenses-permits",
+    "Official licenses and Game Check"
+  ],
+  "MO": [
+    "https://mdc.mo.gov/hunting-trapping/tagging-and-telecheck",
+    "Tagging and Telecheck"
+  ],
+  "MT": [
+    "https://fwp.mt.gov/hunt/hunter-surveys",
+    "Hunter surveys"
+  ],
+  "NE": [
+    "https://outdoornebraska.gov/hunt/telecheck/",
+    "Telecheck"
+  ],
+  "NV": [
+    "https://www.ndow.org/apply-buy/",
+    "Official licensing and hunter questionnaire access"
+  ],
+  "NH": [
+    "https://www.nhfishandgame.com/Index.aspx",
+    "Official license system and deer/turkey registration"
+  ],
+  "NJ": [
+    "https://dep.nj.gov/njfw/hunting/ahrs/",
+    "Automated Harvest Report System"
+  ],
+  "NM": [
+    "https://wildlife.dgf.nm.gov/hunting/harvest-reporting-information/",
+    "Harvest reporting information"
+  ],
+  "NY": [
+    "https://dec.ny.gov/things-to-do/hunting/deer-bear/regulations",
+    "Deer/bear tagging and reporting guidance"
+  ],
+  "NC": [
+    "https://www.ncwildlife.gov/hunting/after-hunt/big-game-harvest-reporting",
+    "Big game harvest reporting"
+  ],
+  "ND": [
+    "https://gf.nd.gov/hunting/deer",
+    "Deer hunting, tagging and survey guidance"
+  ],
+  "OH": [
+    "https://dam.assets.ohio.gov/image/upload/ohiodnr.gov/documents/wildlife/laws-regs-licenses/Ohio%20Hunting%20and%20Trapping%20Regulations%20ENGLISH.pdf",
+    "Official hunting guide: game check instructions"
+  ],
+  "OK": [
+    "https://www.wildlifedepartment.com/hunting/regs/big-game-regulations",
+    "Big game tagging and E-Check guidance"
+  ],
+  "OR": [
+    "https://myodfw.com/articles/report-your-hunt",
+    "Report your hunt"
+  ],
+  "PA": [
+    "https://www.pa.gov/agencies/pgc/huntingandtrapping/regulations/reporting-a-harvest",
+    "Reporting a harvest"
+  ],
+  "RI": [
+    "https://dem.ri.gov/media/36651/download",
+    "Official deer tagging and reporting guide"
+  ],
+  "SC": [
+    "https://dnr.sc.gov/harvestreport/",
+    "Hunting harvest reporting"
+  ],
+  "SD": [
+    "https://gfp.sd.gov/hunt-surveys/",
+    "Harvest reports and surveys"
+  ],
+  "TN": [
+    "https://www.tn.gov/twra/hunting/tag-before-you-drag.html",
+    "Tagging and game check procedures"
+  ],
+  "TX": [
+    "https://tpwd.texas.gov/regulations/outdoor-annual/hunting/general-regulations/after-killing-a-deer",
+    "After harvesting a deer: tagging and reporting"
+  ],
+  "UT": [
+    "https://wildlife.utah.gov/harvest",
+    "Report your game harvest"
+  ],
+  "VT": [
+    "https://vtfishandwildlife.com/hunt/big-game-reporting",
+    "Big game reporting"
+  ],
+  "VA": [
+    "https://dwr.virginia.gov/hunting/game-harvest-reporting/",
+    "Game harvest reporting"
+  ],
+  "WA": [
+    "https://wdfw.wa.gov/hunting/requirements/harvest-reporting",
+    "Reporting your harvest"
+  ],
+  "WV": [
+    "https://wvdnr.gov/electronic-game-check-guide/",
+    "Electronic big game check guide"
+  ],
+  "WI": [
+    "https://dnr.wisconsin.gov/topic/Hunt/regulations/OnlineHuntingRegulations/DeerRegistration",
+    "Deer registration and GameReg"
+  ],
+  "WY": [
+    "https://wgfd.wyo.gov/news-events/hunters-encouraged-submit-harvest-surveys",
+    "Official hunter harvest survey guidance"
+  ]
+}
